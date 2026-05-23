@@ -1,7 +1,6 @@
 # GTM-Builds
 
-Resumen corto de la idea
-Problema: Marketing publica contenido “a ciegas” y ventas pierde deals en juntas internas donde el vendedor no está invitado; ese aprendizaje casi nunca regresa a marketing.
+Marketing publica contenido “a ciegas” y ventas pierde deals en juntas internas donde el vendedor no está invitado; ese aprendizaje casi nunca regresa a marketing.
 
 Solución:
 
