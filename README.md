@@ -151,22 +151,11 @@ serve(async (req) => {
 ### 1. Onboarding Cero Fricciones
 El cliente nunca necesita descargar una app ni llenar un formulario. La primera vez que pide factura, NexoLeal crea su perfil automáticamente y le envía un WhatsApp: *"Hola José, tu monedero de lealtad en [Barbería X] ya está activo. Ya tienes 1 de 10 visitas para tu corte gratis."*
 
-### 2. Segmentación Fiscal para Campañas
-Gemini puede instruirse con el régimen fiscal del cliente para personalizar el tono de las campañas de reactivación: diferente mensaje para una persona moral (empresa) vs. una persona física con actividad empresarial.
-
 ### 3. Detección de LTV Real
 El ticket promedio calculado desde CFDIs es más preciso que el registrado manualmente. NexoLeal puede clasificar automáticamente a los clientes en tres niveles: Bronce (< $150 ticket), Plata ($150–$300) y Oro (> $300), y personalizar las recompensas de lealtad en consecuencia.
 
 ### 4. Cumplimiento y Confianza
 El dueño de la PYME tiene certeza de que cada visita registrada en NexoLeal corresponde a una transacción fiscalmente verificada — eliminando la posibilidad de que el staff selle tarjetas sin que haya ocurrido una venta real.
-
-***
-
-## Consideraciones de Privacidad y Cumplimiento
-
-- Los datos del CFDI son proporcionados voluntariamente por el cliente al solicitar factura. NexoLeal debe informar explícitamente en sus Términos de Servicio que estos datos se usarán para enriquecer el perfil de lealtad.
-- El RFC es dato personal según la Ley Federal de Protección de Datos Personales (LFPDPPP). Debe almacenarse cifrado en Supabase y nunca exponerse en el frontend del cliente ni del staff.
-- NexoLeal actúa como sub-procesador de datos fiscales — la PYME (emisor del CFDI) es el responsable primario ante el SAT y ante la LFPDPPP.
 
 ***
 
