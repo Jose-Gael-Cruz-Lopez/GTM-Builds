@@ -1,149 +1,188 @@
-# NexoLeal 🤝
+# NexoLeal
 
-Motor de Lealtad y Retención para PYMES
+**Motor de Lealtad y Retención para PYMES latinoamericanas**
 
-NexoLeal transforma el sistema tradicional de tarjetas de lealtad de cartón en un ecosistema digital B2B2C. Combina un monedero digital sin fricción para el cliente con un sistema de retención para el negocio, permitiendo registrar visitas, prevenir fraude y activar campañas inteligentes de reactivación.
+[![Backend CI](https://github.com/Jose-Gael-Cruz-Lopez/GTM-Builds/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/Jose-Gael-Cruz-Lopez/GTM-Builds/actions/workflows/backend-ci.yml)
+[![Worker](https://img.shields.io/badge/worker-live-brightgreen)](https://nexoleal-backend.nexoleal.workers.dev/health)
 
-***
+NexoLeal transforma el sistema tradicional de tarjetas de lealtad de cartón en un ecosistema digital B2B2C. Combina un monedero digital sin fricción para el cliente con un motor de retención para el negocio: registra visitas, previene fraude y activa campañas inteligentes con IA.
+
+---
 
 ## Problema
 
-Las PYMES de servicios como barberías, estéticas, clínicas veterinarias y negocios similares enfrentan tres problemas principales en la retención de clientes:
+Las PYMES de servicios (barberías, estéticas, veterinarias, cafeterías) enfrentan tres problemas en la retención de clientes:
 
-- **Pérdida de datos**: Las tarjetas físicas no capturan información útil sobre el cliente, como frecuencia de visita o historial.
-- **Fraude**: Los sellos físicos pueden falsificarse fácilmente por empleados o clientes.
-- **Falta de seguimiento**: No existe una forma simple de detectar cuándo un cliente dejó de regresar ni de reactivarlo automáticamente.
+- **Pérdida de datos** — las tarjetas físicas no capturan frecuencia ni historial.
+- **Fraude** — los sellos físicos son fáciles de falsificar.
+- **Sin seguimiento** — no hay forma de detectar cuándo un cliente dejó de regresar.
 
-El resultado es una relación transaccional y ciega con el cliente: el negocio entrega recompensas, pero no aprende nada del comportamiento de compra.
+El resultado: una relación ciega con el cliente. El negocio entrega recompensas pero no aprende nada.
 
-***
+---
 
 ## Solución
 
-NexoLeal digitaliza el programa de lealtad de una PYME con tres componentes conectados:
+NexoLeal digitaliza el programa de lealtad con tres componentes conectados:
 
-### 1. Monedero digital para el cliente
-El cliente accede a su progreso de lealtad desde una experiencia simple y rápida. Puede ver cuántas visitas lleva, cuándo desbloquea su próxima recompensa y generar su código QR de validación.
+| Componente | Quién lo usa | Qué hace |
+|---|---|---|
+| **Monedero digital** | Cliente | Muestra progreso, genera QR temporal para escaneo |
+| **Validación segura** | Staff / caja | Escanea el QR, registra la visita, previene doble uso |
+| **Dashboard + IA** | Dueño del negocio | Métricas de retención, detecta inactivos, genera campañas |
 
-### 2. Validación segura para staff
-El personal del negocio escanea el código QR del cliente desde una interfaz de caja o recepción. Cada escaneo se valida en backend para evitar duplicaciones, reutilización de tokens o intentos de fraude.
+---
 
-### 3. Dashboard para el dueño del negocio
-El administrador visualiza métricas clave como visitas, clientes frecuentes, clientes inactivos y campañas sugeridas. Así, NexoLeal deja de ser solo un sistema de puntos y se convierte en un motor de retención.
+## Stack técnico
 
-***
+| Capa | Tecnología |
+|---|---|
+| **Backend** | Cloudflare Workers + Hono.js |
+| **Base de datos** | Supabase (PostgreSQL) |
+| **Autenticación** | Supabase Auth (JWT) + staff keys (HMAC-SHA256) |
+| **IA / Campañas** | NVIDIA NIM (`meta/llama-3.3-70b-instruct`) |
+| **KV / Cache** | Cloudflare KV (token blacklist, rate limit, analytics cache) |
+| **Frontend** | Lovable (React + Vite + Tailwind CSS) |
+| **CI/CD** | GitHub Actions → Cloudflare Workers (auto-deploy on push) |
 
-## Propuesta de valor
+---
 
-NexoLeal no solo reemplaza una tarjeta física: convierte cada visita en una señal de negocio.
+## Arquitectura del backend
 
-Esto permite que una PYME:
+```
+POST /tokens/generate   ← cliente genera QR (Supabase JWT)
+POST /tokens/validate   ← staff escanea QR (X-Staff-Key)
+POST /visits            ← registra visita + sello + recompensa
+GET  /businesses/:id/analytics/summary   ← métricas (KV cache)
+POST /businesses/:id/campaigns/generate  ← IA genera campaña
+```
 
-- Registre actividad de clientes sin fricción adicional.
-- Detecte abandono antes de que sea demasiado tarde.
-- Lance campañas de reactivación en días de baja demanda.
-- Tenga evidencia clara de qué tan efectivo es su programa de lealtad.
+### Anti-fraude por diseño
 
-En lugar de depender de memoria, intuición o tarjetas selladas a mano, el negocio obtiene una base operativa para retener mejor a sus clientes.
+Cada QR está firmado con HMAC-SHA256 y tiene una vida útil de 90 segundos. Después del primer escaneo válido, el token se invalida en Cloudflare KV — imposible reutilizarlo.
 
-***
+$$T = \text{HMAC\\_SHA256}(k,\ u \| b \| t \| \text{nonce})$$
+
+- `k` — clave secreta del servidor (`TOKEN_SECRET`)
+- `u` — ID del usuario (Supabase auth)
+- `b` — ID del negocio
+- `t` — timestamp Unix (segundos)
+- `nonce` — 16 bytes aleatorios (hace cada token único)
+
+---
 
 ## Cómo funciona
 
-### Flujo del cliente
-1. El cliente abre su monedero digital.
-2. Genera un código QR temporal.
-3. Presenta el QR en caja o recepción.
+**Flujo del cliente**
+1. Abre su monedero digital → ve sus sellos y recompensas.
+2. Genera un QR temporal válido por 90 s.
+3. Presenta el QR en caja.
 
-### Flujo del staff
-1. El staff escanea el código QR.
-2. El backend valida que el token sea auténtico, vigente y no reutilizado.
-3. Si es válido, se registra la visita y se actualiza el progreso del cliente.
+**Flujo del staff**
+1. Escanea el QR con su dispositivo.
+2. El backend valida firma, expiración y uso único.
+3. Registra la visita, actualiza sellos, desbloquea recompensa si aplica.
 
-### Flujo del admin
-1. El dueño del negocio entra al dashboard.
-2. Visualiza métricas de retención y actividad.
-3. Detecta clientes inactivos o ventanas de baja demanda.
-4. Genera campañas de reactivación personalizadas.
+**Flujo del dueño**
+1. Entra al dashboard.
+2. Ve clientes activos / en riesgo / perdidos (calculado diariamente a las 3 AM UTC).
+3. Genera campañas de reactivación personalizadas con IA en segundos.
 
-***
+---
 
-## Arquitectura anti-fraude
+## Estructura del repositorio
 
-Uno de los diferenciadores clave de NexoLeal es su sistema de validación segura para evitar sellos falsos o duplicados.
+```
+GTM-Builds/
+├── backend/
+│   ├── src/
+│   │   ├── index.ts           # Hono app + cron export
+│   │   ├── cron.ts            # Recalcula status active/at_risk/lost
+│   │   ├── lib/
+│   │   │   ├── supabase.ts    # Cliente PostgREST tipado
+│   │   │   ├── tokenEngine.ts # Genera / valida / invalida QR tokens
+│   │   │   └── nim.ts         # Genera campañas con NVIDIA NIM
+│   │   ├── middleware/
+│   │   │   ├── auth.ts        # requireClient / requireStaff / requireAdmin
+│   │   │   ├── rateLimit.ts   # Sliding window (Cloudflare KV)
+│   │   │   └── errorHandler.ts
+│   │   ├── routes/            # tokens, businesses, clients, visits, analytics, campaigns
+│   │   └── types/             # Env, API envelope, DB schema
+│   ├── src/__tests__/         # 24 tests — Vitest + miniflare
+│   ├── supabase-schema.sql    # Schema completo para el teammate
+│   ├── wrangler.toml          # KV namespaces + cron trigger
+│   └── DEPLOY.md              # Guía de deploy paso a paso
+├── prompts/
+│   ├── START-HERE.md          # Punto de entrada para agentes
+│   └── backend/               # 10 prompts detallados (01–10)
+└── .github/workflows/
+    └── backend-ci.yml         # typecheck → test → deploy automático
+```
 
-La idea es generar un token ligado al usuario y al tiempo de emisión, firmado desde el servidor. De manera conceptual, puede representarse así:
+---
 
-$$
-T = H(k \| u \| t)
-$$
+## Endpoints principales
 
-Donde:
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/health` | — | Estado del worker |
+| `POST` | `/tokens/generate` | Bearer JWT | Genera QR token |
+| `POST` | `/tokens/validate` | X-Staff-Key | Valida y consume QR |
+| `POST` | `/visits` | X-Staff-Key | Registra visita |
+| `GET` | `/clients/me` | Bearer JWT | Perfil del cliente |
+| `GET` | `/businesses/:id/analytics/summary` | Bearer JWT | Dashboard stats |
+| `POST` | `/businesses/:id/campaigns/generate` | Bearer JWT | Genera campaña IA |
 
-- `T` es el token generado.
-- `H` es una función hash segura.
-- `k` es una clave secreta del servidor.
-- `u` es el identificador del usuario.
-- `t` es una marca de tiempo.
-
-Este enfoque permite que cada QR sea único, temporal y difícil de falsificar. Además, el backend puede invalidarlo después de un solo uso para bloquear ataques de replay o duplicación.
-
-***
+---
 
 ## Casos de uso
 
-NexoLeal puede aplicarse fácilmente a negocios de alta recurrencia como:
+NexoLeal está diseñado para negocios de alta recurrencia:
 
-- Barberías
-- Estéticas
+- Barberías y estéticas
 - Clínicas veterinarias
 - Cafeterías
 - Gimnasios boutique
-- Consultorios o servicios por cita
+- Consultorios y servicios por cita
 
-Cualquier negocio que hoy use tarjetas físicas o promociones repetitivas puede migrar a un sistema más medible y accionable.
+---
 
-***
+## CI/CD
 
-## Stack tecnológico
+Cada push a `main` que toque `backend/**`:
 
-- **Frontend**: Lovable (React + Vite + Tailwind CSS)
-- **Backend**: Cloudflare Workers o Supabase según el flujo
-- **Base de datos**: Supabase / PostgreSQL o D1 según arquitectura
-- **Inteligencia Artificial**: Gemini API para análisis y campañas
-- **Seguridad**: generación y validación de tokens con funciones hash
-
-***
-
-## Estructura del proyecto
-
-```bash
-/frontend
-  Cliente: monedero digital y generación de QR
-  Staff: escaneo y validación
-  Admin: dashboard con métricas y campañas
-
-/backend
-  APIs, validación de tokens, lógica de visitas, campañas y eventos
-
-/docs
-  assets, branding, pitch deck y documentación
+```
+GitHub Actions
+  └── typecheck (tsc --noEmit)
+  └── tests (vitest — 24/24 passing)
+  └── deploy → https://nexoleal-backend.nexoleal.workers.dev
 ```
 
-***
+---
 
-## Qué hace diferente a NexoLeal
+## Desarrollo local
 
-NexoLeal destaca por tres razones:
+```bash
+cd backend
+cp .dev.vars.example .dev.vars   # llena con tus keys
+npm install
+npm run dev        # wrangler dev en localhost:8787
+npm test           # vitest — 24 tests
+```
 
-1. **Resuelve un problema real y cotidiano** en miles de PYMES que todavía operan con lealtad manual.
-2. **Convierte un sistema pasivo en uno accionable**, donde cada visita genera datos útiles.
-3. **Integra seguridad y retención en una sola experiencia**, en lugar de limitarse a digitalizar una tarjeta física.
+Variables requeridas en `.dev.vars`:
 
-No es solo una app bonita ni un demo de IA: es una herramienta para ayudar a pequeños negocios a retener clientes de forma más inteligente.
+```
+SUPABASE_URL=https://lajrjnjyvbpaaspzgpvh.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_KEY=eyJ...
+TOKEN_SECRET=<256-bit hex>
+NIM_API_KEY=nvapi-...
+STAFF_API_KEY_HASH=<sha256 del raw key>
+```
 
-***
+---
 
 ## Visión
 
-La visión de NexoLeal es convertirse en la capa de lealtad digital para PYMES en Latinoamérica: una infraestructura sencilla, segura y accesible que permita a pequeños negocios conocer mejor a sus clientes, aumentar recurrencia y crecer con datos reales en lugar de intuición.
+NexoLeal busca convertirse en la **capa de lealtad digital para PYMES en Latinoamérica**: una infraestructura sencilla, segura y accesible que permita a pequeños negocios conocer mejor a sus clientes, aumentar recurrencia y crecer con datos reales en lugar de intuición.
