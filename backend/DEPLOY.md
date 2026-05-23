@@ -115,3 +115,4 @@ curl https://nexoleal-backend.your-subdomain.workers.dev/health
 | `TOKEN_TTL_SECONDS` | `90`                            | Lifetime of a QR token                     |
 | `RATE_LIMIT_WINDOW_SECONDS` | `60`                    | Sliding-window rate limit period           |
 | `RATE_LIMIT_MAX_REQUESTS`   | `60`                    | Max requests per window per IP             |
+# Sat May 23 22:17:08 UTC 2026
