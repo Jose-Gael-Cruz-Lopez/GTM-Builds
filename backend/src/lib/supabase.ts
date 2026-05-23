@@ -19,7 +19,7 @@ interface QueryOptions {
   order?: string          // e.g. 'created_at.desc'
   limit?: number
   offset?: number
-  single?: boolean        // adds Accept: application/vnd.pgsuite.object+json
+  single?: boolean        // adds Accept: application/vnd.pgrst.object+json
   count?: 'exact' | 'planned' | 'estimated'
 }
 
@@ -152,14 +152,14 @@ export function createSupabaseClient(env: Env, mode: AuthMode = 'anon'): Supabas
 
     async getOne<T extends TableName>(table: T, options?: QueryOptions): Promise<Row<T> | null> {
       const url = buildUrl(table, { ...options, limit: 1 })
-      const headers = buildHeaders({ 'Accept': 'application/vnd.pgsuite.object+json' })
+      const headers = buildHeaders({ 'Accept': 'application/vnd.pgrst.object+json' })
       const response = await fetchWithRetry(url, { method: 'GET', headers })
 
       if (response.status === 406) return null // no rows matched + single mode
       if (response.status === 200 && response.headers.get('content-length') === '0') return null
 
-      const rows = await handleResponse<Row<T>[]>(response)
-      return rows[0] ?? null
+      const body = await handleResponse<Row<T> | Row<T>[]>(response)
+      return Array.isArray(body) ? (body[0] ?? null) : body
     },
 
     async post<T extends TableName>(table: T, body: Insert<T> | Insert<T>[]): Promise<Row<T>[]> {

@@ -17,9 +17,11 @@ const app = new Hono<{ Bindings: Env; Variables: ContextVariables }>()
 // ─── Global Middleware ────────────────────────────────────────────────────────
 app.use('*', logger())
 app.use('*', async (c, next) => {
-  const origin = c.env.FRONTEND_ORIGIN
+  const allowList = c.env.FRONTEND_ORIGIN.split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
   return cors({
-    origin,
+    origin: (origin) => (origin && allowList.includes(origin) ? origin : null),
     allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Staff-Key'],
     exposeHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],

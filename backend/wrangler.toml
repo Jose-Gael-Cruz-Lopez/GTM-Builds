@@ -21,7 +21,7 @@ preview_id = "449fdbc534af4dd79affb336b02fffe3"
 
 # ─── Default Vars ────────────────────────────────────────────────────────────
 [vars]
-FRONTEND_ORIGIN = "http://localhost:5173"
+FRONTEND_ORIGIN = "http://localhost:5173,http://localhost:3000,https://tanstack-start-app.nexoleal.workers.dev"
 TOKEN_TTL_SECONDS = "90"
 RATE_LIMIT_WINDOW_SECONDS = "60"
 RATE_LIMIT_MAX_REQUESTS = "60"
@@ -35,7 +35,7 @@ crons = ["0 3 * * *"]
 # ─── Staging Environment ─────────────────────────────────────────────────────
 [env.staging]
 name = "nexoleal-backend-staging"
-vars = { FRONTEND_ORIGIN = "https://staging.nexoleal.com", TOKEN_TTL_SECONDS = "90", RATE_LIMIT_WINDOW_SECONDS = "60", RATE_LIMIT_MAX_REQUESTS = "60" }
+vars = { FRONTEND_ORIGIN = "https://staging.nexoleal.com,https://tanstack-start-app.nexoleal.workers.dev", TOKEN_TTL_SECONDS = "90", RATE_LIMIT_WINDOW_SECONDS = "60", RATE_LIMIT_MAX_REQUESTS = "60" }
 
 [[env.staging.kv_namespaces]]
 binding = "TOKEN_BLACKLIST"
@@ -55,7 +55,7 @@ crons = ["0 3 * * *"]
 # ─── Production Environment ──────────────────────────────────────────────────
 [env.production]
 name = "nexoleal-backend-production"
-vars = { FRONTEND_ORIGIN = "https://app.nexoleal.com", TOKEN_TTL_SECONDS = "90", RATE_LIMIT_WINDOW_SECONDS = "60", RATE_LIMIT_MAX_REQUESTS = "60" }
+vars = { FRONTEND_ORIGIN = "https://app.nexoleal.com,https://tanstack-start-app.nexoleal.workers.dev", TOKEN_TTL_SECONDS = "90", RATE_LIMIT_WINDOW_SECONDS = "60", RATE_LIMIT_MAX_REQUESTS = "60" }
 
 [[env.production.kv_namespaces]]
 binding = "TOKEN_BLACKLIST"
