@@ -1,0 +1,9 @@
+# Copy this file to .dev.vars and fill in real values for local development
+# NEVER commit .dev.vars to git
+
+SUPABASE_URL=https://lajrjnjyvbpaaspzgpvh.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_KEY=eyJ...
+TOKEN_SECRET=replace-with-256-bit-hex-string-generated-via-openssl-rand-hex-32
+NIM_API_KEY=nvapi-...
+STAFF_API_KEY_HASH=replace-with-sha256-hash-of-your-raw-staff-api-key

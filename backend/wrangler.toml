@@ -1,0 +1,73 @@
+name = "nexoleal-backend"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# ─── KV Namespaces (dev / default) ───────────────────────────────────────────
+[[kv_namespaces]]
+binding = "TOKEN_BLACKLIST"
+id = "5d4fb7d450ec41ee90894eda78ddbe9e"
+preview_id = "392896c610434456bedaab463e0496de"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "7599c9c50d97401a9537cf4a70ba3cdc"
+preview_id = "aa2675b32dad4e9ea55d09f869dc2994"
+
+[[kv_namespaces]]
+binding = "ANALYTICS_CACHE"
+id = "a79f587953124bc3a2615aa88ae90723"
+preview_id = "449fdbc534af4dd79affb336b02fffe3"
+
+# ─── Default Vars ────────────────────────────────────────────────────────────
+[vars]
+FRONTEND_ORIGIN = "http://localhost:5173"
+TOKEN_TTL_SECONDS = "90"
+RATE_LIMIT_WINDOW_SECONDS = "60"
+RATE_LIMIT_MAX_REQUESTS = "60"
+
+# ─── Cron Triggers ───────────────────────────────────────────────────────────
+# Daily 03:00 UTC — recalculate client_business_loyalty.status
+# (active / at_risk / lost) based on last_visit_at recency. See src/cron.ts.
+[triggers]
+crons = ["0 3 * * *"]
+
+# ─── Staging Environment ─────────────────────────────────────────────────────
+[env.staging]
+name = "nexoleal-backend-staging"
+vars = { FRONTEND_ORIGIN = "https://staging.nexoleal.com", TOKEN_TTL_SECONDS = "90", RATE_LIMIT_WINDOW_SECONDS = "60", RATE_LIMIT_MAX_REQUESTS = "60" }
+
+[[env.staging.kv_namespaces]]
+binding = "TOKEN_BLACKLIST"
+id = "554ef1d173dc4f648b9d96eae57c990a"
+
+[[env.staging.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "761fc784301540c6ab715f66cada25a8"
+
+[[env.staging.kv_namespaces]]
+binding = "ANALYTICS_CACHE"
+id = "24d49e316ab54ba19606ac3ba02163b7"
+
+[env.staging.triggers]
+crons = ["0 3 * * *"]
+
+# ─── Production Environment ──────────────────────────────────────────────────
+[env.production]
+name = "nexoleal-backend-production"
+vars = { FRONTEND_ORIGIN = "https://app.nexoleal.com", TOKEN_TTL_SECONDS = "90", RATE_LIMIT_WINDOW_SECONDS = "60", RATE_LIMIT_MAX_REQUESTS = "60" }
+
+[[env.production.kv_namespaces]]
+binding = "TOKEN_BLACKLIST"
+id = "be9a4af9d5ea42829e90a00e81f7d968"
+
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "d6accd9f2be74696a31581e59bef2011"
+
+[[env.production.kv_namespaces]]
+binding = "ANALYTICS_CACHE"
+id = "8dab42a1493b4a87bdfcf3c12da3696e"
+
+[env.production.triggers]
+crons = ["0 3 * * *"]
