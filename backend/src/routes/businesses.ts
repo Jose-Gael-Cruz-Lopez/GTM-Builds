@@ -75,7 +75,9 @@ businessRoutes.post('/', requireAnyAuth(), async (c) => {
 
 businessRoutes.get('/:id', requireAnyAuth(), async (c) => {
   const id = c.req.param('id')
-  const db = createSupabaseClient(c.env, 'anon')
+  // Service role: auth is validated above; anon key would fail RLS because the
+  // user's JWT is not forwarded to PostgREST.
+  const db = createSupabaseClient(c.env, 'service')
 
   const business = await db.getOne('businesses', {
     filters: [

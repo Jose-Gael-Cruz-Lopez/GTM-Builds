@@ -91,4 +91,42 @@ describe('Visits API', () => {
     const response = await app.fetch(request, env)
     expect(response.status).toBe(410)
   })
+
+  it('GET /visits/business-visits is not captured by /:visitId', async () => {
+    const businessId = '6943dccf-6c75-4cf7-9be0-fc745920e6a5'
+    const ownerId = '486757f9-4af0-49a7-afae-d3b3861483c1'
+
+    mockFetch.mockImplementation((url: string | URL | Request) => {
+      const u = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (u.includes('/auth/v1/user')) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ id: ownerId, email: 'owner@test.com' }), { status: 200 }),
+        )
+      }
+      if (u.includes('/rest/v1/businesses')) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify([{ id: businessId, owner_id: ownerId, is_active: true }]),
+            { status: 200 },
+          ),
+        )
+      }
+      if (u.includes('/rest/v1/visits')) {
+        return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
+      }
+      return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
+    })
+
+    const request = new Request(
+      `http://localhost/visits/business-visits?businessId=${businessId}&limit=5`,
+      {
+        headers: { Authorization: 'Bearer valid-owner-jwt' },
+      },
+    )
+    const response = await app.fetch(request, env)
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { success: boolean; data: { visits: unknown[] } }
+    expect(body.success).toBe(true)
+    expect(body.data.visits).toEqual([])
+  })
 })
