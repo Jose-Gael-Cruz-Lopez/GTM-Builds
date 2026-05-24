@@ -1,10 +1,10 @@
-import { Link, useRouter } from '@tanstack/react-router'
-import { NotFoundGlyph, IsoScene } from '@/components/ui/iso-scene'
+import { Link, useRouter } from "@tanstack/react-router";
+import { NotFoundGlyph, IsoScene } from "@/components/ui/iso-scene";
 
 /** Per-route error boundary — editorial fallback with retry. */
 export function RouteError({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error)
-  const router = useRouter()
+  console.error(error);
+  const router = useRouter();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg-paper)] px-4">
@@ -16,8 +16,8 @@ export function RouteError({ error, reset }: { error: Error; reset: () => void }
             <button
               type="button"
               onClick={() => {
-                router.invalidate()
-                reset()
+                router.invalidate();
+                reset();
               }}
               className="btn-signal text-sm"
             >
@@ -32,5 +32,5 @@ export function RouteError({ error, reset }: { error: Error; reset: () => void }
         <NotFoundGlyph />
       </IsoScene>
     </div>
-  )
+  );
 }

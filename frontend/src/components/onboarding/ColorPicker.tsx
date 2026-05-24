@@ -1,23 +1,23 @@
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { tokens } from '@/lib/theme'
-import { cn } from '@/lib/utils'
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { tokens } from "@/lib/theme";
+import { cn } from "@/lib/utils";
 
 const PRESETS = [
-  { id: 'ink', label: 'Tinta', color: tokens.color.ink },
-  { id: 'signal', label: 'Señal', color: tokens.color.signal },
-  { id: 'celebrate', label: 'Celebrar', color: tokens.color.celebrate },
-  { id: 'health', label: 'Salud', color: tokens.color.health },
-  { id: 'scanner', label: 'Rosa', color: tokens.color.scannerWarm },
-] as const
+  { id: "ink", label: "Tinta", color: tokens.color.ink },
+  { id: "signal", label: "Señal", color: tokens.color.signal },
+  { id: "celebrate", label: "Celebrar", color: tokens.color.celebrate },
+  { id: "health", label: "Salud", color: tokens.color.health },
+  { id: "scanner", label: "Rosa", color: tokens.color.scannerWarm },
+] as const;
 
 interface ColorPickerProps {
-  value: string
-  onChange: (color: string) => void
+  value: string;
+  onChange: (color: string) => void;
 }
 
 function isValidHex(hex: string) {
-  return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(hex)
+  return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(hex);
 }
 
 export function ColorPicker({ value, onChange }: ColorPickerProps) {
@@ -33,10 +33,10 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
             aria-pressed={value.toLowerCase() === preset.color.toLowerCase()}
             onClick={() => onChange(preset.color)}
             className={cn(
-              'h-10 w-10 rounded-full border-2 transition-transform hover:scale-105',
+              "h-10 w-10 rounded-full border-2 transition-transform hover:scale-105",
               value.toLowerCase() === preset.color.toLowerCase()
-                ? 'border-[var(--color-ink)] ring-2 ring-[var(--color-signal)] ring-offset-2'
-                : 'border-transparent',
+                ? "border-[var(--color-ink)] ring-2 ring-[var(--color-signal)] ring-offset-2"
+                : "border-transparent",
             )}
             style={{ backgroundColor: preset.color }}
           />
@@ -60,5 +60,5 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
         Este color aparece en sellos y detalles de la tarjeta del cliente.
       </p>
     </div>
-  )
+  );
 }

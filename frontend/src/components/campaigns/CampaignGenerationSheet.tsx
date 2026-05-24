@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -9,14 +9,14 @@ import {
   UserMinus,
   Users,
   Zap,
-} from 'lucide-react'
-import type { CampaignTargetSegment } from '@/integrations/supabase/types'
-import { campaignsApi, type Campaign } from '@/lib/api/campaigns'
-import { analyticsApi } from '@/lib/api/analytics'
-import { ApiError } from '@/lib/api-client'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
+} from "lucide-react";
+import type { CampaignTargetSegment } from "@/integrations/supabase/types";
+import { campaignsApi, type Campaign } from "@/lib/api/campaigns";
+import { analyticsApi } from "@/lib/api/analytics";
+import { ApiError } from "@/lib/api-client";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Drawer,
   DrawerContent,
@@ -24,31 +24,31 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from '@/components/ui/drawer'
+} from "@/components/ui/drawer";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { toast } from 'sonner'
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import {
   getSegmentCount,
   SEGMENT_OPTIONS,
   TONE_OPTIONS,
-} from '@/components/campaigns/segment-utils'
-import { cn } from '@/lib/utils'
+} from "@/components/campaigns/segment-utils";
+import { cn } from "@/lib/utils";
 
 const SEGMENT_ICONS = {
   at_risk: AlertTriangle,
   lost: UserMinus,
   all: Users,
   frequent: Zap,
-} as const
+} as const;
 
-type Step = 1 | 2 | 3
+type Step = 1 | 2 | 3;
 
 export function CampaignGenerationSheet({
   businessId,
@@ -57,32 +57,32 @@ export function CampaignGenerationSheet({
   onEdit,
   onActivate,
 }: {
-  businessId: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onEdit: (campaignId: string) => void
-  onActivate: (campaign: Campaign) => void
+  businessId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit: (campaignId: string) => void;
+  onActivate: (campaign: Campaign) => void;
 }) {
-  const qc = useQueryClient()
-  const [step, setStep] = useState<Step>(1)
-  const [segment, setSegment] = useState<CampaignTargetSegment>('at_risk')
-  const [customSegment, setCustomSegment] = useState('')
-  const [objective, setObjective] = useState('')
-  const [tone, setTone] = useState('calido')
-  const [drafts, setDrafts] = useState<Campaign[]>([])
+  const qc = useQueryClient();
+  const [step, setStep] = useState<Step>(1);
+  const [segment, setSegment] = useState<CampaignTargetSegment>("at_risk");
+  const [customSegment, setCustomSegment] = useState("");
+  const [objective, setObjective] = useState("");
+  const [tone, setTone] = useState("calido");
+  const [drafts, setDrafts] = useState<Campaign[]>([]);
 
   const clients = useQuery({
-    queryKey: ['business', businessId, 'analytics', 'clients'],
+    queryKey: ["business", businessId, "analytics", "clients"],
     queryFn: () => analyticsApi.clients(businessId),
     enabled: open,
-  })
+  });
   const churn = useQuery({
-    queryKey: ['business', businessId, 'analytics', 'churn-risk'],
+    queryKey: ["business", businessId, "analytics", "churn-risk"],
     queryFn: () => analyticsApi.churnRisk(businessId),
     enabled: open,
-  })
+  });
 
-  const count = getSegmentCount(segment, clients.data, churn.data)
+  const count = getSegmentCount(segment, clients.data, churn.data);
 
   const generate = useMutation({
     mutationFn: () =>
@@ -92,31 +92,31 @@ export function CampaignGenerationSheet({
         tone,
       }),
     onSuccess: (d) => {
-      setDrafts(d.campaigns)
-      setStep(3)
+      setDrafts(d.campaigns);
+      setStep(3);
       toast.success(
-        d.generatedBy === 'fallback'
-          ? 'Generamos 3 plantillas. (IA no disponible — usamos fallback)'
+        d.generatedBy === "fallback"
+          ? "Generamos 3 plantillas. (IA no disponible — usamos fallback)"
           : `¡3 campañas generadas con ${d.model}!`,
-      )
-      qc.invalidateQueries({ queryKey: ['business', businessId, 'campaigns'] })
+      );
+      qc.invalidateQueries({ queryKey: ["business", businessId, "campaigns"] });
     },
     onError: (e: ApiError) => toast.error(e.message),
-  })
+  });
 
   const reset = () => {
-    setStep(1)
-    setSegment('at_risk')
-    setCustomSegment('')
-    setObjective('')
-    setTone('calido')
-    setDrafts([])
-  }
+    setStep(1);
+    setSegment("at_risk");
+    setCustomSegment("");
+    setObjective("");
+    setTone("calido");
+    setDrafts([]);
+  };
 
   const handleOpenChange = (next: boolean) => {
-    if (!next) reset()
-    onOpenChange(next)
-  }
+    if (!next) reset();
+    onOpenChange(next);
+  };
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
@@ -131,8 +131,8 @@ export function CampaignGenerationSheet({
               <div
                 key={s}
                 className={cn(
-                  'h-1 flex-1 rounded-full transition-colors',
-                  s <= step ? 'bg-[var(--signal)]' : 'bg-[var(--surface-soft)]',
+                  "h-1 flex-1 rounded-full transition-colors",
+                  s <= step ? "bg-[var(--signal)]" : "bg-[var(--surface-soft)]",
                 )}
               />
             ))}
@@ -147,19 +147,19 @@ export function CampaignGenerationSheet({
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {SEGMENT_OPTIONS.map((opt) => {
-                  const Icon = SEGMENT_ICONS[opt.value]
-                  const selected = segment === opt.value
+                  const Icon = SEGMENT_ICONS[opt.value];
+                  const selected = segment === opt.value;
                   return (
                     <button
                       key={opt.value}
                       type="button"
                       onClick={() => setSegment(opt.value)}
                       className={cn(
-                        'flex flex-col items-start gap-2 rounded-[var(--radius)] border p-4 text-left transition-all',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--signal)] focus-visible:ring-offset-2',
+                        "flex flex-col items-start gap-2 rounded-[var(--radius)] border p-4 text-left transition-all",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--signal)] focus-visible:ring-offset-2",
                         selected
-                          ? 'border-[var(--ink)] bg-[var(--cream)] shadow-[var(--shadow-soft)]'
-                          : 'border-[var(--border)] bg-white hover:border-[var(--ink-soft)]',
+                          ? "border-[var(--ink)] bg-[var(--cream)] shadow-[var(--shadow-soft)]"
+                          : "border-[var(--border)] bg-white hover:border-[var(--ink-soft)]",
                       )}
                     >
                       <span
@@ -175,7 +175,7 @@ export function CampaignGenerationSheet({
                       </span>
                       <span className="text-xs text-[var(--ink-soft)]">{opt.description}</span>
                     </button>
-                  )
+                  );
                 })}
               </div>
 
@@ -190,9 +190,9 @@ export function CampaignGenerationSheet({
               </div>
 
               <p className="rounded-[var(--radius-sm)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--ink)]">
-                <strong>{count}</strong> cliente{count === 1 ? '' : 's'}{' '}
-                {SEGMENT_OPTIONS.find((o) => o.value === segment)?.label.toLowerCase()}{' '}
-                recibirán esta campaña.
+                <strong>{count}</strong> cliente{count === 1 ? "" : "s"}{" "}
+                {SEGMENT_OPTIONS.find((o) => o.value === segment)?.label.toLowerCase()} recibirán
+                esta campaña.
               </p>
             </div>
           )}
@@ -241,7 +241,11 @@ export function CampaignGenerationSheet({
                   <p className="text-sm text-[var(--ink-soft)]">
                     Pulsa generar para crear tus borradores.
                   </p>
-                  <Button className="mt-4" onClick={() => generate.mutate()} disabled={generate.isPending}>
+                  <Button
+                    className="mt-4"
+                    onClick={() => generate.mutate()}
+                    disabled={generate.isPending}
+                  >
                     <Sparkles className="h-4 w-4" /> Generar borradores
                   </Button>
                 </div>
@@ -290,20 +294,29 @@ export function CampaignGenerationSheet({
                 type="button"
                 className="ml-auto"
                 onClick={() => {
-                  setStep(3)
-                  generate.mutate()
+                  setStep(3);
+                  generate.mutate();
                 }}
                 disabled={generate.isPending}
               >
                 {generate.isPending ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Generando...</>
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Generando...
+                  </>
                 ) : (
-                  <><Sparkles className="h-4 w-4" /> Generar borradores</>
+                  <>
+                    <Sparkles className="h-4 w-4" /> Generar borradores
+                  </>
                 )}
               </Button>
             )}
             {step === 3 && (
-              <Button type="button" variant="ghost" className="ml-auto" onClick={() => handleOpenChange(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="ml-auto"
+                onClick={() => handleOpenChange(false)}
+              >
                 Cerrar
               </Button>
             )}
@@ -311,5 +324,5 @@ export function CampaignGenerationSheet({
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }

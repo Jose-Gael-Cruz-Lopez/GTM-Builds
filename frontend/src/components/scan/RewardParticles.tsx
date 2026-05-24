@@ -1,10 +1,10 @@
-import { useMemo } from "react"
-import { tokens } from "@/lib/theme"
-import { prefersReducedMotion } from "@/lib/prefers-reduced-motion"
+import { useMemo } from "react";
+import { tokens } from "@/lib/theme";
+import { prefersReducedMotion } from "@/lib/prefers-reduced-motion";
 
 /** La Revoltosa-style bubbles — panel-scoped only, not full-screen. */
 export function RewardParticles() {
-  const reduced = prefersReducedMotion()
+  const reduced = prefersReducedMotion();
 
   const bubbles = useMemo(
     () =>
@@ -16,7 +16,7 @@ export function RewardParticles() {
         duration: 1.8 + (i % 3) * 0.4,
       })),
     [],
-  )
+  );
 
   if (reduced) {
     return (
@@ -24,7 +24,7 @@ export function RewardParticles() {
         className="pointer-events-none absolute inset-0 bg-[color:var(--color-celebrate)]/15 animate-[fade-celebrate_200ms_ease-out_forwards]"
         aria-hidden
       />
-    )
+    );
   }
 
   return (
@@ -51,5 +51,5 @@ export function RewardParticles() {
         />
       ))}
     </div>
-  )
+  );
 }

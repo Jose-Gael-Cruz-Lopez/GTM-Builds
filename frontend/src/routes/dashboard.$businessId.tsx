@@ -1,4 +1,4 @@
-import { RouteError } from "@/components/RouteError"
+import { RouteError } from "@/components/RouteError";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
@@ -50,9 +50,7 @@ function DashboardPage() {
   const { businessName, business } = useOwnedBusiness();
 
   const ownerFirstName =
-    user?.user_metadata?.full_name?.split(/\s+/)[0] ??
-    user?.email?.split("@")[0] ??
-    "equipo";
+    user?.user_metadata?.full_name?.split(/\s+/)[0] ?? user?.email?.split("@")[0] ?? "equipo";
 
   const stats = useQuery({
     queryKey: ["business", businessId, "stats"],
@@ -101,10 +99,8 @@ function DashboardPage() {
 
   const totalClients = stats.data?.totalClients ?? 0;
   const activeClients = stats.data?.activeClients ?? 0;
-  const activePct =
-    totalClients > 0 ? Math.round((activeClients / totalClients) * 100) : 0;
-  const retention60 =
-    retention.data?.windows.find((w) => w.days === 60)?.retentionRate ?? null;
+  const activePct = totalClients > 0 ? Math.round((activeClients / totalClients) * 100) : 0;
+  const retention60 = retention.data?.windows.find((w) => w.days === 60)?.retentionRate ?? null;
   const isEmpty = stats.data && stats.data.totalClients === 0;
 
   return (
@@ -202,11 +198,7 @@ function DashboardPage() {
           </div>
 
           <div className="mt-6">
-            <ChurnRiskList
-              data={churn.data}
-              isLoading={churn.isLoading}
-              businessId={businessId}
-            />
+            <ChurnRiskList data={churn.data} isLoading={churn.isLoading} businessId={businessId} />
           </div>
         </>
       )}

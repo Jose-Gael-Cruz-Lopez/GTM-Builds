@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   BarChart3,
   Gift,
@@ -11,98 +11,98 @@ import {
   UserPlus,
   Users,
   Footprints,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
-import { signOut } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Badge } from '@/components/ui/badge'
+} from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { signOut } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 
 export type DashboardNavId =
-  | 'resumen'
-  | 'clientes'
-  | 'visitas'
-  | 'recompensas'
-  | 'campanas'
-  | 'config'
+  | "resumen"
+  | "clientes"
+  | "visitas"
+  | "recompensas"
+  | "campanas"
+  | "config";
 
 interface DashboardShellProps {
-  businessId: string
-  businessName?: string | null
-  plan?: 'free' | 'pro' | null
-  activeNav?: DashboardNavId
-  ownerFirstName?: string
-  children: React.ReactNode
+  businessId: string;
+  businessName?: string | null;
+  plan?: "free" | "pro" | null;
+  activeNav?: DashboardNavId;
+  ownerFirstName?: string;
+  children: React.ReactNode;
 }
 
 const NAV_ITEMS: {
-  id: DashboardNavId
-  label: string
-  icon: typeof LayoutDashboard
-  href: (id: string) => string
-  mobileTab?: boolean
+  id: DashboardNavId;
+  label: string;
+  icon: typeof LayoutDashboard;
+  href: (id: string) => string;
+  mobileTab?: boolean;
 }[] = [
   {
-    id: 'resumen',
-    label: 'Resumen',
+    id: "resumen",
+    label: "Resumen",
     icon: LayoutDashboard,
     href: (id) => `/dashboard/${id}`,
     mobileTab: true,
   },
   {
-    id: 'clientes',
-    label: 'Clientes',
+    id: "clientes",
+    label: "Clientes",
     icon: Users,
     href: (id) => `/dashboard/${id}/clients`,
     mobileTab: true,
   },
   {
-    id: 'visitas',
-    label: 'Visitas',
+    id: "visitas",
+    label: "Visitas",
     icon: Footprints,
     href: (id) => `/dashboard/${id}/visits`,
     mobileTab: true,
   },
   {
-    id: 'recompensas',
-    label: 'Recompensas',
+    id: "recompensas",
+    label: "Recompensas",
     icon: Gift,
-    href: (id) => `/settings/${id}`,
+    href: (id) => `/dashboard/${id}/redemptions`,
   },
   {
-    id: 'campanas',
-    label: 'Campañas',
+    id: "campanas",
+    label: "Campañas",
     icon: Megaphone,
     href: (id) => `/campaigns/${id}`,
     mobileTab: true,
   },
   {
-    id: 'config',
-    label: 'Configuración',
+    id: "config",
+    label: "Configuración",
     icon: Settings,
     href: (id) => `/settings/${id}`,
     mobileTab: true,
   },
-]
+];
 
 function formatToday(): string {
-  return new Intl.DateTimeFormat('es-MX', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  }).format(new Date())
+  return new Intl.DateTimeFormat("es-MX", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
 }
 
 function copyJoinUrl(businessId: string) {
   const url =
-    typeof window !== 'undefined'
+    typeof window !== "undefined"
       ? `${window.location.origin}/join/${businessId}`
-      : `/join/${businessId}`
+      : `/join/${businessId}`;
   navigator.clipboard.writeText(url).then(
-    () => toast.success('Enlace de invitación copiado'),
-    () => toast.error('No pudimos copiar el enlace'),
-  )
+    () => toast.success("Enlace de invitación copiado"),
+    () => toast.error("No pudimos copiar el enlace"),
+  );
 }
 
 function SidebarNav({
@@ -110,36 +110,36 @@ function SidebarNav({
   activeNav,
   onNavigate,
 }: {
-  businessId: string
-  activeNav: DashboardNavId
-  onNavigate?: () => void
+  businessId: string;
+  activeNav: DashboardNavId;
+  onNavigate?: () => void;
 }) {
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
       {NAV_ITEMS.map(({ id, label, icon: Icon, href }) => {
-        const active = activeNav === id
+        const active = activeNav === id;
         return (
           <a
             key={id}
             href={href(businessId)}
             onClick={onNavigate}
             className={cn(
-              'flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--duration)] ease-[var(--ease-out-expo)]',
+              "flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--duration)] ease-[var(--ease-out-expo)]",
               active
-                ? 'bg-[var(--color-cream)] text-[color:var(--color-ink)] shadow-[var(--shadow-soft)]'
-                : 'text-[color:var(--color-ink-soft)] hover:bg-[var(--color-cream)]/60 hover:text-[color:var(--color-ink)]',
+                ? "bg-[var(--color-cream)] text-[color:var(--color-ink)] shadow-[var(--shadow-soft)]"
+                : "text-[color:var(--color-ink-soft)] hover:bg-[var(--color-cream)]/60 hover:text-[color:var(--color-ink)]",
             )}
-            aria-current={active ? 'page' : undefined}
+            aria-current={active ? "page" : undefined}
           >
             <Icon className="h-4 w-4 shrink-0" aria-hidden />
             {label}
           </a>
-        )
+        );
       })}
       <div className="mt-auto border-t border-[color:var(--color-border)] pt-4">
         <button
           type="button"
-          onClick={() => signOut().then(() => (window.location.href = '/login'))}
+          onClick={() => signOut().then(() => (window.location.href = "/login"))}
           className="flex w-full items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[color:var(--color-ink-soft)] transition-colors hover:bg-[var(--color-cream)]/60 hover:text-[color:var(--color-ink)]"
         >
           <LogOut className="h-4 w-4 shrink-0" aria-hidden />
@@ -147,7 +147,7 @@ function SidebarNav({
         </button>
       </div>
     </nav>
-  )
+  );
 }
 
 function SidebarBrand({
@@ -155,9 +155,9 @@ function SidebarBrand({
   businessName,
   plan,
 }: {
-  businessId: string
-  businessName?: string | null
-  plan?: 'free' | 'pro' | null
+  businessId: string;
+  businessName?: string | null;
+  plan?: "free" | "pro" | null;
 }) {
   return (
     <div className="border-b border-[color:var(--color-border)] px-4 py-5">
@@ -173,11 +173,8 @@ function SidebarBrand({
           ) : (
             <div className="h-4 w-28 shimmer rounded" />
           )}
-          <Badge
-            variant="secondary"
-            className="mt-1 h-5 px-2 text-[10px] uppercase tracking-wide"
-          >
-            {plan === 'pro' ? 'Pro' : 'Free'}
+          <Badge variant="secondary" className="mt-1 h-5 px-2 text-[10px] uppercase tracking-wide">
+            {plan === "pro" ? "Pro" : "Free"}
           </Badge>
         </div>
       </div>
@@ -192,20 +189,20 @@ function SidebarBrand({
         Invitar clientes
       </Button>
     </div>
-  )
+  );
 }
 
 export function DashboardShell({
   businessId,
   businessName,
   plan,
-  activeNav = 'resumen',
+  activeNav = "resumen",
   ownerFirstName,
   children,
 }: DashboardShellProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const mobileTabs = NAV_ITEMS.filter((item) => item.mobileTab)
-  const campaignsGenerateHref = `/campaigns/${businessId}?action=generate`
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const mobileTabs = NAV_ITEMS.filter((item) => item.mobileTab);
+  const campaignsGenerateHref = `/campaigns/${businessId}?action=generate`;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-paper)] text-[color:var(--color-ink)]">
@@ -232,11 +229,7 @@ export function DashboardShell({
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[280px] p-0">
-                  <SidebarBrand
-                    businessId={businessId}
-                    businessName={businessName}
-                    plan={plan}
-                  />
+                  <SidebarBrand businessId={businessId} businessName={businessName} plan={plan} />
                   <SidebarNav
                     businessId={businessId}
                     activeNav={activeNav}
@@ -247,7 +240,7 @@ export function DashboardShell({
 
               <div>
                 <h1 className="font-display text-xl font-semibold tracking-tight md:text-2xl">
-                  Hola, {ownerFirstName ?? 'equipo'}
+                  Hola, {ownerFirstName ?? "equipo"}
                 </h1>
                 <p className="text-sm capitalize text-[color:var(--color-ink-soft)]">
                   {formatToday()}
@@ -276,29 +269,27 @@ export function DashboardShell({
       >
         <div className="grid grid-cols-5">
           {mobileTabs.map(({ id, label, icon: Icon, href }) => {
-            const active = activeNav === id
+            const active = activeNav === id;
             return (
               <a
                 key={id}
                 href={href(businessId)}
                 className={cn(
-                  'flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors',
-                  active
-                    ? 'text-[color:var(--color-ink)]'
-                    : 'text-[color:var(--color-ink-soft)]',
+                  "flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors",
+                  active ? "text-[color:var(--color-ink)]" : "text-[color:var(--color-ink-soft)]",
                 )}
-                aria-current={active ? 'page' : undefined}
+                aria-current={active ? "page" : undefined}
               >
                 <Icon
-                  className={cn('h-5 w-5', active && 'text-[color:var(--color-signal)]')}
+                  className={cn("h-5 w-5", active && "text-[color:var(--color-signal)]")}
                   aria-hidden
                 />
                 {label}
               </a>
-            )
+            );
           })}
         </div>
       </nav>
     </div>
-  )
+  );
 }

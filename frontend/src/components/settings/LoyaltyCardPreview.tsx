@@ -1,12 +1,12 @@
-import { Sparkles } from 'lucide-react'
-import { tokens } from '@/lib/theme'
+import { Sparkles } from "lucide-react";
+import { tokens } from "@/lib/theme";
 
 interface LoyaltyCardPreviewProps {
-  businessName: string
-  stampsRequired: number
-  rewardDescription: string
-  primaryColor?: string
-  logoUrl?: string
+  businessName: string;
+  stampsRequired: number;
+  rewardDescription: string;
+  primaryColor?: string;
+  logoUrl?: string;
 }
 
 export function LoyaltyCardPreview({
@@ -16,7 +16,7 @@ export function LoyaltyCardPreview({
   primaryColor = tokens.color.signal,
   logoUrl,
 }: LoyaltyCardPreviewProps) {
-  const filled = Math.min(3, stampsRequired)
+  const filled = Math.min(3, stampsRequired);
 
   return (
     <div
@@ -36,8 +36,10 @@ export function LoyaltyCardPreview({
           </div>
         )}
         <div>
-          <p className="font-display text-sm font-semibold">{businessName || 'Tu negocio'}</p>
-          <p className="text-xs text-[color:var(--color-ink-soft)]">{rewardDescription || 'Tu recompensa'}</p>
+          <p className="font-display text-sm font-semibold">{businessName || "Tu negocio"}</p>
+          <p className="text-xs text-[color:var(--color-ink-soft)]">
+            {rewardDescription || "Tu recompensa"}
+          </p>
         </div>
       </div>
 
@@ -46,8 +48,8 @@ export function LoyaltyCardPreview({
         style={{ gridTemplateColumns: `repeat(${Math.min(stampsRequired, 10)}, minmax(0, 1fr))` }}
       >
         {Array.from({ length: Math.min(stampsRequired, 10) }).map((_, i) => (
-          <div key={i} className={`stamp-cell text-xs font-semibold ${i < filled ? 'filled' : ''}`}>
-            {i < filled ? '★' : ''}
+          <div key={i} className={`stamp-cell text-xs font-semibold ${i < filled ? "filled" : ""}`}>
+            {i < filled ? "★" : ""}
           </div>
         ))}
       </div>
@@ -56,5 +58,5 @@ export function LoyaltyCardPreview({
         {stampsRequired} sellos · vista previa
       </p>
     </div>
-  )
+  );
 }

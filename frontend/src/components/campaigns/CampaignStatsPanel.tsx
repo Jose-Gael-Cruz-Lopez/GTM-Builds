@@ -1,30 +1,30 @@
-import { useQuery } from '@tanstack/react-query'
-import { BarChart3, Loader2 } from 'lucide-react'
-import { campaignsApi } from '@/lib/api/campaigns'
+import { useQuery } from "@tanstack/react-query";
+import { BarChart3, Loader2 } from "lucide-react";
+import { campaignsApi } from "@/lib/api/campaigns";
 
 export function CampaignStatsPanel({
   businessId,
   campaignId,
 }: {
-  businessId: string
-  campaignId: string
+  businessId: string;
+  campaignId: string;
 }) {
   const stats = useQuery({
-    queryKey: ['business', businessId, 'campaigns', campaignId, 'stats'],
+    queryKey: ["business", businessId, "campaigns", campaignId, "stats"],
     queryFn: () => campaignsApi.stats(businessId, campaignId),
-  })
+  });
 
   if (stats.isLoading) {
     return (
       <div className="mt-4 flex items-center gap-2 text-xs text-[var(--ink-soft)]">
         <Loader2 className="h-3.5 w-3.5 animate-spin" /> Cargando métricas...
       </div>
-    )
+    );
   }
 
-  if (stats.isError || !stats.data) return null
+  if (stats.isError || !stats.data) return null;
 
-  const { stats: data } = stats.data
+  const { stats: data } = stats.data;
 
   if (data.sentCount === null) {
     return (
@@ -37,7 +37,7 @@ export function CampaignStatsPanel({
           Pronto podrás ver aperturas, clics y conversiones de esta campaña.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -45,11 +45,11 @@ export function CampaignStatsPanel({
       <Stat label="Enviados" value={String(data.sentCount)} />
       <Stat
         label="Apertura"
-        value={data.openRate != null ? `${Math.round(data.openRate * 100)}%` : '—'}
+        value={data.openRate != null ? `${Math.round(data.openRate * 100)}%` : "—"}
       />
-      <Stat label="Canjes" value={String(data.redemptionCount ?? '—')} />
+      <Stat label="Canjes" value={String(data.redemptionCount ?? "—")} />
     </dl>
-  )
+  );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -58,5 +58,5 @@ function Stat({ label, value }: { label: string; value: string }) {
       <dt className="text-[10px] uppercase tracking-wider text-[var(--ink-soft)]">{label}</dt>
       <dd className="mt-0.5 font-semibold text-[var(--ink)]">{value}</dd>
     </div>
-  )
+  );
 }

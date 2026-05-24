@@ -1,29 +1,37 @@
-import { RouteError } from "@/components/RouteError"
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowRight, Sparkles, Shield, Zap, BarChart3, MessageCircle } from 'lucide-react'
-import { AppShell } from '@/components/layout/AppShell'
-import { useSession } from '@/hooks/use-session'
-import { useOwnedBusiness } from '@/hooks/use-owned-business'
+import { RouteError } from "@/components/RouteError";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Sparkles, Shield, Zap, BarChart3, MessageCircle } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell";
+import { useSession } from "@/hooks/use-session";
+import { useOwnedBusiness } from "@/hooks/use-owned-business";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: LandingPage,
   errorComponent: RouteError,
   head: () => ({
     meta: [
-      { title: 'NexoLeal · Convierte cada visita en una razón para volver' },
+      { title: "NexoLeal · Convierte cada visita en una razón para volver" },
       {
-        name: 'description',
+        name: "description",
         content:
-          'Lealtad digital, validación por QR sin fraude y campañas con IA. Para barberías, veterinarias, cafeterías, gimnasios y más en Latinoamérica.',
+          "Lealtad digital, validación por QR sin fraude y campañas con IA. Para barberías, veterinarias, cafeterías, gimnasios y más en Latinoamérica.",
       },
     ],
   }),
-})
+});
 
 const businessTypes = [
-  'Barberías', 'Veterinarias', 'Cafeterías', 'Gimnasios boutique', 'Estéticas',
-  'Consultorios', 'Spas', 'Lavanderías', 'Pet shops', 'Florerías',
-]
+  "Barberías",
+  "Veterinarias",
+  "Cafeterías",
+  "Gimnasios boutique",
+  "Estéticas",
+  "Consultorios",
+  "Spas",
+  "Lavanderías",
+  "Pet shops",
+  "Florerías",
+];
 
 function LandingPage() {
   return (
@@ -38,12 +46,12 @@ function LandingPage() {
       <FinalCTA />
       <Footer />
     </AppShell>
-  )
+  );
 }
 
 function Hero() {
-  const { user } = useSession()
-  const { businessId } = useOwnedBusiness()
+  const { user } = useSession();
+  const { businessId } = useOwnedBusiness();
 
   return (
     <section className="relative overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-cream)]">
@@ -51,27 +59,31 @@ function Hero() {
         className="pointer-events-none absolute inset-0 opacity-50"
         style={{
           background:
-            'radial-gradient(circle at 85% 15%, rgba(245, 232, 216, 0.18), transparent 40%), radial-gradient(circle at 10% 90%, rgba(245, 197, 24, 0.15), transparent 50%)',
+            "radial-gradient(circle at 85% 15%, rgba(245, 232, 216, 0.18), transparent 40%), radial-gradient(circle at 10% 90%, rgba(245, 197, 24, 0.15), transparent 50%)",
         }}
         aria-hidden
       />
       <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 md:grid-cols-2 md:py-32 md:px-8">
         <div>
-          <p className="eyebrow text-[color:var(--color-cream)]/70">Hola — hagamos que tus clientes regresen.</p>
+          <p className="eyebrow text-[color:var(--color-cream)]/70">
+            Hola — hagamos que tus clientes regresen.
+          </p>
           <h1 className="display-xl mt-4 text-[color:var(--color-cream)]">
             Convierte cada visita en una razón para volver.
           </h1>
           <p className="mt-6 max-w-lg text-base leading-relaxed text-[color:var(--color-cream)]/80 md:text-lg">
-            NexoLeal digitaliza la lealtad de tu negocio: monedero sin fricción para tu cliente, QR antifraude para tu staff y un panel con IA que te dice cuándo y a quién enviar campañas.
+            NexoLeal digitaliza la lealtad de tu negocio: monedero sin fricción para tu cliente, QR
+            antifraude para tu staff y un panel con IA que te dice cuándo y a quién enviar campañas.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             {user ? (
               <Link
-                to={businessId ? '/dashboard/$businessId' : '/wallet'}
+                to={businessId ? "/dashboard/$businessId" : "/wallet"}
                 params={businessId ? { businessId } : undefined}
                 className="btn-signal inline-flex items-center gap-2"
               >
-                {businessId ? 'Abrir mi panel' : 'Abrir mi cartera'} <ArrowRight className="h-4 w-4" />
+                {businessId ? "Abrir mi panel" : "Abrir mi cartera"}{" "}
+                <ArrowRight className="h-4 w-4" />
               </Link>
             ) : (
               <>
@@ -80,7 +92,7 @@ function Hero() {
                 </Link>
                 <Link
                   to="/join/$businessId"
-                  params={{ businessId: 'demo' }}
+                  params={{ businessId: "demo" }}
                   className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-[color:var(--color-cream)] hover:bg-white/5"
                 >
                   Ver demo en vivo
@@ -103,7 +115,7 @@ function Hero() {
               </div>
               <div className="my-4 grid w-full grid-cols-4 gap-2">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className={`stamp-cell ${i < 5 ? 'filled' : ''}`}>
+                  <div key={i} className={`stamp-cell ${i < 5 ? "filled" : ""}`}>
                     {i < 5 ? <Sparkles className="h-3.5 w-3.5" /> : null}
                   </div>
                 ))}
@@ -128,7 +140,7 @@ function Hero() {
         @media (prefers-reduced-motion: reduce) { .phone-float { animation: none; } }
       `}</style>
     </section>
-  )
+  );
 }
 
 function Marquee() {
@@ -148,27 +160,27 @@ function Marquee() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function HowItWorks() {
   const steps = [
     {
-      n: '01',
-      title: 'Tu cliente abre su cartera digital',
-      desc: 'Sin descargar nada. Un enlace o un QR le crea su carta de lealtad.',
+      n: "01",
+      title: "Tu cliente abre su cartera digital",
+      desc: "Sin descargar nada. Un enlace o un QR le crea su carta de lealtad.",
     },
     {
-      n: '02',
-      title: 'Genera un QR que vive 90 segundos',
-      desc: 'Firmado con HMAC-SHA256. Imposible falsificar o reutilizar.',
+      n: "02",
+      title: "Genera un QR que vive 90 segundos",
+      desc: "Firmado con HMAC-SHA256. Imposible falsificar o reutilizar.",
     },
     {
-      n: '03',
-      title: 'Tú escaneas, sumas un sello, y el sistema aprende',
-      desc: 'Cada visita alimenta tu panel y entrena tus campañas con IA.',
+      n: "03",
+      title: "Tú escaneas, sumas un sello, y el sistema aprende",
+      desc: "Cada visita alimenta tu panel y entrena tus campañas con IA.",
     },
-  ]
+  ];
   return (
     <section id="como-funciona" className="mx-auto max-w-7xl px-4 py-20 md:px-8">
       <p className="eyebrow text-center">Cómo funciona</p>
@@ -183,16 +195,32 @@ function HowItWorks() {
         ))}
       </div>
     </section>
-  )
+  );
 }
 
 function Benefits() {
   const items = [
-    { icon: Shield, title: 'Sin fraude', desc: 'QR firmados que viven 90s y se invalidan al primer uso.' },
-    { icon: Zap, title: 'Sin instalaciones', desc: 'Funciona en el navegador del cliente y del staff.' },
-    { icon: MessageCircle, title: 'Campañas con IA', desc: 'Genera mensajes de reactivación en segundos.' },
-    { icon: BarChart3, title: 'Métricas en tiempo real', desc: 'Detecta clientes inactivos antes de que se vayan.' },
-  ]
+    {
+      icon: Shield,
+      title: "Sin fraude",
+      desc: "QR firmados que viven 90s y se invalidan al primer uso.",
+    },
+    {
+      icon: Zap,
+      title: "Sin instalaciones",
+      desc: "Funciona en el navegador del cliente y del staff.",
+    },
+    {
+      icon: MessageCircle,
+      title: "Campañas con IA",
+      desc: "Genera mensajes de reactivación en segundos.",
+    },
+    {
+      icon: BarChart3,
+      title: "Métricas en tiempo real",
+      desc: "Detecta clientes inactivos antes de que se vayan.",
+    },
+  ];
   return (
     <section id="beneficios" className="bg-[var(--color-cream)] py-20">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
@@ -200,7 +228,10 @@ function Benefits() {
         <h2 className="display-lg mt-2 max-w-2xl">Tu negocio aprende de cada visita.</h2>
         <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {items.map((b) => (
-            <article key={b.title} className="surface-paper group p-6 transition hover:-translate-y-1">
+            <article
+              key={b.title}
+              className="surface-paper group p-6 transition hover:-translate-y-1"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-ink)] text-[var(--color-signal)]">
                 <b.icon className="h-5 w-5" />
               </div>
@@ -211,7 +242,7 @@ function Benefits() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function DemoBand() {
@@ -225,42 +256,47 @@ function DemoBand() {
         </p>
         <Link
           to="/join/$businessId"
-          params={{ businessId: 'demo' }}
+          params={{ businessId: "demo" }}
           className="btn-signal mt-8 inline-flex items-center gap-2"
         >
           Abrir demo <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     </section>
-  )
+  );
 }
 
 function Pricing() {
   const plans = [
     {
-      name: 'Free',
-      tagline: 'Para empezar',
-      price: '$0',
-      features: ['Hasta 100 clientes activos', '1 dispositivo de staff', 'Métricas básicas', 'Sin IA'],
-      cta: 'Empezar gratis',
+      name: "Free",
+      tagline: "Para empezar",
+      price: "$0",
+      features: [
+        "Hasta 100 clientes activos",
+        "1 dispositivo de staff",
+        "Métricas básicas",
+        "Sin IA",
+      ],
+      cta: "Empezar gratis",
       highlight: false,
-      plan: 'free',
+      plan: "free",
     },
     {
-      name: 'Pro',
-      tagline: 'Para crecer',
-      price: '$299 MXN/mes',
+      name: "Pro",
+      tagline: "Para crecer",
+      price: "$299 MXN/mes",
       features: [
-        'Clientes ilimitados',
-        '10 dispositivos de staff',
-        'Campañas con IA (NVIDIA NIM)',
-        'Métricas avanzadas y retención',
+        "Clientes ilimitados",
+        "10 dispositivos de staff",
+        "Campañas con IA (NVIDIA NIM)",
+        "Métricas avanzadas y retención",
       ],
-      cta: 'Probar Pro',
+      cta: "Probar Pro",
       highlight: true,
-      plan: 'pro',
+      plan: "pro",
     },
-  ]
+  ];
   return (
     <section id="precios" className="mx-auto max-w-5xl px-4 py-20 md:px-8">
       <p className="eyebrow text-center">Precios</p>
@@ -271,8 +307,8 @@ function Pricing() {
             key={p.name}
             className={`relative rounded-[var(--radius-lg)] p-8 ${
               p.highlight
-                ? 'bg-[var(--color-ink)] text-[var(--color-cream)] shadow-[var(--shadow-lifted)]'
-                : 'surface-paper'
+                ? "bg-[var(--color-ink)] text-[var(--color-cream)] shadow-[var(--shadow-lifted)]"
+                : "surface-paper"
             }`}
           >
             {p.highlight && (
@@ -286,7 +322,9 @@ function Pricing() {
             <ul className="mt-6 space-y-2 text-sm">
               {p.features.map((f) => (
                 <li key={f} className="flex items-start gap-2">
-                  <Sparkles className={`mt-0.5 h-4 w-4 ${p.highlight ? 'text-[var(--color-signal)]' : 'text-[var(--color-celebrate)]'}`} />
+                  <Sparkles
+                    className={`mt-0.5 h-4 w-4 ${p.highlight ? "text-[var(--color-signal)]" : "text-[var(--color-celebrate)]"}`}
+                  />
                   {f}
                 </li>
               ))}
@@ -295,7 +333,9 @@ function Pricing() {
               to="/signup"
               search={{ plan: p.plan } as never}
               className={`mt-8 block w-full rounded-full px-5 py-3 text-center text-sm font-semibold ${
-                p.highlight ? 'bg-[var(--color-signal)] text-[var(--color-ink)]' : 'bg-[var(--color-ink)] text-[var(--color-cream)]'
+                p.highlight
+                  ? "bg-[var(--color-signal)] text-[var(--color-ink)]"
+                  : "bg-[var(--color-ink)] text-[var(--color-cream)]"
               }`}
             >
               {p.cta}
@@ -304,7 +344,7 @@ function Pricing() {
         ))}
       </div>
     </section>
-  )
+  );
 }
 
 function Testimonials() {
@@ -312,15 +352,13 @@ function Testimonials() {
     <section className="bg-[var(--color-cream)] py-20">
       <div className="mx-auto max-w-3xl px-4 text-center md:px-8">
         <p className="eyebrow">Historias reales</p>
-        <h2 className="display-md mt-2">
-          Pronto: historias de negocios que crecen con NexoLeal.
-        </h2>
+        <h2 className="display-md mt-2">Pronto: historias de negocios que crecen con NexoLeal.</h2>
         <p className="mt-4 text-[color:var(--color-ink-soft)]">
           Estamos recopilando casos reales. ¿Quieres ser uno de los primeros? Escríbenos.
         </p>
       </div>
     </section>
-  )
+  );
 }
 
 function FinalCTA() {
@@ -329,7 +367,8 @@ function FinalCTA() {
       <div className="mx-auto max-w-3xl px-4 text-center md:px-8">
         <h2 className="display-lg font-display">Empieza gratis en 3 minutos.</h2>
         <p className="mt-4 text-white/80">
-          Crea tu cuenta, configura tu programa de lealtad y comparte el enlace con tus clientes hoy mismo.
+          Crea tu cuenta, configura tu programa de lealtad y comparte el enlace con tus clientes hoy
+          mismo.
         </p>
         <Link
           to="/signup"
@@ -339,7 +378,7 @@ function FinalCTA() {
         </Link>
       </div>
     </section>
-  )
+  );
 }
 
 function Footer() {
@@ -357,17 +396,31 @@ function Footer() {
         <div>
           <p className="eyebrow text-[color:var(--color-cream)]/50">Producto</p>
           <ul className="mt-3 space-y-2">
-            <li><a href="#como-funciona">Cómo funciona</a></li>
-            <li><a href="#precios">Precios</a></li>
-            <li><Link to="/join/$businessId" params={{ businessId: 'demo' }}>Demo</Link></li>
+            <li>
+              <a href="#como-funciona">Cómo funciona</a>
+            </li>
+            <li>
+              <a href="#precios">Precios</a>
+            </li>
+            <li>
+              <Link to="/join/$businessId" params={{ businessId: "demo" }}>
+                Demo
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
           <p className="eyebrow text-[color:var(--color-cream)]/50">Legal</p>
           <ul className="mt-3 space-y-2">
-            <li><Link to="/terms">Términos</Link></li>
-            <li><Link to="/privacy">Privacidad</Link></li>
-            <li><a href="mailto:hola@nexoleal.com">Contacto</a></li>
+            <li>
+              <Link to="/terms">Términos</Link>
+            </li>
+            <li>
+              <Link to="/privacy">Privacidad</Link>
+            </li>
+            <li>
+              <a href="mailto:hola@nexoleal.com">Contacto</a>
+            </li>
           </ul>
         </div>
       </div>
@@ -375,5 +428,5 @@ function Footer() {
         © {new Date().getFullYear()} NexoLeal · Hecho en México 🇲🇽
       </div>
     </footer>
-  )
+  );
 }

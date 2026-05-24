@@ -1,29 +1,29 @@
-import { useEffect, useState } from 'react'
-import { Link } from '@tanstack/react-router'
-import { ArrowRight, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ColorPicker } from '@/components/onboarding/ColorPicker'
-import { LogoUploader } from '@/components/onboarding/LogoUploader'
-import { OnboardingCardPreview } from '@/components/onboarding/OnboardingCardPreview'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ColorPicker } from "@/components/onboarding/ColorPicker";
+import { LogoUploader } from "@/components/onboarding/LogoUploader";
+import { OnboardingCardPreview } from "@/components/onboarding/OnboardingCardPreview";
 import {
   loadBrandSettings,
   persistBrandSettings,
   type BrandSettings,
-} from '@/lib/onboarding-brand'
-import { ApiError } from '@/lib/api-client'
-import { tokens } from '@/lib/theme'
+} from "@/lib/onboarding-brand";
+import { ApiError } from "@/lib/api-client";
+import { tokens } from "@/lib/theme";
 
 interface BrandStepProps {
-  businessId: string
-  businessName: string
-  businessCategory: string
-  rewardDescription: string
-  stampsRequired: number
-  onComplete: () => void
+  businessId: string;
+  businessName: string;
+  businessCategory: string;
+  rewardDescription: string;
+  stampsRequired: number;
+  onComplete: () => void;
 }
 
 export function BrandStep({
@@ -34,44 +34,51 @@ export function BrandStep({
   stampsRequired,
   onComplete,
 }: BrandStepProps) {
-  const [brand, setBrand] = useState<BrandSettings>(() => loadBrandSettings(businessId))
-  const [saving, setSaving] = useState(false)
+  const [brand, setBrand] = useState<BrandSettings>({
+    logoUrl: null,
+    primaryColor: tokens.color.signal,
+    tagline: "",
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setBrand(loadBrandSettings(businessId))
-  }, [businessId])
+    let cancelled = false;
+    void loadBrandSettings(businessId).then((settings) => {
+      if (!cancelled) setBrand(settings);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [businessId]);
 
   const update = (patch: Partial<BrandSettings>) => {
-    setBrand((prev) => ({ ...prev, ...patch }))
-  }
+    setBrand((prev) => ({ ...prev, ...patch }));
+  };
 
   const handleContinue = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
-      const result = await persistBrandSettings(businessId, brand)
+      const result = await persistBrandSettings(businessId, brand);
       if (!result.savedRemote) {
-        toast.message('Marca guardada localmente', {
-          description: 'La sincronización con el servidor estará disponible pronto.',
-        })
+        toast.message("Marca guardada localmente", {
+          description: "Revisa tu conexión e intenta sincronizar desde Configuración.",
+        });
       } else {
-        toast.success('Marca guardada')
+        toast.success("Marca guardada");
       }
-      onComplete()
+      onComplete();
     } catch (e) {
       const message =
-        e instanceof ApiError
-          ? e.message
-          : 'No pudimos guardar tu marca. Intenta de nuevo.'
-      toast.error(message)
+        e instanceof ApiError ? e.message : "No pudimos guardar tu marca. Intenta de nuevo.";
+      toast.error(message);
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
-  const primaryColor =
-    /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(brand.primaryColor)
-      ? brand.primaryColor
-      : tokens.color.signal
+  const primaryColor = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(brand.primaryColor)
+    ? brand.primaryColor
+    : tokens.color.signal;
 
   return (
     <div className="surface-paper overflow-hidden">
@@ -143,5 +150,5 @@ export function BrandStep({
         </div>
       </div>
     </div>
-  )
+  );
 }

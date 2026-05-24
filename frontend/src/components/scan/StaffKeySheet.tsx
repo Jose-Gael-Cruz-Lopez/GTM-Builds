@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -9,16 +9,16 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { isValidStaffKeyFormat } from "@/lib/staff-key-storage"
-import { toast } from "sonner"
+} from "@/components/ui/sheet";
+import { isValidStaffKeyFormat } from "@/lib/staff-key-storage";
+import { toast } from "sonner";
 
 interface StaffKeySheetProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  initialValue?: string
-  onSave: (key: string) => Promise<void>
-  onClear?: () => Promise<void>
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initialValue?: string;
+  onSave: (key: string) => Promise<void>;
+  onClear?: () => Promise<void>;
 }
 
 export function StaffKeySheet({
@@ -28,29 +28,29 @@ export function StaffKeySheet({
   onSave,
   onClear,
 }: StaffKeySheetProps) {
-  const [value, setValue] = useState(initialValue)
-  const [saving, setSaving] = useState(false)
+  const [value, setValue] = useState(initialValue);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open) setValue(initialValue)
-  }, [open, initialValue])
+    if (open) setValue(initialValue);
+  }, [open, initialValue]);
 
   const handleSave = async () => {
     if (!isValidStaffKeyFormat(value)) {
-      toast.error("Formato inválido. Debe ser <businessId>:<key>")
-      return
+      toast.error("Formato inválido. Debe ser <businessId>:<key>");
+      return;
     }
-    setSaving(true)
+    setSaving(true);
     try {
-      await onSave(value.trim())
-      onOpenChange(false)
-      toast.success("Llave guardada en este dispositivo")
+      await onSave(value.trim());
+      onOpenChange(false);
+      toast.success("Llave guardada en este dispositivo");
     } catch {
-      toast.error("No se pudo guardar la llave")
+      toast.error("No se pudo guardar la llave");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -63,8 +63,8 @@ export function StaffKeySheet({
             Llave de staff
           </SheetTitle>
           <SheetDescription className="text-[color:var(--color-cream)]/70">
-            Se guarda solo en este dispositivo (IndexedDB). Pégala tal como te la entregó el
-            dueño del negocio.
+            Se guarda solo en este dispositivo (IndexedDB). Pégala tal como te la entregó el dueño
+            del negocio.
           </SheetDescription>
         </SheetHeader>
 
@@ -105,5 +105,5 @@ export function StaffKeySheet({
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

@@ -149,9 +149,10 @@ export function requireAdmin(): MiddlewareHandler<HonoEnv> {
     }
 
     // Extract businessId from the route parameter (all admin routes are under /businesses/:businessId/...)
-    const businessId = c.req.param('businessId') ?? c.req.param('id')
+    const businessId =
+      c.req.param('businessId') ?? c.req.param('id') ?? c.req.query('businessId')
     if (!businessId) {
-      return c.json(err('VALIDATION_ERROR', 'Business ID required in route'), 400)
+      return c.json(err('VALIDATION_ERROR', 'Business ID required'), 400)
     }
 
     // Verify the authenticated user owns this business

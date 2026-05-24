@@ -1,6 +1,6 @@
-import { Sparkles, Users, TrendingUp, Heart } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { IsoScene } from '@/components/ui/iso-scene'
+import { Sparkles, Users, TrendingUp, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { IsoScene } from "@/components/ui/iso-scene";
 
 export function CampaignEmptyState({ onGenerate }: { onGenerate: () => void }) {
   return (
@@ -20,7 +20,7 @@ export function CampaignEmptyState({ onGenerate }: { onGenerate: () => void }) {
         <SegmentIllustration icon={TrendingUp} color="var(--health)" delay={2} />
       </div>
     </IsoScene>
-  )
+  );
 }
 
 function SegmentIllustration({
@@ -28,9 +28,9 @@ function SegmentIllustration({
   color,
   delay,
 }: {
-  icon: typeof Users
-  color: string
-  delay: number
+  icon: typeof Users;
+  color: string;
+  delay: number;
 }) {
   return (
     <div
@@ -45,5 +45,5 @@ function SegmentIllustration({
       </span>
       <span className="h-1.5 w-8 rounded-full bg-[var(--surface-soft)]" />
     </div>
-  )
+  );
 }

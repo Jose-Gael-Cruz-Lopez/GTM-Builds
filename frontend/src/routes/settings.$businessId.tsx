@@ -1,71 +1,70 @@
-import { RouteError } from "@/components/RouteError"
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { z } from 'zod'
-import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Loader2 } from 'lucide-react'
-import { requireAdmin } from '@/lib/auth-guards'
-import { businessesApi } from '@/lib/api/businesses'
-import { useOwnedBusiness } from '@/hooks/use-owned-business'
-import { supabase } from '@/integrations/supabase/client'
-import { AppShell } from '@/components/layout/AppShell'
-import { SettingsTabBar, type SettingsTab } from '@/components/settings/SettingsTabBar'
-import { SettingsHelpRail } from '@/components/settings/SettingsHelpRail'
-import { GeneralSettingsTab } from '@/components/settings/GeneralSettingsTab'
-import { LoyaltySettingsTab } from '@/components/settings/LoyaltySettingsTab'
-import { StaffSettingsTab } from '@/components/settings/StaffSettingsTab'
-import { AccountSettingsTab } from '@/components/settings/AccountSettingsTab'
-import type { BusinessCategory } from '@/integrations/supabase/types'
+import { RouteError } from "@/components/RouteError";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { requireAdmin } from "@/lib/auth-guards";
+import { businessesApi } from "@/lib/api/businesses";
+import { useOwnedBusiness } from "@/hooks/use-owned-business";
+import { supabase } from "@/integrations/supabase/client";
+import { AppShell } from "@/components/layout/AppShell";
+import { SettingsTabBar, type SettingsTab } from "@/components/settings/SettingsTabBar";
+import { SettingsHelpRail } from "@/components/settings/SettingsHelpRail";
+import { GeneralSettingsTab } from "@/components/settings/GeneralSettingsTab";
+import { LoyaltySettingsTab } from "@/components/settings/LoyaltySettingsTab";
+import { StaffSettingsTab } from "@/components/settings/StaffSettingsTab";
+import { AccountSettingsTab } from "@/components/settings/AccountSettingsTab";
+import type { BusinessCategory } from "@/integrations/supabase/types";
 
 const searchSchema = z.object({
-  tab: z.enum(['general', 'loyalty', 'staff', 'account']).default('general'),
-})
+  tab: z.enum(["general", "loyalty", "staff", "account"]).default("general"),
+});
 
-export const Route = createFileRoute('/settings/$businessId')({
+export const Route = createFileRoute("/settings/$businessId")({
   validateSearch: (search) => searchSchema.parse(search),
   beforeLoad: async ({ params, location }) => {
-    await requireAdmin(params.businessId, location.pathname)
+    await requireAdmin(params.businessId, location.pathname);
   },
   component: SettingsPage,
   errorComponent: RouteError,
-  head: () => ({ meta: [{ title: 'Configuración · NexoLeal' }] }),
-})
+  head: () => ({ meta: [{ title: "Configuración · NexoLeal" }] }),
+});
 
 function SettingsPage() {
-  const { businessId } = Route.useParams()
-  const { tab } = Route.useSearch()
-  const { businessName: ownedName } = useOwnedBusiness()
+  const { businessId } = Route.useParams();
+  const { tab } = Route.useSearch();
+  const { businessName: ownedName } = useOwnedBusiness();
 
   const businessFromApi = useQuery({
-    queryKey: ['business', businessId],
+    queryKey: ["business", businessId],
     queryFn: () => businessesApi.get(businessId),
     retry: false,
-  })
+  });
 
   const businessFromSupabase = useQuery({
-    queryKey: ['business', businessId, 'supabase'],
+    queryKey: ["business", businessId, "supabase"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('businesses')
-        .select('id, name, category, is_active')
-        .eq('id', businessId)
-        .maybeSingle()
-      if (error) throw error
-      return data
+        .from("businesses")
+        .select("id, name, category, is_active, tagline, logo_url, primary_color, address, phone")
+        .eq("id", businessId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
     },
-  })
+  });
 
   const name =
     businessFromApi.data?.business.name ??
     businessFromSupabase.data?.name ??
     ownedName ??
-    'Tu negocio'
+    "Tu negocio";
 
-  const category =
-    (businessFromApi.data?.business.category ??
-      businessFromSupabase.data?.category ??
-      'other') as BusinessCategory
+  const category = (businessFromApi.data?.business.category ??
+    businessFromSupabase.data?.category ??
+    "other") as BusinessCategory;
 
-  const isLoading = businessFromApi.isLoading && businessFromSupabase.isLoading
+  const isLoading = businessFromApi.isLoading && businessFromSupabase.isLoading;
 
   return (
     <AppShell variant="light">
@@ -85,9 +84,7 @@ function SettingsPage() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
         <div className="mb-6">
           <p className="eyebrow">Ajustes del negocio</p>
-          <h1 className="display-md mt-2 font-display">
-            Configuración de {name}
-          </h1>
+          <h1 className="display-md mt-2 font-display">Configuración de {name}</h1>
         </div>
 
         <SettingsTabBar businessId={businessId} activeTab={tab as SettingsTab} />
@@ -100,18 +97,43 @@ function SettingsPage() {
               </div>
             ) : (
               <>
-                {tab === 'general' && (
+                {tab === "general" && (
                   <GeneralSettingsTab
                     businessId={businessId}
                     initialName={name}
                     initialCategory={category}
+                    initialTagline={
+                      businessFromApi.data?.business.tagline ??
+                      businessFromSupabase.data?.tagline ??
+                      undefined
+                    }
+                    initialLogoUrl={
+                      businessFromApi.data?.business.logo_url ??
+                      businessFromSupabase.data?.logo_url ??
+                      undefined
+                    }
+                    initialPrimaryColor={
+                      businessFromApi.data?.business.primary_color ??
+                      businessFromSupabase.data?.primary_color ??
+                      undefined
+                    }
+                    initialAddress={
+                      businessFromApi.data?.business.address ??
+                      businessFromSupabase.data?.address ??
+                      undefined
+                    }
+                    initialPhone={
+                      businessFromApi.data?.business.phone ??
+                      businessFromSupabase.data?.phone ??
+                      undefined
+                    }
                   />
                 )}
-                {tab === 'loyalty' && (
+                {tab === "loyalty" && (
                   <LoyaltySettingsTab businessId={businessId} businessName={name} />
                 )}
-                {tab === 'staff' && <StaffSettingsTab businessId={businessId} />}
-                {tab === 'account' && <AccountSettingsTab />}
+                {tab === "staff" && <StaffSettingsTab businessId={businessId} />}
+                {tab === "account" && <AccountSettingsTab />}
               </>
             )}
           </div>
@@ -119,5 +141,5 @@ function SettingsPage() {
         </div>
       </div>
     </AppShell>
-  )
+  );
 }

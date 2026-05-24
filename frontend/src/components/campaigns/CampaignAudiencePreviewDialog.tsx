@@ -1,9 +1,9 @@
-import { Loader2 } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-import type { Campaign } from '@/lib/api/campaigns'
-import { analyticsApi } from '@/lib/api/analytics'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { Campaign } from "@/lib/api/campaigns";
+import { analyticsApi } from "@/lib/api/analytics";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +11,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   filterAudienceBySegment,
   getSegmentCount,
   initials,
-} from '@/components/campaigns/segment-utils'
+} from "@/components/campaigns/segment-utils";
 
 export function CampaignAudiencePreviewDialog({
   businessId,
@@ -26,45 +26,52 @@ export function CampaignAudiencePreviewDialog({
   onConfirm,
   confirming,
 }: {
-  businessId: string
-  campaign: Campaign
-  open: boolean
-  onClose: () => void
-  onConfirm: () => void
-  confirming?: boolean
+  businessId: string;
+  campaign: Campaign;
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  confirming?: boolean;
 }) {
   const clients = useQuery({
-    queryKey: ['business', businessId, 'analytics', 'clients'],
+    queryKey: ["business", businessId, "analytics", "clients"],
     queryFn: () => analyticsApi.clients(businessId),
     enabled: open,
-  })
+  });
   const churn = useQuery({
-    queryKey: ['business', businessId, 'analytics', 'churn-risk'],
+    queryKey: ["business", businessId, "analytics", "churn-risk"],
     queryFn: () => analyticsApi.churnRisk(businessId),
     enabled: open,
-  })
+  });
 
-  const count = getSegmentCount(campaign.target_segment, clients.data, churn.data)
-  const preview = filterAudienceBySegment(
-    campaign.target_segment,
-    churn.data?.clients ?? [],
-  ).slice(0, 5)
+  const count = getSegmentCount(campaign.target_segment, clients.data, churn.data);
+  const preview = filterAudienceBySegment(campaign.target_segment, churn.data?.clients ?? []).slice(
+    0,
+    5,
+  );
 
-  const loading = clients.isLoading || churn.isLoading
+  const loading = clients.isLoading || churn.isLoading;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle className="font-display">Vista previa de audiencia</DialogTitle>
           <DialogDescription>
             {loading ? (
-              'Calculando audiencia...'
+              "Calculando audiencia..."
             ) : (
               <>
-                Esta campaña se enviará a{' '}
-                <strong>{count} cliente{count === 1 ? '' : 's'}</strong>.
-                {preview.length > 0 && ' Estos son los primeros 5:'}
+                Esta campaña se enviará a{" "}
+                <strong>
+                  {count} cliente{count === 1 ? "" : "s"}
+                </strong>
+                .{preview.length > 0 && " Estos son los primeros 5:"}
               </>
             )}
           </DialogDescription>
@@ -103,13 +110,15 @@ export function CampaignAudiencePreviewDialog({
           </Button>
           <Button type="button" onClick={onConfirm} disabled={confirming}>
             {confirming ? (
-              <><Loader2 className="h-4 w-4 animate-spin" /> Activando...</>
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Activando...
+              </>
             ) : (
-              'Confirmar'
+              "Confirmar"
             )}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

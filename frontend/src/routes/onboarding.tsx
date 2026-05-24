@@ -1,4 +1,4 @@
-import { RouteError } from "@/components/RouteError"
+import { RouteError } from "@/components/RouteError";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useEffect, useState } from "react";
@@ -9,14 +9,8 @@ import { toast } from "sonner";
 import { BrandStep } from "@/components/onboarding/BrandStep";
 import { FinishStep } from "@/components/onboarding/FinishStep";
 import { RewardStep } from "@/components/onboarding/RewardStep";
-import {
-  StepIndicator,
-  type OnboardingStep,
-} from "@/components/onboarding/StepIndicator";
-import {
-  businessesApi,
-  type CreateStaffKeyResponse,
-} from "@/lib/api/businesses";
+import { StepIndicator, type OnboardingStep } from "@/components/onboarding/StepIndicator";
+import { businessesApi, type CreateStaffKeyResponse } from "@/lib/api/businesses";
 import { ApiError } from "@/lib/api-client";
 import { STAFF_KEY_STORAGE, loadBrandSettings } from "@/lib/onboarding-brand";
 import { setStaffKey } from "@/lib/staff-key-storage";
@@ -75,7 +69,14 @@ function OnboardingPage() {
 
   const businessName = business ?? "Tu negocio";
   const businessCategory = type?.toLowerCase() ?? "negocio";
-  const brandSettings = businessId ? loadBrandSettings(businessId) : { tagline: "" };
+
+  const brandQuery = useQuery({
+    queryKey: ["business", businessId, "brand"],
+    queryFn: () => loadBrandSettings(businessId!),
+    enabled: !!businessId,
+    staleTime: 60_000,
+  });
+  const brandTagline = brandQuery.data?.tagline ?? "";
 
   const setStep = (next: OnboardingStep) => {
     navigate({
@@ -98,9 +99,7 @@ function OnboardingPage() {
     },
     onError: (e) => {
       const message =
-        e instanceof ApiError
-          ? e.message
-          : "No pudimos guardar tu recompensa. Intenta de nuevo.";
+        e instanceof ApiError ? e.message : "No pudimos guardar tu recompensa. Intenta de nuevo.";
       toast.error(message);
     },
   });
@@ -195,7 +194,7 @@ function OnboardingPage() {
             <FinishStep
               businessId={businessId}
               businessName={businessName}
-              tagline={brandSettings.tagline}
+              tagline={brandTagline}
               joinUrl={joinUrl}
               staffKey={staffKeyQuery.data}
               staffKeyLoading={staffKeyQuery.isLoading}

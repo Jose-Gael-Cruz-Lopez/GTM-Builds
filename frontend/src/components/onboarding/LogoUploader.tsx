@@ -1,9 +1,9 @@
-import { useCallback, useRef, useState } from 'react'
-import Cropper, { type Area } from 'react-easy-crop'
-import { ImagePlus, Loader2, X } from 'lucide-react'
-import { toast } from 'sonner'
+import { useCallback, useRef, useState } from "react";
+import Cropper, { type Area } from "react-easy-crop";
+import { ImagePlus, Loader2, X } from "lucide-react";
+import { toast } from "sonner";
 
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,78 +11,78 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { supabase } from '@/integrations/supabase/client'
-import { getCroppedImageBlob } from '@/components/onboarding/logo-crop-utils'
+} from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { getCroppedImageBlob } from "@/components/onboarding/logo-crop-utils";
 
-const MAX_BYTES = 1024 * 1024
+const MAX_BYTES = 1024 * 1024;
 
 interface LogoUploaderProps {
-  businessId: string
-  value: string | null
-  onChange: (url: string | null) => void
+  businessId: string;
+  value: string | null;
+  onChange: (url: string | null) => void;
 }
 
 export function LogoUploader({ businessId, value, onChange }: LogoUploaderProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [cropSrc, setCropSrc] = useState<string | null>(null)
-  const [crop, setCrop] = useState({ x: 0, y: 0 })
-  const [zoom, setZoom] = useState(1)
-  const [croppedArea, setCroppedArea] = useState<Area | null>(null)
-  const [uploading, setUploading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedArea, setCroppedArea] = useState<Area | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const onCropComplete = useCallback((_: Area, pixels: Area) => {
-    setCroppedArea(pixels)
-  }, [])
+    setCroppedArea(pixels);
+  }, []);
 
   const handleFile = (file: File | null) => {
-    if (!file) return
+    if (!file) return;
     if (file.size > MAX_BYTES) {
-      toast.error('El logo debe pesar menos de 1 MB')
-      return
+      toast.error("El logo debe pesar menos de 1 MB");
+      return;
     }
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecciona una imagen válida')
-      return
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecciona una imagen válida");
+      return;
     }
-    const url = URL.createObjectURL(file)
-    setCropSrc(url)
-    setCrop({ x: 0, y: 0 })
-    setZoom(1)
-  }
+    const url = URL.createObjectURL(file);
+    setCropSrc(url);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+  };
 
   const closeCrop = () => {
-    if (cropSrc) URL.revokeObjectURL(cropSrc)
-    setCropSrc(null)
-    setCroppedArea(null)
-  }
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+    setCroppedArea(null);
+  };
 
   const uploadCropped = async () => {
-    if (!cropSrc || !croppedArea) return
-    setUploading(true)
+    if (!cropSrc || !croppedArea) return;
+    setUploading(true);
     try {
-      const blob = await getCroppedImageBlob(cropSrc, croppedArea)
+      const blob = await getCroppedImageBlob(cropSrc, croppedArea);
       if (blob.size > MAX_BYTES) {
-        toast.error('La imagen recortada supera 1 MB. Prueba con menos zoom.')
-        return
+        toast.error("La imagen recortada supera 1 MB. Prueba con menos zoom.");
+        return;
       }
-      const path = `${businessId}/${Date.now()}.png`
-      const { error } = await supabase.storage.from('business-logos').upload(path, blob, {
-        contentType: 'image/png',
+      const path = `${businessId}/${Date.now()}.png`;
+      const { error } = await supabase.storage.from("business-logos").upload(path, blob, {
+        contentType: "image/png",
         upsert: true,
-      })
-      if (error) throw error
-      const { data } = supabase.storage.from('business-logos').getPublicUrl(path)
-      onChange(data.publicUrl)
-      toast.success('Logo subido')
-      closeCrop()
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from("business-logos").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Logo subido");
+      closeCrop();
     } catch (e) {
-      console.error(e)
-      toast.error('No pudimos subir el logo. Intenta de nuevo.')
+      console.error(e);
+      toast.error("No pudimos subir el logo. Intenta de nuevo.");
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-3">
@@ -107,8 +107,13 @@ export function LogoUploader({ businessId, value, onChange }: LogoUploaderProps)
           </div>
         )}
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-            {value ? 'Cambiar logo' : 'Subir logo'}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => inputRef.current?.click()}
+          >
+            {value ? "Cambiar logo" : "Subir logo"}
           </Button>
           {value ? (
             <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)}>
@@ -125,7 +130,9 @@ export function LogoUploader({ businessId, value, onChange }: LogoUploaderProps)
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Recorta tu logo</DialogTitle>
-            <DialogDescription>Ajusta el encuadre cuadrado para tu tarjeta de lealtad.</DialogDescription>
+            <DialogDescription>
+              Ajusta el encuadre cuadrado para tu tarjeta de lealtad.
+            </DialogDescription>
           </DialogHeader>
           <div className="relative h-64 overflow-hidden rounded-lg bg-[var(--bg-elevated)]">
             {cropSrc ? (
@@ -160,12 +167,12 @@ export function LogoUploader({ businessId, value, onChange }: LogoUploaderProps)
                   <Loader2 className="h-4 w-4 animate-spin" /> Subiendo…
                 </>
               ) : (
-                'Usar este logo'
+                "Usar este logo"
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

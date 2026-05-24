@@ -1,18 +1,18 @@
-import { ArrowDown, ArrowUp } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { StatusDot } from '@/components/ui/status-dot'
-import { Sparkline } from '@/components/dashboard/Sparkline'
+import { ArrowDown, ArrowUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { StatusDot } from "@/components/ui/status-dot";
+import { Sparkline } from "@/components/dashboard/Sparkline";
 
 export interface KpiTileProps {
-  title: string
-  value: string | number
-  href?: string
-  delta?: number | null
-  deltaLabel?: string
-  healthChip?: boolean
-  healthLabel?: string
-  sparklineData?: number[]
-  statusTone?: 'good' | 'warn' | 'risk' | 'health' | 'neutral'
+  title: string;
+  value: string | number;
+  href?: string;
+  delta?: number | null;
+  deltaLabel?: string;
+  healthChip?: boolean;
+  healthLabel?: string;
+  sparklineData?: number[];
+  statusTone?: "good" | "warn" | "risk" | "health" | "neutral";
 }
 
 export function KpiTile({
@@ -22,9 +22,9 @@ export function KpiTile({
   delta,
   deltaLabel,
   healthChip,
-  healthLabel = 'Saludable',
+  healthLabel = "Saludable",
   sparklineData,
-  statusTone = 'neutral',
+  statusTone = "neutral",
 }: KpiTileProps) {
   const content = (
     <>
@@ -49,10 +49,10 @@ export function KpiTile({
           {delta !== undefined && delta !== null ? (
             <p
               className={cn(
-                'mt-1 flex items-center gap-1 text-xs font-medium',
+                "mt-1 flex items-center gap-1 text-xs font-medium",
                 delta >= 0
-                  ? 'text-[color:var(--color-status-good)]'
-                  : 'text-[color:var(--color-status-risk)]',
+                  ? "text-[color:var(--color-status-good)]"
+                  : "text-[color:var(--color-status-risk)]",
               )}
             >
               {delta >= 0 ? (
@@ -60,7 +60,7 @@ export function KpiTile({
               ) : (
                 <ArrowDown className="h-3 w-3" aria-hidden />
               )}
-              {Math.abs(delta)}% {deltaLabel ?? 'vs ayer'}
+              {Math.abs(delta)}% {deltaLabel ?? "vs ayer"}
             </p>
           ) : null}
         </div>
@@ -69,20 +69,20 @@ export function KpiTile({
         ) : null}
       </div>
     </>
-  )
+  );
 
   const className =
-    'surface-paper block p-5 transition-transform duration-[var(--duration)] ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-lifted)]'
+    "surface-paper block p-5 transition-transform duration-[var(--duration)] ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-lifted)]";
 
   if (href) {
     return (
       <a href={href} className={className}>
         {content}
       </a>
-    )
+    );
   }
 
-  return <div className={className}>{content}</div>
+  return <div className={className}>{content}</div>;
 }
 
 export function KpiTileSkeleton() {
@@ -92,5 +92,5 @@ export function KpiTileSkeleton() {
       <div className="mt-4 h-9 w-20 shimmer rounded" />
       <div className="mt-2 h-3 w-16 shimmer rounded" />
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import { useRef } from 'react'
-import { Link } from '@tanstack/react-router'
-import { QRCodeCanvas } from 'qrcode.react'
-import { jsPDF } from 'jspdf'
+import { useRef } from "react";
+import { Link } from "@tanstack/react-router";
+import { QRCodeCanvas } from "qrcode.react";
+import { jsPDF } from "jspdf";
 import {
   AlertTriangle,
   Copy,
@@ -11,22 +11,22 @@ import {
   MessageCircle,
   QrCode,
   Share2,
-} from 'lucide-react'
-import { toast } from 'sonner'
+} from "lucide-react";
+import { toast } from "sonner";
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import type { CreateStaffKeyResponse } from '@/lib/api/businesses'
-import { tokens } from '@/lib/theme'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { CreateStaffKeyResponse } from "@/lib/api/businesses";
+import { tokens } from "@/lib/theme";
 
 interface FinishStepProps {
-  businessId: string
-  businessName: string
-  tagline: string
-  joinUrl: string
-  staffKey: CreateStaffKeyResponse | undefined
-  staffKeyLoading: boolean
-  staffKeyError: boolean
+  businessId: string;
+  businessName: string;
+  tagline: string;
+  joinUrl: string;
+  staffKey: CreateStaffKeyResponse | undefined;
+  staffKeyLoading: boolean;
+  staffKeyError: boolean;
 }
 
 function FeatureCard({
@@ -34,9 +34,9 @@ function FeatureCard({
   title,
   children,
 }: {
-  icon: typeof Share2
-  title: string
-  children: React.ReactNode
+  icon: typeof Share2;
+  title: string;
+  children: React.ReactNode;
 }) {
   return (
     <article className="surface-paper flex flex-col p-6">
@@ -48,7 +48,7 @@ function FeatureCard({
         {children}
       </div>
     </article>
-  )
+  );
 }
 
 export function FinishStep({
@@ -60,69 +60,72 @@ export function FinishStep({
   staffKeyLoading,
   staffKeyError,
 }: FinishStepProps) {
-  const qrRef = useRef<HTMLDivElement>(null)
+  const qrRef = useRef<HTMLDivElement>(null);
 
-  const whatsappMessage = `¡Hola! Únete a mi programa de lealtad y gana recompensas: ${joinUrl}`
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`
+  const whatsappMessage = `¡Hola! Únete a mi programa de lealtad y gana recompensas: ${joinUrl}`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
 
   const copyJoinUrl = () => {
-    void navigator.clipboard.writeText(joinUrl)
-    toast.success('Enlace copiado')
-  }
+    void navigator.clipboard.writeText(joinUrl);
+    toast.success("Enlace copiado");
+  };
 
   const copyStaffKey = () => {
-    const value = staffKey?.headerValue ?? ''
-    void navigator.clipboard.writeText(value)
-    toast.success('Llave copiada')
-  }
+    const value = staffKey?.headerValue ?? "";
+    void navigator.clipboard.writeText(value);
+    toast.success("Llave copiada");
+  };
 
   const downloadPng = () => {
-    const canvas = qrRef.current?.querySelector('canvas')
+    const canvas = qrRef.current?.querySelector("canvas");
     if (!canvas) {
-      toast.error('No pudimos generar la imagen')
-      return
+      toast.error("No pudimos generar la imagen");
+      return;
     }
-    const link = document.createElement('a')
-    link.download = `nexoleal-qr-${businessId.slice(0, 8)}.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
-    toast.success('QR descargado')
-  }
+    const link = document.createElement("a");
+    link.download = `nexoleal-qr-${businessId.slice(0, 8)}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+    toast.success("QR descargado");
+  };
 
   const downloadPdf = () => {
-    const canvas = qrRef.current?.querySelector('canvas')
+    const canvas = qrRef.current?.querySelector("canvas");
     if (!canvas) {
-      toast.error('No pudimos generar el PDF')
-      return
+      toast.error("No pudimos generar el PDF");
+      return;
     }
-    const imgData = canvas.toDataURL('image/png')
-    const doc = new jsPDF({ unit: 'mm', format: 'a6' })
-    const pageW = doc.internal.pageSize.getWidth()
-    const margin = 10
+    const imgData = canvas.toDataURL("image/png");
+    const doc = new jsPDF({ unit: "mm", format: "a6" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 10;
 
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(14)
-    doc.text(businessName, pageW / 2, margin + 4, { align: 'center', maxWidth: pageW - margin * 2 })
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text(businessName, pageW / 2, margin + 4, {
+      align: "center",
+      maxWidth: pageW - margin * 2,
+    });
 
     if (tagline) {
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(9)
-      doc.setTextColor(74, 81, 96)
-      doc.text(tagline, pageW / 2, margin + 12, { align: 'center', maxWidth: pageW - margin * 2 })
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(74, 81, 96);
+      doc.text(tagline, pageW / 2, margin + 12, { align: "center", maxWidth: pageW - margin * 2 });
     }
 
-    const qrSize = 70
-    const qrX = (pageW - qrSize) / 2
-    const qrY = tagline ? margin + 18 : margin + 14
-    doc.addImage(imgData, 'PNG', qrX, qrY, qrSize, qrSize)
+    const qrSize = 70;
+    const qrX = (pageW - qrSize) / 2;
+    const qrY = tagline ? margin + 18 : margin + 14;
+    doc.addImage(imgData, "PNG", qrX, qrY, qrSize, qrSize);
 
-    doc.setFontSize(8)
-    doc.setTextColor(10, 15, 30)
-    doc.text('Escanea para unirte al programa', pageW / 2, qrY + qrSize + 8, { align: 'center' })
+    doc.setFontSize(8);
+    doc.setTextColor(10, 15, 30);
+    doc.text("Escanea para unirte al programa", pageW / 2, qrY + qrSize + 8, { align: "center" });
 
-    doc.save(`nexoleal-qr-${businessId.slice(0, 8)}.pdf`)
-    toast.success('PDF descargado')
-  }
+    doc.save(`nexoleal-qr-${businessId.slice(0, 8)}.pdf`);
+    toast.success("PDF descargado");
+  };
 
   return (
     <div className="space-y-8">
@@ -137,8 +140,19 @@ export function FinishStep({
         <FeatureCard icon={Share2} title="Comparte con tus clientes">
           <p>Envía este enlace para que se unan a tu programa de lealtad.</p>
           <div className="flex gap-2">
-            <Input readOnly value={joinUrl} className="font-mono text-xs" aria-label="Enlace para unirse" />
-            <Button type="button" variant="outline" size="icon" onClick={copyJoinUrl} aria-label="Copiar enlace">
+            <Input
+              readOnly
+              value={joinUrl}
+              className="font-mono text-xs"
+              aria-label="Enlace para unirse"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={copyJoinUrl}
+              aria-label="Copiar enlace"
+            >
               <Copy className="h-4 w-4" />
             </Button>
           </div>
@@ -211,5 +225,5 @@ export function FinishStep({
         </Button>
       </div>
     </div>
-  )
+  );
 }

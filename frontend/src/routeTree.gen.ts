@@ -27,6 +27,7 @@ import { Route as DashboardBusinessIdRouteImport } from './routes/dashboard.$bus
 import { Route as CampaignsBusinessIdRouteImport } from './routes/campaigns.$businessId'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as DashboardBusinessIdVisitsRouteImport } from './routes/dashboard.$businessId.visits'
+import { Route as DashboardBusinessIdRedemptionsRouteImport } from './routes/dashboard.$businessId.redemptions'
 import { Route as DashboardBusinessIdClientsRouteImport } from './routes/dashboard.$businessId.clients'
 
 const TermsRoute = TermsRouteImport.update({
@@ -120,6 +121,12 @@ const DashboardBusinessIdVisitsRoute =
     path: '/visits',
     getParentRoute: () => DashboardBusinessIdRoute,
   } as any)
+const DashboardBusinessIdRedemptionsRoute =
+  DashboardBusinessIdRedemptionsRouteImport.update({
+    id: '/redemptions',
+    path: '/redemptions',
+    getParentRoute: () => DashboardBusinessIdRoute,
+  } as any)
 const DashboardBusinessIdClientsRoute =
   DashboardBusinessIdClientsRouteImport.update({
     id: '/clients',
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
   '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/redemptions': typeof DashboardBusinessIdRedemptionsRoute
   '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRoutesByTo {
@@ -167,6 +175,7 @@ export interface FileRoutesByTo {
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet': typeof WalletIndexRoute
   '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/redemptions': typeof DashboardBusinessIdRedemptionsRoute
   '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRoutesById {
@@ -189,6 +198,7 @@ export interface FileRoutesById {
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
   '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/redemptions': typeof DashboardBusinessIdRedemptionsRoute
   '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRouteTypes {
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/wallet/profile'
     | '/wallet/'
     | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/redemptions'
     | '/dashboard/$businessId/visits'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/wallet/profile'
     | '/wallet'
     | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/redemptions'
     | '/dashboard/$businessId/visits'
   id:
     | '__root__'
@@ -254,6 +266,7 @@ export interface FileRouteTypes {
     | '/wallet/profile'
     | '/wallet/'
     | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/redemptions'
     | '/dashboard/$businessId/visits'
   fileRoutesById: FileRoutesById
 }
@@ -405,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBusinessIdVisitsRouteImport
       parentRoute: typeof DashboardBusinessIdRoute
     }
+    '/dashboard/$businessId/redemptions': {
+      id: '/dashboard/$businessId/redemptions'
+      path: '/redemptions'
+      fullPath: '/dashboard/$businessId/redemptions'
+      preLoaderRoute: typeof DashboardBusinessIdRedemptionsRouteImport
+      parentRoute: typeof DashboardBusinessIdRoute
+    }
     '/dashboard/$businessId/clients': {
       id: '/dashboard/$businessId/clients'
       path: '/clients'
@@ -417,11 +437,13 @@ declare module '@tanstack/react-router' {
 
 interface DashboardBusinessIdRouteChildren {
   DashboardBusinessIdClientsRoute: typeof DashboardBusinessIdClientsRoute
+  DashboardBusinessIdRedemptionsRoute: typeof DashboardBusinessIdRedemptionsRoute
   DashboardBusinessIdVisitsRoute: typeof DashboardBusinessIdVisitsRoute
 }
 
 const DashboardBusinessIdRouteChildren: DashboardBusinessIdRouteChildren = {
   DashboardBusinessIdClientsRoute: DashboardBusinessIdClientsRoute,
+  DashboardBusinessIdRedemptionsRoute: DashboardBusinessIdRedemptionsRoute,
   DashboardBusinessIdVisitsRoute: DashboardBusinessIdVisitsRoute,
 }
 

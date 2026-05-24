@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { Copy, Loader2, AlertTriangle } from 'lucide-react'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { Copy, Loader2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -8,19 +8,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { businessesApi } from '@/lib/api/businesses'
-import { rememberStaffKeySuffix } from '@/lib/business-profile-storage'
-import { ApiError } from '@/lib/api-client'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { businessesApi } from "@/lib/api/businesses";
+import { rememberStaffKeySuffix } from "@/lib/business-profile-storage";
+import { ApiError } from "@/lib/api-client";
 
 interface CreateStaffKeyDialogProps {
-  businessId: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onCreated: () => void
+  businessId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreated: () => void;
 }
 
 export function CreateStaffKeyDialog({
@@ -29,47 +29,51 @@ export function CreateStaffKeyDialog({
   onOpenChange,
   onCreated,
 }: CreateStaffKeyDialogProps) {
-  const [label, setLabel] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [createdKey, setCreatedKey] = useState<{ rawKey: string; headerValue: string; id: string } | null>(null)
+  const [label, setLabel] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [createdKey, setCreatedKey] = useState<{
+    rawKey: string;
+    headerValue: string;
+    id: string;
+  } | null>(null);
 
   const reset = () => {
-    setLabel('')
-    setCreatedKey(null)
-    setLoading(false)
-  }
+    setLabel("");
+    setCreatedKey(null);
+    setLoading(false);
+  };
 
   const handleOpenChange = (next: boolean) => {
-    if (!next) reset()
-    onOpenChange(next)
-  }
+    if (!next) reset();
+    onOpenChange(next);
+  };
 
   const create = async () => {
     if (!label.trim()) {
-      toast.error('Escribe una etiqueta para la clave')
-      return
+      toast.error("Escribe una etiqueta para la clave");
+      return;
     }
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await businessesApi.createStaffKey(businessId, { label: label.trim() })
-      rememberStaffKeySuffix(res.id, res.rawKey)
-      setCreatedKey({ rawKey: res.rawKey, headerValue: res.headerValue, id: res.id })
-      onCreated()
+      const res = await businessesApi.createStaffKey(businessId, { label: label.trim() });
+      rememberStaffKeySuffix(res.id, res.rawKey);
+      setCreatedKey({ rawKey: res.rawKey, headerValue: res.headerValue, id: res.id });
+      onCreated();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : 'No pudimos crear la clave')
+      toast.error(e instanceof ApiError ? e.message : "No pudimos crear la clave");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const copy = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text)
-      toast.success('Copiado al portapapeles')
+      await navigator.clipboard.writeText(text);
+      toast.success("Copiado al portapapeles");
     } catch {
-      toast.error('No pudimos copiar')
+      toast.error("No pudimos copiar");
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -97,7 +101,7 @@ export function CreateStaffKeyDialog({
                 Cancelar
               </Button>
               <Button onClick={create} disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generar clave'}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Generar clave"}
               </Button>
             </DialogFooter>
           </>
@@ -117,18 +121,32 @@ export function CreateStaffKeyDialog({
                   <code className="flex-1 overflow-x-auto rounded-lg bg-[color:var(--color-bg-base)] px-3 py-2 font-mono text-xs text-[color:var(--color-cream)]">
                     {createdKey.rawKey}
                   </code>
-                  <Button type="button" variant="outline" size="icon" onClick={() => copy(createdKey.rawKey)} aria-label="Copiar clave">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copy(createdKey.rawKey)}
+                    aria-label="Copiar clave"
+                  >
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-[color:var(--color-ink-soft)]">Header X-Staff-Key</Label>
+                <Label className="text-xs text-[color:var(--color-ink-soft)]">
+                  Header X-Staff-Key
+                </Label>
                 <div className="mt-1 flex gap-2">
                   <code className="flex-1 overflow-x-auto rounded-lg border px-3 py-2 font-mono text-xs">
                     {createdKey.headerValue}
                   </code>
-                  <Button type="button" variant="outline" size="icon" onClick={() => copy(createdKey.headerValue)} aria-label="Copiar header">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copy(createdKey.headerValue)}
+                    aria-label="Copiar header"
+                  >
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
@@ -141,5 +159,5 @@ export function CreateStaffKeyDialog({
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

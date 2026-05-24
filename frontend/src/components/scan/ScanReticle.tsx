@@ -1,19 +1,22 @@
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { motionPresets } from "@/lib/theme"
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { motionPresets } from "@/lib/theme";
 
 interface ScanReticleProps {
-  processing?: boolean
-  successZoom?: boolean
-  className?: string
+  processing?: boolean;
+  successZoom?: boolean;
+  className?: string;
 }
 
-const SIZE = 280
+const SIZE = 280;
 
 export function ScanReticle({ processing, successZoom, className }: ScanReticleProps) {
   return (
     <div
-      className={cn("pointer-events-none absolute inset-0 flex items-center justify-center", className)}
+      className={cn(
+        "pointer-events-none absolute inset-0 flex items-center justify-center",
+        className,
+      )}
       aria-hidden
     >
       <motion.div
@@ -47,7 +50,7 @@ export function ScanReticle({ processing, successZoom, className }: ScanReticleP
         <ReticleCorner className="bottom-0 right-0 border-b-2 border-r-2" />
       </motion.div>
     </div>
-  )
+  );
 }
 
 function ReticleCorner({ className }: { className: string }) {
@@ -58,5 +61,5 @@ function ReticleCorner({ className }: { className: string }) {
         className,
       )}
     />
-  )
+  );
 }

@@ -1,28 +1,28 @@
-import { Sparkles, QrCode, Megaphone, CheckCircle2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Sparkles, QrCode, Megaphone, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type Step = 'brand' | 'reward' | 'finish'
+type Step = "brand" | "reward" | "finish";
 
 const STEPS: Array<{ key: Step; icon: typeof Sparkles; label: string }> = [
-  { key: 'brand', icon: Sparkles, label: 'Marca' },
-  { key: 'reward', icon: QrCode, label: 'Recompensa' },
-  { key: 'finish', icon: Megaphone, label: 'Compartir' },
-]
+  { key: "brand", icon: Sparkles, label: "Marca" },
+  { key: "reward", icon: QrCode, label: "Recompensa" },
+  { key: "finish", icon: Megaphone, label: "Compartir" },
+];
 
 interface StepIndicatorProps {
-  current: Step
+  current: Step;
 }
 
 export function StepIndicator({ current }: StepIndicatorProps) {
-  const currentIdx = STEPS.findIndex((s) => s.key === current)
+  const currentIdx = STEPS.findIndex((s) => s.key === current);
 
   return (
     <nav aria-label="Progreso del onboarding" className="mt-10">
       <ol className="flex items-start justify-center">
         {STEPS.map((step, i) => {
-          const Icon = step.icon
-          const isDone = i < currentIdx
-          const isActive = i === currentIdx
+          const Icon = step.icon;
+          const isDone = i < currentIdx;
+          const isActive = i === currentIdx;
 
           return (
             <li key={step.key} className="flex items-start">
@@ -30,22 +30,23 @@ export function StepIndicator({ current }: StepIndicatorProps) {
                 <div
                   aria-hidden
                   className={cn(
-                    'mt-6 h-0.5 w-10 sm:w-16',
-                    i <= currentIdx ? 'bg-[var(--color-ink)]' : 'bg-[var(--border)]',
+                    "mt-6 h-0.5 w-10 sm:w-16",
+                    i <= currentIdx ? "bg-[var(--color-ink)]" : "bg-[var(--border)]",
                   )}
                 />
               )}
               <div className="flex flex-col items-center gap-2 px-1">
                 <div
                   className={cn(
-                    'relative grid h-12 w-12 place-items-center rounded-full border-2 transition-all duration-300',
-                    isDone && 'border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-cream)]',
+                    "relative grid h-12 w-12 place-items-center rounded-full border-2 transition-all duration-300",
+                    isDone &&
+                      "border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-cream)]",
                     isActive &&
-                      'border-[var(--color-signal)] bg-[var(--color-cream)] text-[var(--color-ink)] shadow-[var(--shadow-soft)]',
+                      "border-[var(--color-signal)] bg-[var(--color-cream)] text-[var(--color-ink)] shadow-[var(--shadow-soft)]",
                     !isDone &&
                       !isActive &&
-                      'border-[var(--border)] bg-[var(--surface)] text-[color:var(--color-ink-soft)]',
-                    isActive && 'animate-[step-dot-pulse_2.4s_ease-in-out_infinite]',
+                      "border-[var(--border)] bg-[var(--surface)] text-[color:var(--color-ink-soft)]",
+                    isActive && "animate-[step-dot-pulse_2.4s_ease-in-out_infinite]",
                   )}
                 >
                   {isDone ? (
@@ -62,15 +63,17 @@ export function StepIndicator({ current }: StepIndicatorProps) {
                 </div>
                 <span
                   className={cn(
-                    'text-xs font-medium',
-                    isActive ? 'text-[color:var(--color-ink)]' : 'text-[color:var(--color-ink-soft)]',
+                    "text-xs font-medium",
+                    isActive
+                      ? "text-[color:var(--color-ink)]"
+                      : "text-[color:var(--color-ink-soft)]",
                   )}
                 >
                   {step.label}
                 </span>
               </div>
             </li>
-          )
+          );
         })}
       </ol>
       <style>{`
@@ -80,8 +83,8 @@ export function StepIndicator({ current }: StepIndicatorProps) {
         }
       `}</style>
     </nav>
-  )
+  );
 }
 
-export { STEPS as ONBOARDING_STEPS }
-export type { Step as OnboardingStep }
+export { STEPS as ONBOARDING_STEPS };
+export type { Step as OnboardingStep };

@@ -1,40 +1,40 @@
-import { useEffect, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
-import { Textarea } from '@/components/ui/textarea'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { businessesApi } from '@/lib/api/businesses'
-import { loadBusinessProfileExtras } from '@/lib/business-profile-storage'
-import { ApiError } from '@/lib/api-client'
-import { LoyaltyCardPreview } from './LoyaltyCardPreview'
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { businessesApi } from "@/lib/api/businesses";
+import { loadBusinessProfileExtras } from "@/lib/business-profile-storage";
+import { ApiError } from "@/lib/api-client";
+import { LoyaltyCardPreview } from "./LoyaltyCardPreview";
 
 interface LoyaltySettingsTabProps {
-  businessId: string
-  businessName: string
+  businessId: string;
+  businessName: string;
 }
 
 export function LoyaltySettingsTab({ businessId, businessName }: LoyaltySettingsTabProps) {
-  const qc = useQueryClient()
-  const extras = loadBusinessProfileExtras(businessId)
+  const qc = useQueryClient();
+  const extras = loadBusinessProfileExtras(businessId);
 
   const config = useQuery({
-    queryKey: ['business', businessId, 'loyalty-config'],
+    queryKey: ["business", businessId, "loyalty-config"],
     queryFn: () => businessesApi.getLoyaltyConfig(businessId),
-  })
+  });
 
-  const [stampsRequired, setStampsRequired] = useState(10)
-  const [rewardDescription, setRewardDescription] = useState('')
+  const [stampsRequired, setStampsRequired] = useState(10);
+  const [rewardDescription, setRewardDescription] = useState("");
 
   useEffect(() => {
     if (config.data?.loyaltyConfig) {
-      setStampsRequired(config.data.loyaltyConfig.stamps_required)
-      setRewardDescription(config.data.loyaltyConfig.reward_description)
+      setStampsRequired(config.data.loyaltyConfig.stamps_required);
+      setRewardDescription(config.data.loyaltyConfig.reward_description);
     }
-  }, [config.data])
+  }, [config.data]);
 
   const save = useMutation({
     mutationFn: () =>
@@ -43,18 +43,18 @@ export function LoyaltySettingsTab({ businessId, businessName }: LoyaltySettings
         rewardDescription: rewardDescription.trim(),
       }),
     onSuccess: () => {
-      toast.success('Programa de lealtad actualizado')
-      qc.invalidateQueries({ queryKey: ['business', businessId, 'loyalty-config'] })
+      toast.success("Programa de lealtad actualizado");
+      qc.invalidateQueries({ queryKey: ["business", businessId, "loyalty-config"] });
     },
     onError: (e: ApiError) => toast.error(e.message),
-  })
+  });
 
   if (config.isLoading) {
     return (
       <div className="flex justify-center py-16">
         <Loader2 className="h-6 w-6 animate-spin text-[color:var(--color-ink-soft)]" />
       </div>
-    )
+    );
   }
 
   return (
@@ -76,7 +76,9 @@ export function LoyaltySettingsTab({ businessId, businessName }: LoyaltySettings
           <div>
             <div className="flex items-baseline justify-between">
               <Label>Sellos requeridos</Label>
-              <span className="font-display text-2xl font-semibold tabular-nums">{stampsRequired}</span>
+              <span className="font-display text-2xl font-semibold tabular-nums">
+                {stampsRequired}
+              </span>
             </div>
             <Slider
               className="mt-4"
@@ -108,8 +110,12 @@ export function LoyaltySettingsTab({ businessId, businessName }: LoyaltySettings
           </div>
         </div>
 
-        <Button className="mt-6" onClick={() => save.mutate()} disabled={save.isPending || !rewardDescription.trim()}>
-          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Guardar programa'}
+        <Button
+          className="mt-6"
+          onClick={() => save.mutate()}
+          disabled={save.isPending || !rewardDescription.trim()}
+        >
+          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar programa"}
         </Button>
       </section>
 
@@ -126,5 +132,5 @@ export function LoyaltySettingsTab({ businessId, businessName }: LoyaltySettings
         />
       </div>
     </div>
-  )
+  );
 }

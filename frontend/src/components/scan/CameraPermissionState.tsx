@@ -1,9 +1,9 @@
-import { Camera } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { IsoScene } from "@/components/ui/iso-scene"
+import { Camera } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { IsoScene } from "@/components/ui/iso-scene";
 
 interface CameraPermissionStateProps {
-  onActivate: () => void
+  onActivate: () => void;
 }
 
 export function CameraPermissionState({ onActivate }: CameraPermissionStateProps) {
@@ -25,7 +25,7 @@ export function CameraPermissionState({ onActivate }: CameraPermissionStateProps
     >
       <ScannerSceneGlyph />
     </IsoScene>
-  )
+  );
 }
 
 function ScannerSceneGlyph() {
@@ -33,10 +33,19 @@ function ScannerSceneGlyph() {
     <svg width="140" height="108" viewBox="0 0 140 108" fill="none" aria-hidden>
       <rect x="20" y="28" width="100" height="64" rx="12" fill="#C8A89A" opacity="0.2" />
       <rect x="20" y="28" width="100" height="64" rx="12" stroke="#C8A89A" strokeWidth="2" />
-      <rect x="48" y="44" width="44" height="44" rx="6" stroke="#F5C518" strokeWidth="2" strokeDasharray="6 4" />
+      <rect
+        x="48"
+        y="44"
+        width="44"
+        height="44"
+        rx="6"
+        stroke="#F5C518"
+        strokeWidth="2"
+        strokeDasharray="6 4"
+      />
       <circle cx="70" cy="66" r="6" fill="#F5C518" opacity="0.6" />
       <path d="M34 88 L70 72 L106 88" stroke="#C8A89A" strokeWidth="2" strokeLinecap="round" />
       <rect x="58" y="12" width="24" height="12" rx="4" fill="#C8A89A" opacity="0.35" />
     </svg>
-  )
+  );
 }

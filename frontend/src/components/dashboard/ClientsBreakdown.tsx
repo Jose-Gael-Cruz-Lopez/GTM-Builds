@@ -27,9 +27,7 @@ export function ClientsBreakdown({ data, isLoading }: ClientsBreakdownProps) {
     return (
       <div className="card p-5">
         <h3 className="font-display font-semibold">Tus clientes</h3>
-        <div className="mt-4 grid h-64 place-items-center text-sm muted-text">
-          Sin datos
-        </div>
+        <div className="mt-4 grid h-64 place-items-center text-sm muted-text">Sin datos</div>
       </div>
     );
   }
@@ -103,9 +101,7 @@ export function ClientsBreakdown({ data, isLoading }: ClientsBreakdownProps) {
                 />
                 <span className="flex-1">{slice.label}</span>
                 <span className="font-semibold tabular-nums">{slice.value}</span>
-                <span className="w-10 text-right text-xs muted-text tabular-nums">
-                  {pct}%
-                </span>
+                <span className="w-10 text-right text-xs muted-text tabular-nums">{pct}%</span>
               </li>
             );
           })}

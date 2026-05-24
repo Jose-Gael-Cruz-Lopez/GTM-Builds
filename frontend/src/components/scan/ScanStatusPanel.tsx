@@ -1,29 +1,29 @@
-import { AlertCircle, CheckCircle2, Clock, Loader2, WifiOff } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { RewardParticles } from "./RewardParticles"
+import { AlertCircle, CheckCircle2, Clock, Loader2, WifiOff } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { RewardParticles } from "./RewardParticles";
 
 export type ScanStatus =
   | { kind: "idle" }
   | { kind: "validating" }
   | {
-      kind: "success-stamp"
-      clientFirstName: string
-      stampsRemaining: number
+      kind: "success-stamp";
+      clientFirstName: string;
+      stampsRemaining: number;
     }
   | { kind: "success-reward"; rewardDescription: string }
   | { kind: "error-expired" }
   | { kind: "error-used" }
   | { kind: "error-invalid-key"; message?: string }
   | { kind: "error-camera" }
-  | { kind: "offline-queued"; count?: number }
+  | { kind: "offline-queued"; count?: number };
 
 interface ScanStatusPanelProps {
-  status: ScanStatus
-  className?: string
+  status: ScanStatus;
+  className?: string;
 }
 
 export function ScanStatusPanel({ status, className }: ScanStatusPanelProps) {
-  const liveMessage = statusToLiveMessage(status)
+  const liveMessage = statusToLiveMessage(status);
 
   return (
     <section
@@ -37,7 +37,7 @@ export function ScanStatusPanel({ status, className }: ScanStatusPanelProps) {
       <span className="sr-only">{liveMessage}</span>
       <StatusContent status={status} />
     </section>
-  )
+  );
 }
 
 function StatusContent({ status }: { status: ScanStatus }) {
@@ -49,7 +49,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
             Listo para escanear · Acerca el QR del cliente.
           </p>
         </StatusRow>
-      )
+      );
 
     case "validating":
       return (
@@ -59,7 +59,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
             <p className="text-sm text-[color:var(--color-cream)]/80">Validando código...</p>
           </div>
         </StatusRow>
-      )
+      );
 
     case "success-stamp":
       return (
@@ -74,7 +74,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
             {status.stampsRemaining} sellos para la recompensa.
           </p>
         </StatusRow>
-      )
+      );
 
     case "success-reward":
       return (
@@ -88,7 +88,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
             }
           />
         </div>
-      )
+      );
 
     case "error-expired":
       return (
@@ -99,7 +99,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
             </Chip>
           }
         />
-      )
+      );
 
     case "error-used":
       return (
@@ -110,7 +110,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
             </Chip>
           }
         />
-      )
+      );
 
     case "error-invalid-key":
       return (
@@ -121,7 +121,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
             </Chip>
           }
         />
-      )
+      );
 
     case "error-camera":
       return (
@@ -132,7 +132,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
             </Chip>
           }
         />
-      )
+      );
 
     case "offline-queued":
       return (
@@ -148,35 +148,29 @@ function StatusContent({ status }: { status: ScanStatus }) {
             Se registrará automáticamente al reconectar.
           </p>
         </StatusRow>
-      )
+      );
   }
 }
 
-function StatusRow({
-  chip,
-  children,
-}: {
-  chip: React.ReactNode
-  children?: React.ReactNode
-}) {
+function StatusRow({ chip, children }: { chip: React.ReactNode; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
       {chip}
       {children}
     </div>
-  )
+  );
 }
 
-type ChipTone = "neutral" | "signal" | "good" | "celebrate" | "warn" | "risk"
+type ChipTone = "neutral" | "signal" | "good" | "celebrate" | "warn" | "risk";
 
 function Chip({
   tone,
   icon,
   children,
 }: {
-  tone: ChipTone
-  icon?: React.ReactNode
-  children: React.ReactNode
+  tone: ChipTone;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
 }) {
   const tones: Record<ChipTone, string> = {
     neutral: "bg-white/8 text-[color:var(--color-cream)]",
@@ -185,7 +179,7 @@ function Chip({
     celebrate: "bg-[color:var(--color-celebrate)]/15 text-[color:var(--color-celebrate)]",
     warn: "bg-[color:var(--color-status-warn)]/15 text-[color:var(--color-status-warn)]",
     risk: "bg-[color:var(--color-status-risk)]/15 text-[color:var(--color-status-risk)]",
-  }
+  };
 
   return (
     <span
@@ -200,7 +194,7 @@ function Chip({
         <Loader2 className="h-4 w-4 shrink-0 animate-spin opacity-80" aria-hidden />
       )}
     </span>
-  )
+  );
 }
 
 function FourDotLoader() {
@@ -214,28 +208,28 @@ function FourDotLoader() {
         />
       ))}
     </span>
-  )
+  );
 }
 
 function statusToLiveMessage(status: ScanStatus): string {
   switch (status.kind) {
     case "idle":
-      return "Listo para escanear. Acerca el QR del cliente."
+      return "Listo para escanear. Acerca el QR del cliente.";
     case "validating":
-      return "Validando código."
+      return "Validando código.";
     case "success-stamp":
-      return `Sello agregado a ${status.clientFirstName}. ${status.stampsRemaining} sellos para la recompensa.`
+      return `Sello agregado a ${status.clientFirstName}. ${status.stampsRemaining} sellos para la recompensa.`;
     case "success-reward":
-      return `Recompensa lista. Entrega: ${status.rewardDescription}.`
+      return `Recompensa lista. Entrega: ${status.rewardDescription}.`;
     case "error-expired":
-      return "Código expirado. Pide al cliente generar uno nuevo."
+      return "Código expirado. Pide al cliente generar uno nuevo.";
     case "error-used":
-      return "Este código ya fue usado."
+      return "Este código ya fue usado.";
     case "error-invalid-key":
-      return status.message ?? "Llave de staff inválida."
+      return status.message ?? "Llave de staff inválida.";
     case "error-camera":
-      return "Permiso de cámara denegado."
+      return "Permiso de cámara denegado.";
     case "offline-queued":
-      return "Sin conexión. Visita en cola."
+      return "Sin conexión. Visita en cola.";
   }
 }

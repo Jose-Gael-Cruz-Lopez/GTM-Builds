@@ -1,44 +1,47 @@
-import { useMemo, useState } from 'react'
-import type { PeakHoursResponse } from '@/lib/api/analytics'
-import { cn } from '@/lib/utils'
-import { AnalyticsCardSkeleton, AnalyticsEmptyState } from '@/components/dashboard/AnalyticsEmptyState'
+import { useMemo, useState } from "react";
+import type { PeakHoursResponse } from "@/lib/api/analytics";
+import { cn } from "@/lib/utils";
+import {
+  AnalyticsCardSkeleton,
+  AnalyticsEmptyState,
+} from "@/components/dashboard/AnalyticsEmptyState";
 
 export interface PeakHoursHeatmapProps {
-  data?: PeakHoursResponse
-  isLoading: boolean
-  isError?: boolean
+  data?: PeakHoursResponse;
+  isLoading: boolean;
+  isError?: boolean;
 }
 
 const DAY_ES: Record<string, string> = {
-  Sun: 'Domingo',
-  Mon: 'Lunes',
-  Tue: 'Martes',
-  Wed: 'Miércoles',
-  Thu: 'Jueves',
-  Fri: 'Viernes',
-  Sat: 'Sábado',
-}
+  Sun: "Domingo",
+  Mon: "Lunes",
+  Tue: "Martes",
+  Wed: "Miércoles",
+  Thu: "Jueves",
+  Fri: "Viernes",
+  Sat: "Sábado",
+};
 
 function cellIntensity(count: number, max: number): number {
-  if (max === 0 || count === 0) return 0
-  return 0.15 + (count / max) * 0.85
+  if (max === 0 || count === 0) return 0;
+  return 0.15 + (count / max) * 0.85;
 }
 
 export function PeakHoursHeatmap({ data, isLoading, isError }: PeakHoursHeatmapProps) {
-  const [tooltip, setTooltip] = useState<string | null>(null)
+  const [tooltip, setTooltip] = useState<string | null>(null);
 
   const { max, grid } = useMemo(() => {
-    if (!data) return { max: 0, grid: [] as number[][] }
-    let peak = 0
+    if (!data) return { max: 0, grid: [] as number[][] };
+    let peak = 0;
     data.grid.forEach((row) =>
       row.forEach((c) => {
-        if (c > peak) peak = c
+        if (c > peak) peak = c;
       }),
-    )
-    return { max: peak, grid: data.grid }
-  }, [data])
+    );
+    return { max: peak, grid: data.grid };
+  }, [data]);
 
-  if (isLoading) return <AnalyticsCardSkeleton />
+  if (isLoading) return <AnalyticsCardSkeleton />;
 
   if (isError || !data || data.totalVisitsAnalyzed === 0) {
     return (
@@ -46,7 +49,7 @@ export function PeakHoursHeatmap({ data, isLoading, isError }: PeakHoursHeatmapP
         <h3 className="font-display font-semibold">Horas pico</h3>
         <AnalyticsEmptyState className="mt-4 border-0 bg-transparent py-8" />
       </div>
-    )
+    );
   }
 
   return (
@@ -67,11 +70,11 @@ export function PeakHoursHeatmap({ data, isLoading, isError }: PeakHoursHeatmapP
               <div
                 key={hour}
                 className={cn(
-                  'text-center text-[9px] text-[color:var(--color-ink-soft)]',
-                  i % 3 !== 0 && 'opacity-0 sm:opacity-100',
+                  "text-center text-[9px] text-[color:var(--color-ink-soft)]",
+                  i % 3 !== 0 && "opacity-0 sm:opacity-100",
                 )}
               >
-                {i % 3 === 0 ? hour.replace('am', '').replace('pm', '') : ''}
+                {i % 3 === 0 ? hour.replace("am", "").replace("pm", "") : ""}
               </div>
             ))}
           </div>
@@ -85,10 +88,10 @@ export function PeakHoursHeatmap({ data, isLoading, isError }: PeakHoursHeatmapP
                 {data.dayLabels[dayIdx]?.slice(0, 3)}
               </div>
               {row.map((count, hourIdx) => {
-                const intensity = cellIntensity(count, max)
-                const dayLabel = DAY_ES[data.dayLabels[dayIdx] ?? ''] ?? data.dayLabels[dayIdx]
-                const hourLabel = data.hourLabels[hourIdx]
-                const tip = `${dayLabel} ${hourLabel} · ${count} visitas`
+                const intensity = cellIntensity(count, max);
+                const dayLabel = DAY_ES[data.dayLabels[dayIdx] ?? ""] ?? data.dayLabels[dayIdx];
+                const hourLabel = data.hourLabels[hourIdx];
+                const tip = `${dayLabel} ${hourLabel} · ${count} visitas`;
 
                 return (
                   <button
@@ -98,7 +101,7 @@ export function PeakHoursHeatmap({ data, isLoading, isError }: PeakHoursHeatmapP
                     style={{
                       background:
                         count === 0
-                          ? 'color-mix(in srgb, var(--color-ink) 6%, var(--color-cream))'
+                          ? "color-mix(in srgb, var(--color-ink) 6%, var(--color-cream))"
                           : `color-mix(in srgb, var(--color-health) ${Math.round(intensity * 100)}%, var(--color-ink))`,
                     }}
                     aria-label={tip}
@@ -107,47 +110,47 @@ export function PeakHoursHeatmap({ data, isLoading, isError }: PeakHoursHeatmapP
                     onFocus={() => setTooltip(tip)}
                     onBlur={() => setTooltip(null)}
                   />
-                )
+                );
               })}
             </div>
           ))}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function buildPeakInsight(data: PeakHoursResponse): string {
   if (data.totalVisitsAnalyzed === 0) {
-    return 'Comparte tu enlace con clientes para descubrir cuándo te visitan más.'
+    return "Comparte tu enlace con clientes para descubrir cuándo te visitan más.";
   }
 
-  const dayIdx = data.dayLabels.indexOf(data.peak.day)
-  const hourIdx = data.hourLabels.indexOf(data.peak.hour)
+  const dayIdx = data.dayLabels.indexOf(data.peak.day);
+  const hourIdx = data.hourLabels.indexOf(data.peak.hour);
   if (dayIdx < 0 || hourIdx < 0) {
-    return `Tu hora más activa es ${data.peak.hour} los ${DAY_ES[data.peak.day] ?? data.peak.day}.`
+    return `Tu hora más activa es ${data.peak.hour} los ${DAY_ES[data.peak.day] ?? data.peak.day}.`;
   }
 
-  const windowHours = [hourIdx - 1, hourIdx, hourIdx + 1].filter((h) => h >= 0 && h < 24)
-  let windowVisits = 0
+  const windowHours = [hourIdx - 1, hourIdx, hourIdx + 1].filter((h) => h >= 0 && h < 24);
+  let windowVisits = 0;
   windowHours.forEach((h) => {
-    windowVisits += data.grid[dayIdx]?.[h] ?? 0
-  })
+    windowVisits += data.grid[dayIdx]?.[h] ?? 0;
+  });
 
-  const pct = Math.round((windowVisits / data.totalVisitsAnalyzed) * 100)
-  const dayEs = (DAY_ES[data.peak.day] ?? data.peak.day).toLowerCase()
-  const startHour = windowHours[0] ?? hourIdx
-  const endHour = (windowHours[windowHours.length - 1] ?? hourIdx) + 1
+  const pct = Math.round((windowVisits / data.totalVisitsAnalyzed) * 100);
+  const dayEs = (DAY_ES[data.peak.day] ?? data.peak.day).toLowerCase();
+  const startHour = windowHours[0] ?? hourIdx;
+  const endHour = (windowHours[windowHours.length - 1] ?? hourIdx) + 1;
 
-  return `Los ${dayEs} entre ${formatHourRange(startHour, endHour)} representan el ${pct}% de tus visitas.`
+  return `Los ${dayEs} entre ${formatHourRange(startHour, endHour)} representan el ${pct}% de tus visitas.`;
 }
 
 function formatHourRange(start: number, end: number): string {
   const fmt = (h: number) => {
-    if (h === 0) return '12 am'
-    if (h < 12) return `${h} am`
-    if (h === 12) return '12 pm'
-    return `${h - 12} pm`
-  }
-  return `${fmt(start)} y ${fmt(end)}`
+    if (h === 0) return "12 am";
+    if (h < 12) return `${h} am`;
+    if (h === 12) return "12 pm";
+    return `${h - 12} pm`;
+  };
+  return `${fmt(start)} y ${fmt(end)}`;
 }

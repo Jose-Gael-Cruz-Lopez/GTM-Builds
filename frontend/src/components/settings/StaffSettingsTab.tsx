@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { formatDistanceToNow, format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { KeyRound, Loader2, Plus, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNow, format } from "date-fns";
+import { es } from "date-fns/locale";
+import { KeyRound, Loader2, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,44 +22,44 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
-import { businessesApi, type StaffKeySummary } from '@/lib/api/businesses'
-import { getStaffKeySuffix } from '@/lib/business-profile-storage'
-import { ApiError } from '@/lib/api-client'
-import { CreateStaffKeyDialog } from './CreateStaffKeyDialog'
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { businessesApi, type StaffKeySummary } from "@/lib/api/businesses";
+import { getStaffKeySuffix } from "@/lib/business-profile-storage";
+import { ApiError } from "@/lib/api-client";
+import { CreateStaffKeyDialog } from "./CreateStaffKeyDialog";
 
 interface StaffSettingsTabProps {
-  businessId: string
+  businessId: string;
 }
 
 function formatWhen(iso: string | null): string {
-  if (!iso) return 'Nunca'
-  const d = new Date(iso)
-  return `${format(d, 'd MMM yyyy', { locale: es })} · ${formatDistanceToNow(d, { addSuffix: true, locale: es })}`
+  if (!iso) return "Nunca";
+  const d = new Date(iso);
+  return `${format(d, "d MMM yyyy", { locale: es })} · ${formatDistanceToNow(d, { addSuffix: true, locale: es })}`;
 }
 
 export function StaffSettingsTab({ businessId }: StaffSettingsTabProps) {
-  const qc = useQueryClient()
-  const [createOpen, setCreateOpen] = useState(false)
-  const [revokeTarget, setRevokeTarget] = useState<StaffKeySummary | null>(null)
+  const qc = useQueryClient();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<StaffKeySummary | null>(null);
 
   const keys = useQuery({
-    queryKey: ['business', businessId, 'staff-keys'],
+    queryKey: ["business", businessId, "staff-keys"],
     queryFn: () => businessesApi.listStaffKeys(businessId),
-  })
+  });
 
   const revoke = useMutation({
     mutationFn: (keyId: string) => businessesApi.deleteStaffKey(businessId, keyId),
     onSuccess: () => {
-      toast.success('Clave revocada')
-      qc.invalidateQueries({ queryKey: ['business', businessId, 'staff-keys'] })
-      setRevokeTarget(null)
+      toast.success("Clave revocada");
+      qc.invalidateQueries({ queryKey: ["business", businessId, "staff-keys"] });
+      setRevokeTarget(null);
     },
     onError: (e: ApiError) => toast.error(e.message),
-  })
+  });
 
-  const rows = keys.data?.staffKeys ?? []
+  const rows = keys.data?.staffKeys ?? [];
 
   return (
     <section className="surface-paper p-6">
@@ -101,12 +101,12 @@ export function StaffSettingsTab({ businessId }: StaffSettingsTabProps) {
             </TableHeader>
             <TableBody>
               {rows.map((row) => {
-                const suffix = getStaffKeySuffix(row.id)
+                const suffix = getStaffKeySuffix(row.id);
                 return (
                   <TableRow key={row.id}>
                     <TableCell className="font-medium">{row.label}</TableCell>
                     <TableCell className="font-mono text-xs">
-                      {suffix ? `••••${suffix}` : '••••••••'}
+                      {suffix ? `••••${suffix}` : "••••••••"}
                     </TableCell>
                     <TableCell className="text-sm text-[color:var(--color-ink-soft)]">
                       {formatWhen(row.created_at)}
@@ -115,8 +115,8 @@ export function StaffSettingsTab({ businessId }: StaffSettingsTabProps) {
                       {formatWhen(row.last_used_at)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={row.is_active ? 'default' : 'secondary'}>
-                        {row.is_active ? 'Activa' : 'Revocada'}
+                      <Badge variant={row.is_active ? "default" : "secondary"}>
+                        {row.is_active ? "Activa" : "Revocada"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -132,7 +132,7 @@ export function StaffSettingsTab({ businessId }: StaffSettingsTabProps) {
                       ) : null}
                     </TableCell>
                   </TableRow>
-                )
+                );
               })}
             </TableBody>
           </Table>
@@ -143,7 +143,7 @@ export function StaffSettingsTab({ businessId }: StaffSettingsTabProps) {
         businessId={businessId}
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={() => qc.invalidateQueries({ queryKey: ['business', businessId, 'staff-keys'] })}
+        onCreated={() => qc.invalidateQueries({ queryKey: ["business", businessId, "staff-keys"] })}
       />
 
       <AlertDialog open={!!revokeTarget} onOpenChange={(o) => !o && setRevokeTarget(null)}>
@@ -151,7 +151,8 @@ export function StaffSettingsTab({ businessId }: StaffSettingsTabProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Revocar esta clave?</AlertDialogTitle>
             <AlertDialogDescription>
-              El dispositivo &quot;{revokeTarget?.label}&quot; dejará de poder registrar visitas de inmediato.
+              El dispositivo &quot;{revokeTarget?.label}&quot; dejará de poder registrar visitas de
+              inmediato.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -167,5 +168,5 @@ export function StaffSettingsTab({ businessId }: StaffSettingsTabProps) {
         </AlertDialogContent>
       </AlertDialog>
     </section>
-  )
+  );
 }

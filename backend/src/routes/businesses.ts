@@ -98,19 +98,45 @@ businessRoutes.patch('/:id', requireAdmin(), async (c) => {
   const id = c.req.param('id')
   const body = await c.req.json<{
     name?: string
+    category?: BusinessCategory
     isActive?: boolean
     plan?: 'free' | 'pro'
+    tagline?: string
+    logoUrl?: string
+    logo_url?: string
+    primaryColor?: string
+    primary_color?: string
+    address?: string
+    phone?: string
   }>().catch(() => null)
 
   if (!body || Object.keys(body).length === 0) {
     return c.json(err('VALIDATION_ERROR', 'At least one field to update is required'), 400)
   }
 
+  if (body.category !== undefined) {
+    const validCategories: BusinessCategory[] = ['barbershop', 'salon', 'vet', 'cafe', 'gym', 'other']
+    if (!validCategories.includes(body.category)) {
+      return c.json(
+        err('VALIDATION_ERROR', `category must be one of: ${validCategories.join(', ')}`),
+        400,
+      )
+    }
+  }
+
   const db = createSupabaseClient(c.env, 'service')
   const updates: Record<string, unknown> = {}
   if (body.name !== undefined) updates.name = body.name
+  if (body.category !== undefined) updates.category = body.category
   if (body.isActive !== undefined) updates.is_active = body.isActive
   if (body.plan !== undefined) updates.plan = body.plan
+  if (body.tagline !== undefined) updates.tagline = body.tagline
+  const logoUrl = body.logoUrl ?? body.logo_url
+  if (logoUrl !== undefined) updates.logo_url = logoUrl
+  const primaryColor = body.primaryColor ?? body.primary_color
+  if (primaryColor !== undefined) updates.primary_color = primaryColor
+  if (body.address !== undefined) updates.address = body.address
+  if (body.phone !== undefined) updates.phone = body.phone
 
   try {
     const [updated] = await db.patch('businesses', updates, [
@@ -290,6 +316,99 @@ businessRoutes.delete('/:id/staff-keys/:keyId', requireAdmin(), async (c) => {
     }
 
     return c.json(ok({ deactivated: true, keyId }), 200)
+  } catch (error) {
+    if (error instanceof SupabaseError) {
+      const mapped = mapSupabaseError(error)
+      return c.json(err(mapped.code, mapped.message), mapped.status)
+    }
+    throw error
+  }
+})
+
+// ─── GET /businesses/:id/rewards ─────────────────────────────────────────────
+// Admin list of loyalty rewards unlocked for clients.
+
+businessRoutes.get('/:id/rewards', requireAdmin(), rateLimit({ keyPrefix: 'rewards-list' }), async (c) => {
+  const businessId = c.req.param('id')
+  const url = new URL(c.req.url)
+  const redeemedParam = url.searchParams.get('redeemed')
+  const limit = Math.min(100, parseInt(url.searchParams.get('limit') ?? '50', 10))
+  const offset = parseInt(url.searchParams.get('offset') ?? '0', 10)
+
+  const db = createSupabaseClient(c.env, 'service')
+
+  const filters: NonNullable<Parameters<typeof db.get>[1]>['filters'] = [
+    { column: 'business_id', operator: 'eq', value: businessId },
+  ]
+  if (redeemedParam === 'true') {
+    filters.push({ column: 'redeemed', operator: 'eq', value: true })
+  } else if (redeemedParam === 'false') {
+    filters.push({ column: 'redeemed', operator: 'eq', value: false })
+  }
+
+  const rewards = await db.get('rewards', {
+    filters,
+    order: 'created_at.desc',
+    limit,
+    offset,
+  })
+
+  const clientIds = [...new Set(rewards.map((r) => r.client_id))]
+  const clients = clientIds.length > 0
+    ? await Promise.all(
+        clientIds.map((cid) =>
+          db.getOne('clients', { filters: [{ column: 'id', operator: 'eq', value: cid }] }),
+        ),
+      )
+    : []
+  const clientMap = Object.fromEntries(clientIds.map((cid, i) => [cid, clients[i]]))
+
+  const items = rewards.map((reward) => {
+    const client = clientMap[reward.client_id]
+    return {
+      id: reward.id,
+      clientId: reward.client_id,
+      clientName: client?.full_name ?? 'Cliente',
+      description: reward.description,
+      redeemed: reward.redeemed,
+      redeemedAt: reward.redeemed_at,
+      createdAt: reward.created_at,
+      visitId: reward.visit_id,
+    }
+  })
+
+  return c.json(ok({ rewards: items, count: items.length }), 200)
+})
+
+// ─── PATCH /businesses/:id/rewards/:rewardId ─────────────────────────────────
+// Mark a reward as redeemed at the counter.
+
+businessRoutes.patch('/:id/rewards/:rewardId', requireAdmin(), async (c) => {
+  const businessId = c.req.param('id')
+  const rewardId = c.req.param('rewardId')
+  const body = await c.req.json<{ redeemed?: boolean }>().catch(() => null)
+
+  if (body?.redeemed !== true) {
+    return c.json(err('VALIDATION_ERROR', 'redeemed: true is required'), 400)
+  }
+
+  const db = createSupabaseClient(c.env, 'service')
+
+  try {
+    const [updated] = await db.patch(
+      'rewards',
+      { redeemed: true, redeemed_at: new Date().toISOString() },
+      [
+        { column: 'id', operator: 'eq', value: rewardId },
+        { column: 'business_id', operator: 'eq', value: businessId },
+      ],
+    )
+
+    if (!updated) {
+      return c.json(err('NOT_FOUND', 'Reward not found'), 404)
+    }
+
+    return c.json(ok({ reward: updated }), 200)
   } catch (error) {
     if (error instanceof SupabaseError) {
       const mapped = mapSupabaseError(error)

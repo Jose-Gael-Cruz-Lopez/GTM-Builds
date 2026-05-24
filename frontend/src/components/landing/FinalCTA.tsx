@@ -22,14 +22,12 @@ export function FinalCTA() {
         />
 
         <div className="relative">
-
-
           <h2 className="mx-auto mt-6 max-w-3xl font-display text-3xl font-semibold tracking-tight text-primary-foreground sm:text-5xl">
             Tu próximo cliente frecuente está a un escaneo de distancia.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-primary-foreground/85">
-            Crea tu programa de lealtad digital en menos de 5 minutos y empieza
-            a recibir clientes recurrentes esta misma semana.
+            Crea tu programa de lealtad digital en menos de 5 minutos y empieza a recibir clientes
+            recurrentes esta misma semana.
           </p>
 
           <div className="mt-8 flex justify-center">

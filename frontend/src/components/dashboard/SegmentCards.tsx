@@ -1,48 +1,51 @@
-import { ArrowDown, ArrowUp, TrendingUp } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { StatusDot } from '@/components/ui/status-dot'
-import type { ClientsAnalyticsResponse } from '@/lib/api/analytics'
-import { AnalyticsCardSkeleton, AnalyticsEmptyState } from '@/components/dashboard/AnalyticsEmptyState'
+import { ArrowDown, ArrowUp, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { StatusDot } from "@/components/ui/status-dot";
+import type { ClientsAnalyticsResponse } from "@/lib/api/analytics";
+import {
+  AnalyticsCardSkeleton,
+  AnalyticsEmptyState,
+} from "@/components/dashboard/AnalyticsEmptyState";
 
 export interface SegmentCardsProps {
-  businessId: string
-  data?: ClientsAnalyticsResponse
-  isLoading: boolean
-  isError?: boolean
+  businessId: string;
+  data?: ClientsAnalyticsResponse;
+  isLoading: boolean;
+  isError?: boolean;
 }
 
 interface Segment {
-  key: 'active' | 'at_risk' | 'lost'
-  label: string
-  count: number
-  tone: 'good' | 'warn' | 'risk'
-  href: string
-  trend?: 'up' | 'down' | 'flat'
+  key: "active" | "at_risk" | "lost";
+  label: string;
+  count: number;
+  tone: "good" | "warn" | "risk";
+  href: string;
+  trend?: "up" | "down" | "flat";
 }
 
 function pickBreakdown(data: ClientsAnalyticsResponse) {
-  const lookup = new Map<string, number>()
+  const lookup = new Map<string, number>();
   data.breakdown.labels.forEach((label, i) => {
-    lookup.set(label.toLowerCase(), data.breakdown.values[i] ?? 0)
-  })
+    lookup.set(label.toLowerCase(), data.breakdown.values[i] ?? 0);
+  });
 
   const pick = (...keys: string[]) => {
     for (const key of keys) {
-      const v = lookup.get(key)
-      if (typeof v === 'number') return v
+      const v = lookup.get(key);
+      if (typeof v === "number") return v;
     }
-    return 0
-  }
+    return 0;
+  };
 
   return {
-    active: pick('active', 'activos'),
-    atRisk: pick('at_risk', 'at-risk', 'atrisk', 'en riesgo', 'riesgo'),
-    lost: pick('lost', 'perdidos'),
-  }
+    active: pick("active", "activos"),
+    atRisk: pick("at_risk", "at-risk", "atrisk", "en riesgo", "riesgo"),
+    lost: pick("lost", "perdidos"),
+  };
 }
 
 export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCardsProps) {
-  if (isLoading) return <AnalyticsCardSkeleton />
+  if (isLoading) return <AnalyticsCardSkeleton />;
 
   if (isError || !data) {
     return (
@@ -50,38 +53,38 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
         <h3 className="font-display font-semibold">Segmentos de clientes</h3>
         <AnalyticsEmptyState className="mt-4 border-0 bg-transparent py-8" />
       </div>
-    )
+    );
   }
 
-  const { active, atRisk, lost } = pickBreakdown(data)
-  const total = active + atRisk + lost
+  const { active, atRisk, lost } = pickBreakdown(data);
+  const total = active + atRisk + lost;
 
   const segments: Segment[] = [
     {
-      key: 'active',
-      label: 'Activos',
+      key: "active",
+      label: "Activos",
       count: active,
-      tone: 'good',
+      tone: "good",
       href: `/dashboard/${businessId}/clients?status=active`,
-      trend: active >= atRisk ? 'up' : 'flat',
+      trend: active >= atRisk ? "up" : "flat",
     },
     {
-      key: 'at_risk',
-      label: 'En riesgo',
+      key: "at_risk",
+      label: "En riesgo",
       count: atRisk,
-      tone: 'warn',
+      tone: "warn",
       href: `/dashboard/${businessId}/clients?status=at_risk`,
-      trend: atRisk > 0 ? 'down' : 'flat',
+      trend: atRisk > 0 ? "down" : "flat",
     },
     {
-      key: 'lost',
-      label: 'Perdidos',
+      key: "lost",
+      label: "Perdidos",
       count: lost,
-      tone: 'risk',
+      tone: "risk",
       href: `/dashboard/${businessId}/clients?status=lost`,
-      trend: lost > 0 ? 'down' : 'flat',
+      trend: lost > 0 ? "down" : "flat",
     },
-  ]
+  ];
 
   return (
     <div className="surface-paper flex h-full flex-col p-5">
@@ -98,26 +101,26 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
             key={segment.key}
             href={segment.href}
             className={cn(
-              'group flex items-center gap-4 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[var(--color-cream)] p-4 transition-all duration-[var(--duration)] ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]',
+              "group flex items-center gap-4 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[var(--color-cream)] p-4 transition-all duration-[var(--duration)] ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]",
             )}
           >
             <div
               className={cn(
-                'grid h-12 w-12 shrink-0 place-items-center rounded-[var(--radius)]',
-                segment.tone === 'good' &&
-                  'bg-[color-mix(in_srgb,var(--color-status-good)_18%,var(--color-cream))]',
-                segment.tone === 'warn' &&
-                  'bg-[color-mix(in_srgb,var(--color-status-warn)_18%,var(--color-cream))]',
-                segment.tone === 'risk' &&
-                  'bg-[color-mix(in_srgb,var(--color-status-risk)_14%,var(--color-cream))]',
+                "grid h-12 w-12 shrink-0 place-items-center rounded-[var(--radius)]",
+                segment.tone === "good" &&
+                  "bg-[color-mix(in_srgb,var(--color-status-good)_18%,var(--color-cream))]",
+                segment.tone === "warn" &&
+                  "bg-[color-mix(in_srgb,var(--color-status-warn)_18%,var(--color-cream))]",
+                segment.tone === "risk" &&
+                  "bg-[color-mix(in_srgb,var(--color-status-risk)_14%,var(--color-cream))]",
               )}
             >
               <TrendingUp
                 className={cn(
-                  'h-5 w-5',
-                  segment.tone === 'good' && 'text-[color:var(--color-status-good)]',
-                  segment.tone === 'warn' && 'text-[color:var(--color-status-warn)]',
-                  segment.tone === 'risk' && 'text-[color:var(--color-status-risk)]',
+                  "h-5 w-5",
+                  segment.tone === "good" && "text-[color:var(--color-status-good)]",
+                  segment.tone === "warn" && "text-[color:var(--color-status-warn)]",
+                  segment.tone === "risk" && "text-[color:var(--color-status-risk)]",
                 )}
                 aria-hidden
               />
@@ -128,15 +131,13 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
                 <StatusDot tone={segment.tone} />
                 <span className="text-sm font-medium">{segment.label}</span>
               </div>
-              <p className="mt-1 font-display text-2xl font-bold tabular-nums">
-                {segment.count}
-              </p>
+              <p className="mt-1 font-display text-2xl font-bold tabular-nums">{segment.count}</p>
             </div>
 
             <div className="text-[color:var(--color-ink-soft)]">
-              {segment.trend === 'up' ? (
+              {segment.trend === "up" ? (
                 <ArrowUp className="h-4 w-4 text-[color:var(--color-status-good)]" aria-hidden />
-              ) : segment.trend === 'down' ? (
+              ) : segment.trend === "down" ? (
                 <ArrowDown className="h-4 w-4 text-[color:var(--color-status-warn)]" aria-hidden />
               ) : (
                 <span className="text-xs">—</span>
@@ -146,5 +147,5 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
         ))}
       </div>
     </div>
-  )
+  );
 }

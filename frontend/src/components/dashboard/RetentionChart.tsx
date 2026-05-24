@@ -1,23 +1,18 @@
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { RetentionResponse } from "@/lib/api/analytics";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import type { RetentionResponse } from '@/lib/api/analytics'
-import { AnalyticsCardSkeleton, AnalyticsEmptyState } from '@/components/dashboard/AnalyticsEmptyState'
+  AnalyticsCardSkeleton,
+  AnalyticsEmptyState,
+} from "@/components/dashboard/AnalyticsEmptyState";
 
 export interface RetentionChartProps {
-  data?: RetentionResponse
-  isLoading: boolean
-  isError?: boolean
+  data?: RetentionResponse;
+  isLoading: boolean;
+  isError?: boolean;
 }
 
 export function RetentionChart({ data, isLoading, isError }: RetentionChartProps) {
-  if (isLoading) return <AnalyticsCardSkeleton />
+  if (isLoading) return <AnalyticsCardSkeleton />;
 
   if (isError || !data || data.windows.length === 0) {
     return (
@@ -25,14 +20,14 @@ export function RetentionChart({ data, isLoading, isError }: RetentionChartProps
         <h3 className="font-display font-semibold">Retención</h3>
         <AnalyticsEmptyState className="mt-4 border-0 bg-transparent py-8" />
       </div>
-    )
+    );
   }
 
   const chartData = data.windows.map((w) => ({
-    label: w.label.replace('Last ', '').replace(' days', 'd'),
+    label: w.label.replace("Last ", "").replace(" days", "d"),
     rate: w.retentionRate,
     clients: w.clientCount,
-  }))
+  }));
 
   return (
     <div className="surface-paper p-5">
@@ -46,20 +41,16 @@ export function RetentionChart({ data, isLoading, isError }: RetentionChartProps
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-            <CartesianGrid
-              stroke="var(--color-border)"
-              strokeDasharray="3 3"
-              vertical={false}
-            />
+            <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="label"
-              tick={{ fontSize: 11, fill: 'var(--color-ink-soft)' }}
+              tick={{ fontSize: 11, fill: "var(--color-ink-soft)" }}
               tickLine={false}
-              axisLine={{ stroke: 'var(--color-border)' }}
+              axisLine={{ stroke: "var(--color-border)" }}
             />
             <YAxis
               orientation="right"
-              tick={{ fontSize: 11, fill: 'var(--color-ink-soft)' }}
+              tick={{ fontSize: 11, fill: "var(--color-ink-soft)" }}
               tickLine={false}
               axisLine={false}
               unit="%"
@@ -67,16 +58,16 @@ export function RetentionChart({ data, isLoading, isError }: RetentionChartProps
               domain={[0, 100]}
             />
             <Tooltip
-              cursor={{ fill: 'color-mix(in srgb, var(--color-data-blue) 8%, transparent)' }}
+              cursor={{ fill: "color-mix(in srgb, var(--color-data-blue) 8%, transparent)" }}
               contentStyle={{
                 borderRadius: 12,
-                border: '1px solid var(--color-border)',
-                background: 'var(--surface)',
+                border: "1px solid var(--color-border)",
+                background: "var(--surface)",
                 fontSize: 12,
               }}
               formatter={(value: number, _name, item) => [
                 `${value}% (${item.payload.clients} clientes)`,
-                'Retención',
+                "Retención",
               ]}
             />
             <Bar
@@ -89,5 +80,5 @@ export function RetentionChart({ data, isLoading, isError }: RetentionChartProps
         </ResponsiveContainer>
       </div>
     </div>
-  )
+  );
 }

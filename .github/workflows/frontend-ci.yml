@@ -10,6 +10,7 @@ on:
     branches: [main]
     paths:
       - 'frontend/**'
+      - 'backend/**'
       - '.github/workflows/frontend-ci.yml'
 
 jobs:
@@ -32,6 +33,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Format check
+        run: npx prettier --check "src/**/*.{ts,tsx,css}" "components.json" "eslint.config.js" "package.json" "tsconfig.json"
 
       - name: Lint
         run: npm run lint

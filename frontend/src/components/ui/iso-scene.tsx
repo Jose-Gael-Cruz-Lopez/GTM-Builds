@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 
 /**
  * IsoScene — Kriss.AI-style framed illustration surface for empty states.
@@ -11,16 +11,16 @@ export function IsoScene({
   action,
   className,
 }: {
-  children?: React.ReactNode
-  title?: string
-  description?: string
-  action?: React.ReactNode
-  className?: string
+  children?: React.ReactNode;
+  title?: string;
+  description?: string;
+  action?: React.ReactNode;
+  className?: string;
 }) {
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[var(--color-cream)] px-6 py-12 text-center md:px-12',
+        "relative overflow-hidden rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[var(--color-cream)] px-6 py-12 text-center md:px-12",
         className,
       )}
     >
@@ -28,7 +28,7 @@ export function IsoScene({
         className="pointer-events-none absolute inset-0 opacity-50"
         style={{
           background:
-            'radial-gradient(circle at 30% 20%, rgba(200,168,154,0.35), transparent 50%), radial-gradient(circle at 80% 80%, rgba(245,197,24,0.10), transparent 55%)',
+            "radial-gradient(circle at 30% 20%, rgba(200,168,154,0.35), transparent 50%), radial-gradient(circle at 80% 80%, rgba(245,197,24,0.10), transparent 55%)",
         }}
         aria-hidden
       />
@@ -41,7 +41,7 @@ export function IsoScene({
         {action && <div className="mt-2">{action}</div>}
       </div>
     </div>
-  )
+  );
 }
 
 // Default illustrated icons used across empty states
@@ -55,16 +55,22 @@ export function EmptyWalletGlyph() {
       <circle cx="92" cy="56" r="14" fill="#FF2D1A" opacity="0.15" />
       <circle cx="92" cy="56" r="14" stroke="#FF2D1A" strokeWidth="2" />
     </svg>
-  )
+  );
 }
 
 export function NotFoundGlyph() {
   return (
     <svg width="120" height="96" viewBox="0 0 120 96" fill="none" aria-hidden>
       <circle cx="60" cy="48" r="38" fill="#C8A89A" opacity="0.25" />
-      <path d="M40 60 Q60 40 80 60" stroke="#0A0F1E" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path
+        d="M40 60 Q60 40 80 60"
+        stroke="#0A0F1E"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+      />
       <circle cx="48" cy="42" r="3" fill="#0A0F1E" />
       <circle cx="72" cy="42" r="3" fill="#0A0F1E" />
     </svg>
-  )
+  );
 }

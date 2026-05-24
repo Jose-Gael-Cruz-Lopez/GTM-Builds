@@ -1,6 +1,6 @@
-import { Megaphone } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { StatusDot } from '@/components/ui/status-dot'
+import { Megaphone } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { StatusDot } from "@/components/ui/status-dot";
 import {
   Table,
   TableBody,
@@ -8,31 +8,31 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import type { ChurnRiskResponse, ChurnRiskClient } from '@/lib/api/analytics'
-import { AnalyticsEmptyState } from '@/components/dashboard/AnalyticsEmptyState'
+} from "@/components/ui/table";
+import type { ChurnRiskResponse, ChurnRiskClient } from "@/lib/api/analytics";
+import { AnalyticsEmptyState } from "@/components/dashboard/AnalyticsEmptyState";
 
 export interface ChurnRiskListProps {
-  data?: ChurnRiskResponse
-  isLoading: boolean
-  businessId: string
+  data?: ChurnRiskResponse;
+  isLoading: boolean;
+  businessId: string;
 }
 
-const STATUS_LABEL: Record<ChurnRiskClient['status'], string> = {
-  active: 'Activo',
-  at_risk: 'En riesgo',
-  lost: 'Perdido',
-}
+const STATUS_LABEL: Record<ChurnRiskClient["status"], string> = {
+  active: "Activo",
+  at_risk: "En riesgo",
+  lost: "Perdido",
+};
 
-const STATUS_TONE: Record<ChurnRiskClient['status'], 'good' | 'warn' | 'risk'> = {
-  active: 'good',
-  at_risk: 'warn',
-  lost: 'risk',
-}
+const STATUS_TONE: Record<ChurnRiskClient["status"], "good" | "warn" | "risk"> = {
+  active: "good",
+  at_risk: "warn",
+  lost: "risk",
+};
 
 export function ChurnRiskList({ data, isLoading, businessId }: ChurnRiskListProps) {
-  const campaignsHref = `/campaigns/${businessId}?action=generate`
-  const bulkCampaignHref = `/campaigns/${businessId}?action=generate&segment=at_risk`
+  const campaignsHref = `/campaigns/${businessId}?action=generate`;
+  const bulkCampaignHref = `/campaigns/${businessId}?action=generate&segment=at_risk`;
 
   return (
     <section className="surface-paper overflow-hidden">
@@ -102,7 +102,7 @@ export function ChurnRiskList({ data, isLoading, businessId }: ChurnRiskListProp
                     ) : null}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {client.daysSinceVisit === null ? '—' : client.daysSinceVisit}
+                    {client.daysSinceVisit === null ? "—" : client.daysSinceVisit}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{client.totalVisits}</TableCell>
                   <TableCell className="text-right font-semibold tabular-nums">
@@ -123,7 +123,7 @@ export function ChurnRiskList({ data, isLoading, businessId }: ChurnRiskListProp
         </Table>
       )}
     </section>
-  )
+  );
 }
 
 function ChurnSkeleton() {
@@ -142,5 +142,5 @@ function ChurnSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }

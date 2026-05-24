@@ -1,18 +1,18 @@
-import { Link } from '@tanstack/react-router'
-import { cn } from '@/lib/utils'
+import { Link } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 
-export type SettingsTab = 'general' | 'loyalty' | 'staff' | 'account'
+export type SettingsTab = "general" | "loyalty" | "staff" | "account";
 
 const TABS: Array<{ id: SettingsTab; label: string }> = [
-  { id: 'general', label: 'General' },
-  { id: 'loyalty', label: 'Programa de lealtad' },
-  { id: 'staff', label: 'Staff y dispositivos' },
-  { id: 'account', label: 'Cuenta' },
-]
+  { id: "general", label: "General" },
+  { id: "loyalty", label: "Programa de lealtad" },
+  { id: "staff", label: "Staff y dispositivos" },
+  { id: "account", label: "Cuenta" },
+];
 
 interface SettingsTabBarProps {
-  businessId: string
-  activeTab: SettingsTab
+  businessId: string;
+  activeTab: SettingsTab;
 }
 
 export function SettingsTabBar({ businessId, activeTab }: SettingsTabBarProps) {
@@ -29,17 +29,17 @@ export function SettingsTabBar({ businessId, activeTab }: SettingsTabBarProps) {
             params={{ businessId }}
             search={{ tab: tab.id }}
             className={cn(
-              'shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors',
+              "shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
               activeTab === tab.id
-                ? 'border-[color:var(--color-signal)] text-[color:var(--color-ink)]'
-                : 'border-transparent text-[color:var(--color-ink-soft)] hover:text-[color:var(--color-ink)]',
+                ? "border-[color:var(--color-signal)] text-[color:var(--color-ink)]"
+                : "border-transparent text-[color:var(--color-ink-soft)] hover:text-[color:var(--color-ink)]",
             )}
-            aria-current={activeTab === tab.id ? 'page' : undefined}
+            aria-current={activeTab === tab.id ? "page" : undefined}
           >
             {tab.label}
           </Link>
         ))}
       </div>
     </nav>
-  )
+  );
 }

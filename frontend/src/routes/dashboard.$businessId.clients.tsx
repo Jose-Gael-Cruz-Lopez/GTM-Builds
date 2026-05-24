@@ -1,28 +1,28 @@
-import { RouteError } from "@/components/RouteError"
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
-import { z } from 'zod'
-import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
-import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { Copy, MoreHorizontal, Search } from 'lucide-react'
-import { toast } from 'sonner'
+import { RouteError } from "@/components/RouteError";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
+import { Copy, MoreHorizontal, Search } from "lucide-react";
+import { toast } from "sonner";
 
-import { supabase } from '@/integrations/supabase/client'
-import { adminApi, isAdminRouteUnavailable } from '@/lib/admin-api'
-import { useOwnedBusiness } from '@/hooks/use-owned-business'
-import { useSession } from '@/hooks/use-session'
-import { DashboardShell } from '@/components/dashboard/DashboardShell'
-import { IsoScene } from '@/components/ui/iso-scene'
-import { StatusDot } from '@/components/ui/status-dot'
-import { Input } from '@/components/ui/input'
+import { supabase } from "@/integrations/supabase/client";
+import { adminApi, isAdminRouteUnavailable } from "@/lib/admin-api";
+import { useOwnedBusiness } from "@/hooks/use-owned-business";
+import { useSession } from "@/hooks/use-session";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { IsoScene } from "@/components/ui/iso-scene";
+import { StatusDot } from "@/components/ui/status-dot";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -30,124 +30,110 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
-import type { ClientStatus } from '@/integrations/supabase/types'
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import type { ClientStatus } from "@/integrations/supabase/types";
 
 const searchSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(10).max(50).default(20),
-  status: z.enum(['all', 'active', 'at_risk', 'lost']).default('all'),
-  sort: z.enum(['last_visit', 'total_visits', 'stamps']).default('last_visit'),
+  status: z.enum(["all", "active", "at_risk", "lost"]).default("all"),
+  sort: z.enum(["last_visit", "total_visits", "stamps"]).default("last_visit"),
   q: z.string().optional(),
-})
+});
 
-export const Route = createFileRoute('/dashboard/$businessId/clients')({
+export const Route = createFileRoute("/dashboard/$businessId/clients")({
   validateSearch: (search) => searchSchema.parse(search),
   beforeLoad: async ({ params }) => {
     const {
       data: { session },
-    } = await supabase.auth.getSession()
+    } = await supabase.auth.getSession();
     if (!session) {
       throw redirect({
         href: `/login?redirect=${encodeURIComponent(`/dashboard/${params.businessId}/clients`)}`,
-      })
+      });
     }
   },
   component: ClientsPage,
   errorComponent: RouteError,
-  head: () => ({ meta: [{ title: 'Clientes · NexoLeal' }] }),
-})
+  head: () => ({ meta: [{ title: "Clientes · NexoLeal" }] }),
+});
 
 const STATUS_LABEL: Record<ClientStatus, string> = {
-  active: 'Activo',
-  at_risk: 'En riesgo',
-  lost: 'Perdido',
-}
+  active: "Activo",
+  at_risk: "En riesgo",
+  lost: "Perdido",
+};
 
-const STATUS_TONE: Record<ClientStatus, 'good' | 'warn' | 'risk'> = {
-  active: 'good',
-  at_risk: 'warn',
-  lost: 'risk',
-}
+const STATUS_TONE: Record<ClientStatus, "good" | "warn" | "risk"> = {
+  active: "good",
+  at_risk: "warn",
+  lost: "risk",
+};
 
 function ClientsPage() {
-  const { businessId } = Route.useParams()
-  const search = Route.useSearch()
-  const navigate = useNavigate({ from: Route.fullPath })
-  const { businessName, business } = useOwnedBusiness()
-  const { user } = useSession()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [searchInput, setSearchInput] = useState(search.q ?? '')
+  const { businessId } = Route.useParams();
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { businessName, business } = useOwnedBusiness();
+  const { user } = useSession();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState(search.q ?? "");
 
   const ownerFirstName =
-    user?.user_metadata?.full_name?.split(/\s+/)[0] ??
-    user?.email?.split('@')[0] ??
-    'equipo'
+    user?.user_metadata?.full_name?.split(/\s+/)[0] ?? user?.email?.split("@")[0] ?? "equipo";
 
   const list = useQuery({
-    queryKey: [
-      'business',
-      businessId,
-      'clients',
-      search.page,
-      search.limit,
-      search.status,
-    ],
+    queryKey: ["business", businessId, "clients", search.page, search.limit, search.status],
     queryFn: () =>
       adminApi.listClients({
         businessId,
         page: search.page,
         limit: search.limit,
-        status: search.status === 'all' ? undefined : search.status,
+        status: search.status === "all" ? undefined : search.status,
       }),
     retry: false,
-  })
+  });
 
-  const unavailable = list.error && isAdminRouteUnavailable(list.error)
+  const unavailable = list.error && isAdminRouteUnavailable(list.error);
 
   const filtered = useMemo(() => {
-    if (!list.data?.items) return []
-    let items = [...list.data.items]
-    const q = (search.q ?? '').trim().toLowerCase()
+    if (!list.data?.items) return [];
+    let items = [...list.data.items];
+    const q = (search.q ?? "").trim().toLowerCase();
     if (q) {
-      items = items.filter((c) => c.fullName.toLowerCase().includes(q))
+      items = items.filter((c) => c.fullName.toLowerCase().includes(q));
     }
-    if (search.sort === 'total_visits') {
-      items.sort((a, b) => b.totalVisits - a.totalVisits)
-    } else if (search.sort === 'stamps') {
-      items.sort((a, b) => b.stampCount - a.stampCount)
+    if (search.sort === "total_visits") {
+      items.sort((a, b) => b.totalVisits - a.totalVisits);
+    } else if (search.sort === "stamps") {
+      items.sort((a, b) => b.stampCount - a.stampCount);
     }
-    return items
-  }, [list.data, search.q, search.sort])
+    return items;
+  }, [list.data, search.q, search.sort]);
 
-  const selected = filtered.find((c) => c.clientId === selectedId)
+  const selected = filtered.find((c) => c.clientId === selectedId);
 
   const copyJoin = () => {
-    const url = `${window.location.origin}/join/${businessId}`
+    const url = `${window.location.origin}/join/${businessId}`;
     void navigator.clipboard.writeText(url).then(
-      () => toast.success('Enlace copiado'),
-      () => toast.error('No pudimos copiar'),
-    )
-  }
+      () => toast.success("Enlace copiado"),
+      () => toast.error("No pudimos copiar"),
+    );
+  };
 
   return (
     <DashboardShell
       businessId={businessId}
       businessName={businessName}
-      plan={business?.plan ?? 'free'}
+      plan={business?.plan ?? "free"}
       activeNav="clientes"
       ownerFirstName={ownerFirstName}
     >
@@ -190,8 +176,8 @@ function ClientsPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    navigate({ search: (prev) => ({ ...prev, q: searchInput, page: 1 }) })
+                  if (e.key === "Enter") {
+                    navigate({ search: (prev) => ({ ...prev, q: searchInput, page: 1 }) });
                   }
                 }}
                 aria-label="Buscar clientes"
@@ -300,7 +286,7 @@ function ClientsPage() {
                                 addSuffix: true,
                                 locale: es,
                               })
-                            : '—'}
+                            : "—"}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
                           {client.totalVisits}
@@ -337,9 +323,7 @@ function ClientsPage() {
                   variant="outline"
                   size="sm"
                   disabled={search.page <= 1}
-                  onClick={() =>
-                    navigate({ search: (prev) => ({ ...prev, page: prev.page - 1 }) })
-                  }
+                  onClick={() => navigate({ search: (prev) => ({ ...prev, page: prev.page - 1 }) })}
                 >
                   Anterior
                 </Button>
@@ -348,9 +332,7 @@ function ClientsPage() {
                   variant="outline"
                   size="sm"
                   disabled={!list.data?.hasNextPage}
-                  onClick={() =>
-                    navigate({ search: (prev) => ({ ...prev, page: prev.page + 1 }) })
-                  }
+                  onClick={() => navigate({ search: (prev) => ({ ...prev, page: prev.page + 1 }) })}
                 >
                   Siguiente
                 </Button>
@@ -395,5 +377,5 @@ function ClientsPage() {
         </SheetContent>
       </Sheet>
     </DashboardShell>
-  )
+  );
 }

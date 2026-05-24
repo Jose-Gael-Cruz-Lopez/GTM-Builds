@@ -1,14 +1,14 @@
-import { Sparkles } from 'lucide-react'
-import { StatusDot } from '@/components/ui/status-dot'
+import { Sparkles } from "lucide-react";
+import { StatusDot } from "@/components/ui/status-dot";
 
 interface OnboardingCardPreviewProps {
-  businessName: string
-  businessCategory: string
-  rewardDescription: string
-  stampsRequired: number
-  logoUrl: string | null
-  primaryColor: string
-  tagline: string
+  businessName: string;
+  businessCategory: string;
+  rewardDescription: string;
+  stampsRequired: number;
+  logoUrl: string | null;
+  primaryColor: string;
+  tagline: string;
 }
 
 export function OnboardingCardPreview({
@@ -20,7 +20,7 @@ export function OnboardingCardPreview({
   primaryColor,
   tagline,
 }: OnboardingCardPreviewProps) {
-  const demoStamps = Math.min(3, Math.max(1, Math.floor(stampsRequired / 3)))
+  const demoStamps = Math.min(3, Math.max(1, Math.floor(stampsRequired / 3)));
 
   return (
     <div className="relative">
@@ -29,7 +29,7 @@ export function OnboardingCardPreview({
         className="relative overflow-hidden rounded-[var(--radius-lg)] p-1"
         style={{
           background: `linear-gradient(145deg, ${primaryColor}33, var(--cream))`,
-          boxShadow: 'var(--shadow-card)',
+          boxShadow: "var(--shadow-card)",
         }}
       >
         <div className="surface-card relative overflow-hidden p-5 text-[color:var(--color-ink)]">
@@ -69,13 +69,13 @@ export function OnboardingCardPreview({
             {Array.from({ length: Math.min(stampsRequired, 16) }).map((_, i) => (
               <div
                 key={i}
-                className={`stamp-cell ${i < demoStamps ? 'filled' : ''}`}
+                className={`stamp-cell ${i < demoStamps ? "filled" : ""}`}
                 style={
                   i < demoStamps
                     ? {
                         background: primaryColor,
                         borderColor: primaryColor,
-                        color: 'var(--color-ink)',
+                        color: "var(--color-ink)",
                       }
                     : undefined
                 }
@@ -94,5 +94,5 @@ export function OnboardingCardPreview({
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,22 +1,22 @@
-import { Sparkles } from 'lucide-react'
-import type { PeakHoursResponse } from '@/lib/api/analytics'
-import { buildPeakInsight } from '@/components/dashboard/PeakHoursHeatmap'
-import { AnalyticsCardSkeleton } from '@/components/dashboard/AnalyticsEmptyState'
+import { Sparkles } from "lucide-react";
+import type { PeakHoursResponse } from "@/lib/api/analytics";
+import { buildPeakInsight } from "@/components/dashboard/PeakHoursHeatmap";
+import { AnalyticsCardSkeleton } from "@/components/dashboard/AnalyticsEmptyState";
 
 export interface WeeklyInsightCardProps {
-  businessId: string
-  peakHours?: PeakHoursResponse
-  isLoading: boolean
+  businessId: string;
+  peakHours?: PeakHoursResponse;
+  isLoading: boolean;
 }
 
 export function WeeklyInsightCard({ businessId, peakHours, isLoading }: WeeklyInsightCardProps) {
-  if (isLoading) return <AnalyticsCardSkeleton className="min-h-[160px]" />
+  if (isLoading) return <AnalyticsCardSkeleton className="min-h-[160px]" />;
 
   const insight = peakHours
     ? buildPeakInsight(peakHours)
-    : 'Comparte tu enlace con clientes para descubrir patrones de visita esta semana.'
+    : "Comparte tu enlace con clientes para descubrir patrones de visita esta semana.";
 
-  const ctaHref = `/campaigns/${businessId}?action=generate&seed=peak-hours`
+  const ctaHref = `/campaigns/${businessId}?action=generate&seed=peak-hours`;
 
   return (
     <article className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[var(--color-cream)] p-6 shadow-[var(--shadow-soft)] md:p-8">
@@ -24,7 +24,7 @@ export function WeeklyInsightCard({ businessId, peakHours, isLoading }: WeeklyIn
         className="pointer-events-none absolute inset-0 opacity-40"
         style={{
           background:
-            'radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--color-health) 35%, transparent), transparent 45%), radial-gradient(circle at 10% 90%, color-mix(in srgb, var(--color-signal) 20%, transparent), transparent 50%)',
+            "radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--color-health) 35%, transparent), transparent 45%), radial-gradient(circle at 10% 90%, color-mix(in srgb, var(--color-signal) 20%, transparent), transparent 50%)",
         }}
         aria-hidden
       />
@@ -46,10 +46,13 @@ export function WeeklyInsightCard({ businessId, peakHours, isLoading }: WeeklyIn
           </ul>
         </div>
 
-        <a href={ctaHref} className="btn-signal inline-flex shrink-0 items-center justify-center text-sm">
+        <a
+          href={ctaHref}
+          className="btn-signal inline-flex shrink-0 items-center justify-center text-sm"
+        >
           Generar campaña basada en este insight
         </a>
       </div>
     </article>
-  )
+  );
 }

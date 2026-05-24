@@ -16,13 +16,14 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-white backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <a href="#top" className="flex items-center gap-2 text-black hover:text-[var(--primary)] transition-colors">
+        <a
+          href="#top"
+          className="flex items-center gap-2 text-black hover:text-[var(--primary)] transition-colors"
+        >
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Sparkles className="h-4 w-4" />
           </span>
-          <span className="font-display text-lg font-semibold tracking-tight">
-            NexoLeal
-          </span>
+          <span className="font-display text-lg font-semibold tracking-tight">NexoLeal</span>
         </a>
 
         <nav className="hidden items-center gap-8 text-sm font-medium text-black md:flex">

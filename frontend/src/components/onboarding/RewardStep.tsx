@@ -1,18 +1,18 @@
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, Loader2 } from "lucide-react";
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 interface RewardStepProps {
-  stampsRequired: number
-  rewardDescription: string
-  onStampsChange: (value: number) => void
-  onRewardChange: (value: string) => void
-  onBack: () => void
-  onSubmit: () => void
-  isPending: boolean
+  stampsRequired: number;
+  rewardDescription: string;
+  onStampsChange: (value: number) => void;
+  onRewardChange: (value: string) => void;
+  onBack: () => void;
+  onSubmit: () => void;
+  isPending: boolean;
 }
 
 export function RewardStep({
@@ -28,9 +28,9 @@ export function RewardStep({
     <form
       className="surface-paper p-6 lg:p-8"
       onSubmit={(e) => {
-        e.preventDefault()
-        if (isPending) return
-        onSubmit()
+        e.preventDefault();
+        if (isPending) return;
+        onSubmit();
       }}
     >
       <h2 className="font-display text-xl font-semibold">Crea tu primera recompensa</h2>
@@ -90,5 +90,5 @@ export function RewardStep({
         </Button>
       </div>
     </form>
-  )
+  );
 }
