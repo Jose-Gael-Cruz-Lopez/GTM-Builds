@@ -107,6 +107,8 @@ export type Database = {
           phone: string | null;
           email: string | null;
           full_name: string;
+          referral_code: string;
+          referred_by_client_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -116,6 +118,8 @@ export type Database = {
           phone?: string | null;
           email?: string | null;
           full_name: string;
+          referral_code?: string;
+          referred_by_client_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -125,6 +129,8 @@ export type Database = {
           phone?: string | null;
           email?: string | null;
           full_name?: string;
+          referral_code?: string;
+          referred_by_client_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -8,6 +8,8 @@ import { clientRoutes } from './routes/clients'
 import { visitRoutes } from './routes/visits'
 import { analyticsRoutes } from './routes/analytics'
 import { campaignRoutes } from './routes/campaigns'
+import { consumerRoutes } from './routes/consumer'
+import { scannerRoutes } from './routes/scanner'
 import { recalculateClientStatuses } from './cron'
 import type { Env } from './types/env'
 import type { ContextVariables } from './types/api'
@@ -39,6 +41,8 @@ app.get('/health', (c) =>
 app.route('/tokens', tokenRoutes)
 app.route('/visits', visitRoutes)
 app.route('/clients', clientRoutes)
+app.route('/consumer', consumerRoutes)
+app.route('/scanner', scannerRoutes)
 // /businesses is shared between three route files: base business CRUD,
 // analytics (paths like /:id/retention), and campaigns (paths like /:id/campaigns).
 app.route('/businesses', businessRoutes)

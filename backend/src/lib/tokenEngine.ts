@@ -8,15 +8,35 @@ export interface TokenPayload {
   sig: string
 }
 
+export interface ConsumerTokenPayload {
+  type: 'consumer'
+  uid: string
+  name: string
+  ts: number
+  nonce: string
+  sig: string
+}
+
 export interface GenerateTokenResult {
-  token: string           // full base64url token (QR content)
-  payload: TokenPayload   // decoded payload (for debugging)
-  expiresAt: string       // ISO 8601 UTC timestamp
+  token: string
+  payload: TokenPayload
+  expiresAt: string
+}
+
+export interface ConsumerGenerateTokenResult {
+  token: string
+  payload: ConsumerTokenPayload
+  expiresAt: string
 }
 
 export interface ValidateTokenResult {
   valid: true
   payload: TokenPayload
+}
+
+export interface ValidateConsumerTokenResult {
+  valid: true
+  payload: ConsumerTokenPayload
 }
 
 export interface InvalidTokenResult {
@@ -26,6 +46,7 @@ export interface InvalidTokenResult {
 }
 
 export type TokenValidationResult = ValidateTokenResult | InvalidTokenResult
+export type ConsumerTokenValidationResult = ValidateConsumerTokenResult | InvalidTokenResult
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -174,6 +195,76 @@ export async function invalidateToken(
   await blacklist.put(`used_token:${tokenHash}`, '1', {
     expirationTtl: ttlSeconds * 2,
   })
+}
+
+// ─── Consumer Token Generation ────────────────────────────────────────────────
+// 90-second QR token bound to user identity only (no businessId).
+// The scanning business is determined at scan time via X-Staff-Key.
+
+export async function generateConsumerToken(
+  userId: string,
+  userName: string,
+  secret: string,
+  ttlSeconds: number
+): Promise<ConsumerGenerateTokenResult> {
+  const ts = Math.floor(Date.now() / 1000)
+  const nonce = generateNonce()
+  const message = `consumer:${userId}:${userName}:${ts}:${nonce}`
+  const sig = await hmacSign(secret, message)
+
+  const payload: ConsumerTokenPayload = { type: 'consumer', uid: userId, name: userName, ts, nonce, sig }
+  const token = base64urlEncode(JSON.stringify(payload))
+  const expiresAt = new Date((ts + ttlSeconds) * 1000).toISOString()
+
+  return { token, payload, expiresAt }
+}
+
+// ─── Consumer Token Validation ────────────────────────────────────────────────
+
+export async function validateConsumerToken(
+  token: string,
+  secret: string,
+  ttlSeconds: number,
+  blacklist: KVNamespace
+): Promise<ConsumerTokenValidationResult> {
+  let payload: ConsumerTokenPayload
+  try {
+    const decoded = base64urlDecode(token)
+    const parsed = JSON.parse(decoded) as ConsumerTokenPayload
+    if (parsed.type !== 'consumer') {
+      return { valid: false, code: 'TOKEN_INVALID', message: 'Not a consumer token' }
+    }
+    payload = parsed
+  } catch {
+    return { valid: false, code: 'TOKEN_INVALID', message: 'Token cannot be decoded' }
+  }
+
+  if (!payload.uid || !payload.name || !payload.ts || !payload.nonce || !payload.sig) {
+    return { valid: false, code: 'TOKEN_INVALID', message: 'Token is missing required fields' }
+  }
+
+  const now = Math.floor(Date.now() / 1000)
+  if (now - payload.ts > ttlSeconds) {
+    return {
+      valid: false,
+      code: 'TOKEN_EXPIRED',
+      message: `Token expired ${now - payload.ts - ttlSeconds}s ago`,
+    }
+  }
+
+  const message = `consumer:${payload.uid}:${payload.name}:${payload.ts}:${payload.nonce}`
+  const sigValid = await hmacVerify(secret, message, payload.sig)
+  if (!sigValid) {
+    return { valid: false, code: 'TOKEN_INVALID', message: 'Token signature is invalid' }
+  }
+
+  const tokenHash = await sha256Hex(token)
+  const blacklisted = await blacklist.get(`used_token:${tokenHash}`)
+  if (blacklisted !== null) {
+    return { valid: false, code: 'TOKEN_ALREADY_USED', message: 'Token has already been used' }
+  }
+
+  return { valid: true, payload }
 }
 
 // ─── Token Hash (for visit idempotency key) ───────────────────────────────────

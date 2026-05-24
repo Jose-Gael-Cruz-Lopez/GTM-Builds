@@ -21,6 +21,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WalletIndexRouteImport } from './routes/wallet.index'
 import { Route as WalletProfileRouteImport } from './routes/wallet.profile'
 import { Route as WalletBusinessIdRouteImport } from './routes/wallet.$businessId'
+import { Route as UserRegisterRouteImport } from './routes/user.register'
+import { Route as UserDashboardRouteImport } from './routes/user.dashboard'
 import { Route as SettingsBusinessIdRouteImport } from './routes/settings.$businessId'
 import { Route as JoinBusinessIdRouteImport } from './routes/join.$businessId'
 import { Route as DashboardBusinessIdRouteImport } from './routes/dashboard.$businessId'
@@ -90,6 +92,16 @@ const WalletBusinessIdRoute = WalletBusinessIdRouteImport.update({
   path: '/wallet/$businessId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UserRegisterRoute = UserRegisterRouteImport.update({
+  id: '/user/register',
+  path: '/user/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserDashboardRoute = UserDashboardRouteImport.update({
+  id: '/user/dashboard',
+  path: '/user/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsBusinessIdRoute = SettingsBusinessIdRouteImport.update({
   id: '/settings/$businessId',
   path: '/settings/$businessId',
@@ -149,6 +161,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/$businessId': typeof DashboardBusinessIdRouteWithChildren
   '/join/$businessId': typeof JoinBusinessIdRoute
   '/settings/$businessId': typeof SettingsBusinessIdRoute
+  '/user/dashboard': typeof UserDashboardRoute
+  '/user/register': typeof UserRegisterRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
@@ -171,6 +185,8 @@ export interface FileRoutesByTo {
   '/dashboard/$businessId': typeof DashboardBusinessIdRouteWithChildren
   '/join/$businessId': typeof JoinBusinessIdRoute
   '/settings/$businessId': typeof SettingsBusinessIdRoute
+  '/user/dashboard': typeof UserDashboardRoute
+  '/user/register': typeof UserRegisterRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet': typeof WalletIndexRoute
@@ -194,6 +210,8 @@ export interface FileRoutesById {
   '/dashboard/$businessId': typeof DashboardBusinessIdRouteWithChildren
   '/join/$businessId': typeof JoinBusinessIdRoute
   '/settings/$businessId': typeof SettingsBusinessIdRoute
+  '/user/dashboard': typeof UserDashboardRoute
+  '/user/register': typeof UserRegisterRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
@@ -218,6 +236,8 @@ export interface FileRouteTypes {
     | '/dashboard/$businessId'
     | '/join/$businessId'
     | '/settings/$businessId'
+    | '/user/dashboard'
+    | '/user/register'
     | '/wallet/$businessId'
     | '/wallet/profile'
     | '/wallet/'
@@ -240,6 +260,8 @@ export interface FileRouteTypes {
     | '/dashboard/$businessId'
     | '/join/$businessId'
     | '/settings/$businessId'
+    | '/user/dashboard'
+    | '/user/register'
     | '/wallet/$businessId'
     | '/wallet/profile'
     | '/wallet'
@@ -262,6 +284,8 @@ export interface FileRouteTypes {
     | '/dashboard/$businessId'
     | '/join/$businessId'
     | '/settings/$businessId'
+    | '/user/dashboard'
+    | '/user/register'
     | '/wallet/$businessId'
     | '/wallet/profile'
     | '/wallet/'
@@ -285,6 +309,8 @@ export interface RootRouteChildren {
   DashboardBusinessIdRoute: typeof DashboardBusinessIdRouteWithChildren
   JoinBusinessIdRoute: typeof JoinBusinessIdRoute
   SettingsBusinessIdRoute: typeof SettingsBusinessIdRoute
+  UserDashboardRoute: typeof UserDashboardRoute
+  UserRegisterRoute: typeof UserRegisterRoute
   WalletBusinessIdRoute: typeof WalletBusinessIdRoute
   WalletProfileRoute: typeof WalletProfileRoute
   WalletIndexRoute: typeof WalletIndexRoute
@@ -376,6 +402,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletBusinessIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/user/register': {
+      id: '/user/register'
+      path: '/user/register'
+      fullPath: '/user/register'
+      preLoaderRoute: typeof UserRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user/dashboard': {
+      id: '/user/dashboard'
+      path: '/user/dashboard'
+      fullPath: '/user/dashboard'
+      preLoaderRoute: typeof UserDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings/$businessId': {
       id: '/settings/$businessId'
       path: '/settings/$businessId'
@@ -465,6 +505,8 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardBusinessIdRoute: DashboardBusinessIdRouteWithChildren,
   JoinBusinessIdRoute: JoinBusinessIdRoute,
   SettingsBusinessIdRoute: SettingsBusinessIdRoute,
+  UserDashboardRoute: UserDashboardRoute,
+  UserRegisterRoute: UserRegisterRoute,
   WalletBusinessIdRoute: WalletBusinessIdRoute,
   WalletProfileRoute: WalletProfileRoute,
   WalletIndexRoute: WalletIndexRoute,

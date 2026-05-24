@@ -61,6 +61,8 @@ export interface ClientRow {
   phone: string | null
   email: string | null
   full_name: string
+  referral_code: string
+  referred_by_client_id: string | null
   created_at: string
   updated_at: string
 }
@@ -70,6 +72,8 @@ export interface ClientInsert {
   phone?: string | null
   email?: string | null
   full_name: string
+  referral_code?: string
+  referred_by_client_id?: string | null
 }
 
 // ─── Client-Business Loyalty ─────────────────────────────────────────────────
