@@ -1,10 +1,21 @@
 import { redirect } from "@tanstack/react-router";
+import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * Session is stored in localStorage — unavailable during SSR.
+ * Skip auth in beforeLoad on the server; enforce on client navigations.
+ */
+function isServerRender() {
+  return typeof window === "undefined";
+}
 
 /**
  * Use in route `beforeLoad`. Redirects to /login?redirect=... when no session.
  */
-export async function requireSession(pathname: string) {
+export async function requireSession(pathname: string): Promise<Session | null> {
+  if (isServerRender()) return null;
+
   const { data } = await supabase.auth.getSession();
   if (!data.session) {
     throw redirect({ to: "/login", search: { redirect: pathname } as never });
@@ -24,6 +35,8 @@ export async function requireClient(pathname: string) {
  */
 export async function requireOwner(businessId: string, pathname: string) {
   const session = await requireSession(pathname);
+  if (!session) return null;
+
   const { data, error } = await supabase
     .from("businesses")
     .select("id, owner_id")

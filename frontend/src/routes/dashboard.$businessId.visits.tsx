@@ -1,5 +1,5 @@
 import { RouteError } from "@/components/RouteError";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -8,6 +8,7 @@ import { es } from "date-fns/locale";
 
 import { supabase } from "@/integrations/supabase/client";
 import { adminApi, isAdminRouteUnavailable, type AdminVisitRow } from "@/lib/admin-api";
+import { requireSession } from "@/lib/auth-guards";
 import { useOwnedBusiness } from "@/hooks/use-owned-business";
 import { useSession } from "@/hooks/use-session";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -33,15 +34,8 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/dashboard/$businessId/visits")({
   validateSearch: (search) => searchSchema.parse(search),
-  beforeLoad: async ({ params }) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      throw redirect({
-        href: `/login?redirect=${encodeURIComponent(`/dashboard/${params.businessId}/visits`)}`,
-      });
-    }
+  beforeLoad: async ({ params, location }) => {
+    await requireSession(location.pathname || `/dashboard/${params.businessId}/visits`);
   },
   component: VisitsPage,
   errorComponent: RouteError,

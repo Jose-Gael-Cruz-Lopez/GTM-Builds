@@ -1,5 +1,5 @@
 import { RouteError } from "@/components/RouteError";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNow } from "date-fns";
@@ -7,8 +7,8 @@ import { es } from "date-fns/locale";
 import { Check, Gift, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
+import { requireSession } from "@/lib/auth-guards";
 import { ApiError } from "@/lib/api-client";
 import { useOwnedBusiness } from "@/hooks/use-owned-business";
 import { useSession } from "@/hooks/use-session";
@@ -34,15 +34,8 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/dashboard/$businessId/redemptions")({
   validateSearch: (search) => searchSchema.parse(search),
-  beforeLoad: async ({ params }) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      throw redirect({
-        href: `/login?redirect=${encodeURIComponent(`/dashboard/${params.businessId}/redemptions`)}`,
-      });
-    }
+  beforeLoad: async ({ params, location }) => {
+    await requireSession(location.pathname || `/dashboard/${params.businessId}/redemptions`);
   },
   component: RedemptionsPage,
   errorComponent: RouteError,

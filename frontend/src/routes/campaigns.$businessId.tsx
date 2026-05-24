@@ -1,11 +1,11 @@
 import { RouteError } from "@/components/RouteError";
-import { createFileRoute, redirect, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { routeMeta } from "@/lib/route-meta";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 import { Sparkles, Wand2, ArrowLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireSession } from "@/lib/auth-guards";
 import { campaignsApi, type Campaign, type GroupedCampaigns } from "@/lib/api/campaigns";
 import { analyticsApi } from "@/lib/api/analytics";
 import { Button } from "@/components/ui/button";
@@ -23,22 +23,15 @@ import { cn } from "@/lib/utils";
 
 const searchSchema = z.object({
   tab: z.enum(["all", "draft", "active", "sent", "archived"]).optional().default("all"),
+  action: z.enum(["generate"]).optional(),
 });
 
 type Tab = z.infer<typeof searchSchema>["tab"];
 
 export const Route = createFileRoute("/campaigns/$businessId")({
   validateSearch: (search) => searchSchema.parse(search),
-  beforeLoad: async ({ params }) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      throw redirect({
-        to: "/login",
-        search: { redirect: `/campaigns/${params.businessId}` },
-      });
-    }
+  beforeLoad: async ({ params, location }) => {
+    await requireSession(location.pathname || `/campaigns/${params.businessId}`);
   },
   component: CampaignsPage,
   errorComponent: RouteError,
