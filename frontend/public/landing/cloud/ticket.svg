@@ -1,10 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 120" fill="none" stroke="#1A1A18" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M14 8 h52 a4 4 0 0 1 4 4 v96 l-8 -6 l-8 6 l-8 -6 l-8 6 l-8 -6 l-8 6 l-8 -6 v-96 a4 4 0 0 1 4 -4 z" fill="#FFFFFF"/>
-  <line x1="22" y1="24" x2="58" y2="24" stroke-width="1.5"/>
-  <line x1="22" y1="34" x2="50" y2="34" stroke-width="1.25" stroke-opacity="0.6"/>
-  <line x1="22" y1="50" x2="58" y2="50" stroke-width="1.25" stroke-opacity="0.6"/>
-  <line x1="22" y1="58" x2="58" y2="58" stroke-width="1.25" stroke-opacity="0.6"/>
-  <line x1="22" y1="66" x2="44" y2="66" stroke-width="1.25" stroke-opacity="0.6"/>
-  <circle cx="40" cy="86" r="6" fill="#E7F26A"/>
-  <path d="M36 86 l3 3 l6 -6" stroke-width="1.75"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 110" width="70" height="110">
+<path d="M7 7h60v100h-60z" fill="#1a1a18" opacity="0.08"/>
+<path d="M5 5h60v100h-60z" fill="#f9f6ef" stroke="#1a1a18" stroke-width="1.4"/>
+<g stroke="#1a1a18" stroke-width="1" stroke-linecap="round" opacity="0.7">
+<line x1="12" y1="20" x2="58" y2="20"/>
+<line x1="12" y1="30" x2="48" y2="30"/>
+<line x1="12" y1="40" x2="58" y2="40"/>
+<line x1="12" y1="50" x2="40" y2="50"/>
+</g>
+<text x="35" y="74" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="600" font-size="14" letter-spacing="1.5" fill="#1a1a18">RECIBO</text>
+<g stroke="#1a1a18" stroke-dasharray="2 2" opacity="0.6">
+<line x1="5" y1="86" x2="65" y2="86"/>
+</g>
+<text x="35" y="98" text-anchor="middle" font-family="JetBrains Mono,ui-monospace,monospace" font-size="6.5" letter-spacing="0.5" fill="#3e3c36">#000241</text>
+<circle cx="5" cy="86" r="2" fill="#f0ede6"/>
+<circle cx="65" cy="86" r="2" fill="#f0ede6"/>
 </svg>
