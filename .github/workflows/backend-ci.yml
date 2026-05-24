@@ -68,7 +68,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-production:
-    name: Deploy to Production
+    name: Deploy nexoleal-backend
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -89,8 +89,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Deploy to Production
-        run: npm run deploy:production
+      - name: Deploy to Cloudflare Workers
+        run: npm run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

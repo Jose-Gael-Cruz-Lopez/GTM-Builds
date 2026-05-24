@@ -52,22 +52,6 @@ id = "24d49e316ab54ba19606ac3ba02163b7"
 [env.staging.triggers]
 crons = ["0 3 * * *"]
 
-# ─── Production Environment ──────────────────────────────────────────────────
-[env.production]
-name = "nexoleal-backend-production"
-vars = { FRONTEND_ORIGIN = "https://app.nexoleal.com,https://tanstack-start-app.nexoleal.workers.dev", TOKEN_TTL_SECONDS = "90", RATE_LIMIT_WINDOW_SECONDS = "60", RATE_LIMIT_MAX_REQUESTS = "60" }
-
-[[env.production.kv_namespaces]]
-binding = "TOKEN_BLACKLIST"
-id = "be9a4af9d5ea42829e90a00e81f7d968"
-
-[[env.production.kv_namespaces]]
-binding = "RATE_LIMIT"
-id = "d6accd9f2be74696a31581e59bef2011"
-
-[[env.production.kv_namespaces]]
-binding = "ANALYTICS_CACHE"
-id = "8dab42a1493b4a87bdfcf3c12da3696e"
-
-[env.production.triggers]
-crons = ["0 3 * * *"]
+# Production deploys use the default worker above (name = "nexoleal-backend").
+# CI and manual deploy both run: npm run deploy / wrangler deploy
+# The duplicate nexoleal-backend-production worker can be deleted in Cloudflare dashboard.
