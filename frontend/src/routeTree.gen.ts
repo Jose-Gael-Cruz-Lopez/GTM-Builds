@@ -9,16 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ScanRouteImport } from './routes/scan'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WalletIndexRouteImport } from './routes/wallet.index'
+import { Route as WalletProfileRouteImport } from './routes/wallet.profile'
 import { Route as WalletBusinessIdRouteImport } from './routes/wallet.$businessId'
+import { Route as JoinBusinessIdRouteImport } from './routes/join.$businessId'
 import { Route as DashboardBusinessIdRouteImport } from './routes/dashboard.$businessId'
 import { Route as CampaignsBusinessIdRouteImport } from './routes/campaigns.$businessId'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -27,6 +39,16 @@ const SignupRoute = SignupRouteImport.update({
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -39,6 +61,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,9 +76,19 @@ const WalletIndexRoute = WalletIndexRouteImport.update({
   path: '/wallet/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WalletProfileRoute = WalletProfileRouteImport.update({
+  id: '/wallet/profile',
+  path: '/wallet/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WalletBusinessIdRoute = WalletBusinessIdRouteImport.update({
   id: '/wallet/$businessId',
   path: '/wallet/$businessId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinBusinessIdRoute = JoinBusinessIdRouteImport.update({
+  id: '/join/$businessId',
+  path: '/join/$businessId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardBusinessIdRoute = DashboardBusinessIdRouteImport.update({
@@ -64,91 +101,152 @@ const CampaignsBusinessIdRoute = CampaignsBusinessIdRouteImport.update({
   path: '/campaigns/$businessId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/campaigns/$businessId': typeof CampaignsBusinessIdRoute
   '/dashboard/$businessId': typeof DashboardBusinessIdRoute
+  '/join/$businessId': typeof JoinBusinessIdRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
+  '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/campaigns/$businessId': typeof CampaignsBusinessIdRoute
   '/dashboard/$businessId': typeof DashboardBusinessIdRoute
+  '/join/$businessId': typeof JoinBusinessIdRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
+  '/wallet/profile': typeof WalletProfileRoute
   '/wallet': typeof WalletIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/campaigns/$businessId': typeof CampaignsBusinessIdRoute
   '/dashboard/$businessId': typeof DashboardBusinessIdRoute
+  '/join/$businessId': typeof JoinBusinessIdRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
+  '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
     | '/login'
     | '/onboarding'
+    | '/privacy'
+    | '/reset-password'
     | '/scan'
     | '/signup'
+    | '/terms'
+    | '/auth/callback'
     | '/campaigns/$businessId'
     | '/dashboard/$businessId'
+    | '/join/$businessId'
     | '/wallet/$businessId'
+    | '/wallet/profile'
     | '/wallet/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
     | '/login'
     | '/onboarding'
+    | '/privacy'
+    | '/reset-password'
     | '/scan'
     | '/signup'
+    | '/terms'
+    | '/auth/callback'
     | '/campaigns/$businessId'
     | '/dashboard/$businessId'
+    | '/join/$businessId'
     | '/wallet/$businessId'
+    | '/wallet/profile'
     | '/wallet'
   id:
     | '__root__'
     | '/'
+    | '/forgot-password'
     | '/login'
     | '/onboarding'
+    | '/privacy'
+    | '/reset-password'
     | '/scan'
     | '/signup'
+    | '/terms'
+    | '/auth/callback'
     | '/campaigns/$businessId'
     | '/dashboard/$businessId'
+    | '/join/$businessId'
     | '/wallet/$businessId'
+    | '/wallet/profile'
     | '/wallet/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   CampaignsBusinessIdRoute: typeof CampaignsBusinessIdRoute
   DashboardBusinessIdRoute: typeof DashboardBusinessIdRoute
+  JoinBusinessIdRoute: typeof JoinBusinessIdRoute
   WalletBusinessIdRoute: typeof WalletBusinessIdRoute
+  WalletProfileRoute: typeof WalletProfileRoute
   WalletIndexRoute: typeof WalletIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -161,6 +259,20 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -177,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -191,11 +310,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wallet/profile': {
+      id: '/wallet/profile'
+      path: '/wallet/profile'
+      fullPath: '/wallet/profile'
+      preLoaderRoute: typeof WalletProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wallet/$businessId': {
       id: '/wallet/$businessId'
       path: '/wallet/$businessId'
       fullPath: '/wallet/$businessId'
       preLoaderRoute: typeof WalletBusinessIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join/$businessId': {
+      id: '/join/$businessId'
+      path: '/join/$businessId'
+      fullPath: '/join/$businessId'
+      preLoaderRoute: typeof JoinBusinessIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/$businessId': {
@@ -212,18 +345,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsBusinessIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   CampaignsBusinessIdRoute: CampaignsBusinessIdRoute,
   DashboardBusinessIdRoute: DashboardBusinessIdRoute,
+  JoinBusinessIdRoute: JoinBusinessIdRoute,
   WalletBusinessIdRoute: WalletBusinessIdRoute,
+  WalletProfileRoute: WalletProfileRoute,
   WalletIndexRoute: WalletIndexRoute,
 }
 export const routeTree = rootRouteImport

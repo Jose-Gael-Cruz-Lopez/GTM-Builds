@@ -2,85 +2,118 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+/* ============================================================
+   NexoLeal Design System v2 — fused from Cleo AI, La Revoltosa,
+   MindMarket, Shopify Renaissance, Kriss.AI, Reventador, Sidewave.
+   See: nexoleal_frontend_prompt_pack.md
+   ============================================================ */
 
 @theme inline {
-  /* Manteniendo los radios base de Tailwind */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  
-  /* Mapeo 1:1 de variables de Tailwind a tu nueva paleta cálida */
-  --color-background: var(--bg);
-  --color-foreground: var(--text);
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+
+  /* shadcn token mapping */
+  --color-background: var(--bg-paper);
+  --color-foreground: var(--ink);
   --color-card: var(--surface);
-  --color-card-foreground: var(--text);
-  --color-popover: var(--surface-2);
-  --color-popover-foreground: var(--text);
-  
-  --color-primary: var(--primary);
-  --color-primary-foreground: #FFFFFF; /* Blanco para contraste */
-  
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: #FFFFFF;
-  
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted);
-  
-  --color-accent: var(--accent);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+
+  --color-primary: var(--signal);
+  --color-primary-foreground: var(--ink);
+
+  --color-secondary: var(--ink);
+  --color-secondary-foreground: var(--cream);
+
+  --color-muted: var(--surface-soft);
+  --color-muted-foreground: var(--ink-soft);
+
+  --color-accent: var(--celebrate);
   --color-accent-foreground: #FFFFFF;
-  
-  --color-destructive: var(--danger);
+
+  --color-destructive: var(--status-risk);
   --color-destructive-foreground: #FFFFFF;
-  
+
   --color-border: var(--border);
   --color-input: var(--border);
-  --color-ring: var(--ring);
-  
-  --color-accent-soft: var(--accent-soft);
-  --color-accent-foreground: #FFFFFF;
-  --color-primary-soft: var(--primary-soft);
+  --color-ring: var(--signal);
 
-  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display: "Space Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
+  /* NexoLeal semantic colors — also exposed as Tailwind utilities */
+  --color-bg-base: var(--bg-base);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-paper: var(--bg-paper);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-signal: var(--signal);
+  --color-celebrate: var(--celebrate);
+  --color-health: var(--health);
+  --color-status-good: var(--status-good);
+  --color-status-warn: var(--status-warn);
+  --color-status-risk: var(--status-risk);
+  --color-scanner-warm: var(--scanner-warm);
+  --color-data-blue: var(--data-blue);
+
+  --font-sans: "Inter", "GT Walsheim", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", "Söhne Breit", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-/* Modern warm palette for loyalty control system */
+/* ---------- Token values ---------- */
 :root {
-  --radius: 0.75rem;
-
-  --bg: #FFF8F1;
+  /* Surfaces */
+  --bg-base: #0D0D0D;          /* Cleo near-black */
+  --bg-elevated: #1A1A1A;
+  --bg-paper: #F9F6EF;         /* Shopify warm off-white */
   --surface: #FFFFFF;
-  --surface-2: #FFF1E6;
-  --border: #F0D7C3;
-  --text: #2B2118;
-  --muted: #6F5A4B;
-  
-  --primary: #D97706;
-  --primary-600: #C26100;
-  
-  --secondary: #0F766E;
-  --secondary-600: #115E59;
-  
-  --accent: #F97316;
-  --success: #16A34A;
-  --warning: #D97706;
-  --danger: #DC2626;
-  --info: #0284C7;
-  --ring: #FDBA74;
+  --surface-soft: #F2EEE5;
+  --cream: #F5E8D8;            /* Cleo warm cream — wallet card body */
 
-  --accent-soft: #FFE9D6;
-  --primary-soft: #FFF1E0;
+  /* Ink */
+  --ink: #0A0F1E;              /* deep navy */
+  --ink-soft: #4A5160;
 
-  --shadow: 0 12px 30px rgba(91, 47, 20, 0.10);
-  --shadow-soft: 0 1px 2px rgba(91, 47, 20, 0.06), 0 8px 24px -8px rgba(91, 47, 20, 0.14);
-  --shadow-lifted: 0 20px 50px -16px rgba(91, 47, 20, 0.28);
+  /* Signal & accents */
+  --signal: #F5C518;           /* Cleo yellow — primary CTA */
+  --celebrate: #FF2D1A;        /* La Revoltosa red — stamp wins only */
+  --health: #C8F02A;           /* MindMarket chartreuse — positive KPI */
+  --status-good: #16A34A;
+  --status-warn: #F59E0B;
+  --status-risk: #EF4444;
+  --scanner-warm: #C8A89A;     /* Kriss.AI dusty rose */
+  --data-blue: #2B8EFF;        /* Reventador electric blue — charts */
 
-  --gradient-hero: linear-gradient(135deg, #D97706 0%, #F97316 55%, #0F766E 100%);
-  --gradient-soft: linear-gradient(180deg, #FFF8F1 0%, rgba(253, 186, 116, 0.18) 100%);
+  /* Border */
+  --border: rgba(10, 15, 30, 0.08);
+
+  /* Shadow stack */
+  --shadow-soft: 0 1px 2px rgba(10,15,30,.04), 0 8px 24px rgba(10,15,30,.08);
+  --shadow-lifted: 0 1px 3px rgba(10,15,30,.06), 0 24px 48px -16px rgba(10,15,30,.22);
+  --shadow-card: 0 1px 2px rgba(10,15,30,.05), 0 12px 32px -8px rgba(10,15,30,.12);
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(.22,1,.36,1);
+  --duration: 320ms;
+  --duration-slow: 600ms;
+
+  --radius: 14px;
+}
+
+[data-theme="dark"] {
+  --bg-paper: var(--bg-base);
+  --surface: var(--bg-elevated);
+  --surface-soft: #242424;
+  --ink: #F5E8D8;
+  --ink-soft: #A8A29E;
+  --border: rgba(245, 232, 216, 0.08);
 }
 
 @layer base {
@@ -90,118 +123,220 @@
 
   html {
     scroll-behavior: smooth;
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg-paper);
+    color: var(--ink);
   }
 
   body {
-    background:
-      radial-gradient(circle at top left, rgba(249, 115, 22, 0.10), transparent 30%),
-      radial-gradient(circle at top right, rgba(15, 118, 110, 0.10), transparent 28%),
-      var(--bg);
-    color: var(--text);
+    background: var(--bg-paper);
+    color: var(--ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--primary) 22%, white);
-    color: var(--text);
+    background: var(--signal);
+    color: var(--ink);
   }
 
-  a {
-    color: var(--primary);
-    text-decoration-color: color-mix(in srgb, var(--primary) 55%, transparent);
-    transition: color 160ms ease;
-  }
-
-  a:hover {
-    color: var(--primary-600);
+  :focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
   ::placeholder {
-    color: var(--muted);
-    opacity: 0.8;
+    color: var(--ink-soft);
+    opacity: 0.7;
   }
 }
 
 @layer components {
-  .app-shell {
-    @apply min-h-screen bg-[var(--bg)] text-[var(--text)];
+  /* ---- Surfaces ---- */
+  .surface-card {
+    background: var(--cream);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
-  .card {
-    @apply rounded-2xl border bg-[var(--surface)] shadow-[var(--shadow)];
-    border-color: var(--border);
-  }
-
-  .card-soft {
-    @apply rounded-2xl border bg-[var(--surface-2)];
-    border-color: color-mix(in srgb, var(--border) 70%, white);
-  }
-
-  .section-title {
-    @apply text-sm font-semibold uppercase tracking-[0.18em];
-    color: var(--secondary-600);
-  }
-
-  .page-title {
-    @apply text-3xl font-bold tracking-tight md:text-4xl;
-  }
-
-  .muted-text {
-    color: var(--muted);
-  }
-
-  .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-semibold text-white transition;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-    box-shadow: 0 10px 20px rgba(217, 119, 6, 0.22);
-  }
-
-  .btn-primary:hover {
-    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary) 100%);
-  }
-
-  .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl border px-4 py-2 font-semibold transition;
-    background: rgba(255, 255, 255, 0.72);
-    border-color: var(--border);
-    color: var(--secondary-600);
-  }
-
-  .btn-secondary:hover {
+  .surface-paper {
     background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
   }
 
-  .input {
-    @apply w-full rounded-xl border bg-white px-4 py-2 outline-none transition;
-    border-color: var(--border);
-    color: var(--text);
+  .surface-ink {
+    background: var(--bg-base);
+    color: var(--cream);
+    border-radius: var(--radius-lg);
   }
 
-  .input:focus {
-    border-color: var(--ring);
-    box-shadow: 0 0 0 4px rgba(253, 186, 116, 0.25);
+  /* ---- Typography utilities ---- */
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 
-  .badge {
-    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
-    background: color-mix(in srgb, var(--secondary) 10%, white);
-    color: var(--secondary-600);
+  .display-xl {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    font-weight: 600;
   }
 
-  .metric-up {
-    color: var(--success);
+  .display-lg {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 600;
   }
 
-  .metric-down {
-    color: var(--danger);
+  .display-md {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  /* ---- Buttons (compose with shadcn Button) ---- */
+  .btn-signal {
+    background: var(--signal);
+    color: var(--ink);
+    border-radius: var(--radius-pill);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: transform var(--duration) var(--ease-out-expo), box-shadow var(--duration) var(--ease-out-expo);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .btn-signal:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lifted);
+  }
+
+  .btn-celebrate {
+    background: var(--celebrate);
+    color: #FFFFFF;
+    border-radius: var(--radius-pill);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+  }
+
+  /* ---- Scanner reticle pulse (Sidewave) ---- */
+  .scanner-pulse {
+    position: relative;
+  }
+
+  .scanner-pulse::before {
+    content: "";
+    position: absolute;
+    inset: -16px;
+    border-radius: inherit;
+    border: 2px solid var(--scanner-warm);
+    opacity: 0.6;
+    animation: scanner-pulse 2.4s var(--ease-out-expo) infinite;
+    pointer-events: none;
+  }
+
+  @keyframes scanner-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.06); opacity: 0.15; }
+  }
+
+  /* ---- Stamp unlocked celebration ---- */
+  @keyframes celebrate-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.04); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .celebrate-pulse {
+    animation: celebrate-pulse 1.2s var(--ease-out-expo);
+  }
+
+  /* ---- Marquee (La Revoltosa) ---- */
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .marquee-track {
+    animation: marquee 32s linear infinite;
+  }
+
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  /* ---- Shimmer for skeletons ---- */
+  @keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, var(--surface-soft) 0%, var(--cream) 50%, var(--surface-soft) 100%);
+    background-size: 800px 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  /* ---- Stamp grid ---- */
+  .stamp-cell {
+    aspect-ratio: 1;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid color-mix(in srgb, var(--ink) 14%, transparent);
+    background: rgba(255,255,255,0.4);
+    transition: all var(--duration) var(--ease-out-expo);
+  }
+
+  .stamp-cell.filled {
+    background: var(--signal);
+    border-color: var(--signal);
+    color: var(--ink);
+    box-shadow: 0 4px 12px rgba(245, 197, 24, 0.35);
+  }
+
+  /* ---- Status chips ---- */
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    margin-right: 6px;
+    vertical-align: middle;
   }
 }
 
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scanner viewport */
 #scanner-container {
   aspect-ratio: 1 / 1;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  background: var(--bg-elevated);
 }

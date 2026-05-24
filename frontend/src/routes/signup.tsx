@@ -1,322 +1,212 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { z } from "zod";
-import { Sparkles, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { businessesApi } from "@/lib/api/businesses";
-import { ApiError } from "@/lib/api-client";
-import {
-  BUSINESS_CATEGORY_OPTIONS,
-  type BusinessCategory,
-} from "@/lib/business-categories";
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { z } from 'zod'
+import { Loader2, Mail } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { supabase } from '@/integrations/supabase/client'
+import { businessesApi } from '@/lib/api/businesses'
+import { AuthSplit } from '@/components/auth/AuthSplit'
+import { BUSINESS_CATEGORY_OPTIONS } from '@/lib/business-categories'
 
-export const Route = createFileRoute("/signup")({
-  validateSearch: (search) => z.object({}).passthrough().parse(search),
+const searchSchema = z.object({
+  plan: z.enum(['free', 'pro']).optional(),
+})
+
+export const Route = createFileRoute('/signup')({
+  validateSearch: (s) => searchSchema.parse(s),
   component: SignupPage,
-  head: () => ({
-    meta: [
-      { title: "Crear cuenta de mi negocio · NexoLeal" },
-      {
-        name: "description",
-        content:
-          "Crea tu cuenta de NexoLeal en menos de 2 minutos y empieza a fidelizar a tus clientes sin tarjetas de cartón.",
-      },
-    ],
-  }),
-});
+  head: () => ({ meta: [{ title: 'Crear cuenta · NexoLeal' }] }),
+})
 
-const signupSchema = z.object({
-  business_name: z
-    .string()
-    .trim()
-    .min(2, { message: "Ingresa el nombre de tu negocio" })
-    .max(120, { message: "Máximo 120 caracteres" }),
-  email: z
-    .string()
-    .trim()
-    .email({ message: "Correo inválido" })
-    .max(255, { message: "Máximo 255 caracteres" }),
-  password: z
-    .string()
-    .min(8, { message: "Mínimo 8 caracteres" })
-    .max(72, { message: "Máximo 72 caracteres" }),
-  business_type: z
-    .string()
-    .min(1, { message: "Selecciona un tipo de negocio" })
-    .max(60),
-});
+const step1Schema = z
+  .object({
+    email: z.string().trim().email('Email inválido'),
+    password: z.string().min(8, 'Mínimo 8 caracteres'),
+    confirm: z.string(),
+  })
+  .refine((d) => d.password === d.confirm, { path: ['confirm'], message: 'Las contraseñas no coinciden' })
 
-const CURRENT_BUSINESS_KEY = "nexoleal:current-business-id";
-
-function mapCategory(label: string): BusinessCategory {
-  const found = BUSINESS_CATEGORY_OPTIONS.find((o) => o.label === label);
-  return found?.value ?? "other";
-}
+const step2Schema = z.object({
+  businessName: z.string().trim().min(2, 'Demasiado corto'),
+  category: z.string().min(1, 'Elige una categoría'),
+  plan: z.enum(['free', 'pro']),
+})
 
 function SignupPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const { plan: initialPlan } = Route.useSearch()
+  const [step, setStep] = useState<1 | 2 | 'await'>(1)
+  const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
-    business_name: "",
-    email: "",
-    password: "",
-    business_type: "",
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+    email: '',
+    password: '',
+    confirm: '',
+    businessName: '',
+    category: 'cafe',
+    plan: initialPlan ?? 'free',
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
-    const parsed = signupSchema.safeParse(form);
-    if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {};
-      for (const issue of parsed.error.issues) {
-        const key = issue.path[0]?.toString();
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
-      }
-      setErrors(fieldErrors);
-      return;
+  const goStep2 = (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrors({})
+    const p = step1Schema.safeParse(form)
+    if (!p.success) {
+      const map: Record<string, string> = {}
+      p.error.issues.forEach((i) => (map[i.path[0] as string] = i.message))
+      setErrors(map)
+      return
     }
+    setStep(2)
+  }
 
-    setSubmitting(true);
-
+  const handleFinalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrors({})
+    const p = step2Schema.safeParse(form)
+    if (!p.success) {
+      const map: Record<string, string> = {}
+      p.error.issues.forEach((i) => (map[i.path[0] as string] = i.message))
+      setErrors(map)
+      return
+    }
+    setSubmitting(true)
     try {
-      const { data: signUpData, error: signUpError } =
-        await supabase.auth.signUp({
-          email: parsed.data.email,
-          password: parsed.data.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
-            data: {
-              business_name: parsed.data.business_name,
-              business_type: parsed.data.business_type,
-            },
-          },
-        });
+      const { data: signUpData, error: signErr } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      })
+      if (signErr) throw signErr
 
-      if (signUpError) {
-        toast.error(signUpError.message);
-        setSubmitting(false);
-        return;
-      }
-
+      // If email confirmation is required, session is null.
       if (!signUpData.session) {
-        toast.success(
-          "Te enviamos un correo para confirmar tu cuenta",
-        );
-        setSubmitting(false);
-        return;
+        localStorage.setItem(
+          'nexoleal:pending-business',
+          JSON.stringify({ name: form.businessName, category: form.category, plan: form.plan }),
+        )
+        setStep('await')
+        return
       }
 
-      const category = mapCategory(parsed.data.business_type);
-      const { business } = await businessesApi.create({
-        name: parsed.data.business_name,
-        category,
-      });
-
-      try {
-        localStorage.setItem(CURRENT_BUSINESS_KEY, business.id);
-      } catch {
-        // localStorage may be unavailable (private mode); search params are the source of truth.
-      }
-
-      toast.success("¡Cuenta creada! Vamos a configurar tu negocio.");
-      await navigate({
-        to: "/onboarding",
-        // Onboarding's search schema is widened in the parallel Wave 2 prompt
-        // (03-onboarding-persistence) to accept `businessId`. Cast for now.
-        search: {
-          businessId: business.id,
-          business: parsed.data.business_name,
-        } as unknown as { business?: string; type?: string },
-      });
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message);
-      } else {
-        console.error("Signup failed:", error);
-        toast.error("No pudimos crear tu cuenta. Intenta de nuevo.");
-      }
-      setSubmitting(false);
+      const created = await businessesApi.create({
+        name: form.businessName,
+        category: form.category as never,
+        plan: form.plan,
+      })
+      localStorage.setItem('nexoleal:current-business-id', created.business.id)
+      toast.success('Cuenta creada')
+      navigate({ to: '/onboarding' })
+    } catch (err) {
+      console.error(err)
+      toast.error('No pudimos crear tu cuenta', { description: (err as Error).message })
+    } finally {
+      setSubmitting(false)
     }
-  };
+  }
+
+  if (step === 'await') {
+    return (
+      <AuthSplit headline="Revisa tu correo." subtitle="Confirma tu cuenta para terminar la creación de tu negocio.">
+        <div className="surface-paper p-8 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-cream)]">
+            <Mail className="h-6 w-6 text-[color:var(--color-ink)]" />
+          </div>
+          <h2 className="mt-6 font-display text-2xl">Te enviamos un enlace</h2>
+          <p className="mt-2 text-sm text-[color:var(--color-ink-soft)]">
+            Abre el correo en <strong>{form.email}</strong> y haz clic en el botón de confirmación. Cuando regreses, tu negocio se creará automáticamente.
+          </p>
+        </div>
+      </AuthSplit>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)]">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2 text-black">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Sparkles className="h-4 w-4" />
-            </span>
-            <span className="font-display text-lg font-semibold">NexoLeal</span>
-          </Link>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1 text-sm text-muted hover:text-[var(--primary)]"
-          >
-            <ArrowLeft className="h-4 w-4" /> Volver
-          </Link>
-        </div>
-      </header>
+    <AuthSplit
+      headline={step === 1 ? 'Crea tu cuenta.' : 'Cuéntanos de tu negocio.'}
+      subtitle={
+        step === 1
+          ? 'Tu programa de lealtad estará listo en 3 minutos.'
+          : 'Esto aparecerá en la cartera digital de tus clientes.'
+      }
+    >
+      <div className="mb-6 flex gap-2">
+        <span className={`h-1 flex-1 rounded-full ${step !== 1 ? 'bg-[var(--color-ink)]' : 'bg-[var(--color-signal)]'}`} />
+        <span className={`h-1 flex-1 rounded-full ${step === 2 ? 'bg-[var(--color-signal)]' : 'bg-[var(--color-border)]'}`} />
+      </div>
 
-      <main className="mx-auto grid max-w-6xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:py-20">
-        <section className="hidden flex-col justify-center lg:flex">
-          <span className="section-title mb-4">Crear cuenta</span>
-          <h1 className="page-title mb-4">
-            Empieza a fidelizar a tus clientes hoy.
-          </h1>
-          <p className="muted-text text-lg">
-            Configura tu programa de lealtad digital en minutos. Sin tarjetas,
-            sin hardware, sin tarjeta de crédito.
+      {step === 1 ? (
+        <form onSubmit={goStep2} className="space-y-4">
+          <h2 className="display-md">Paso 1 · Cuenta</h2>
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} aria-invalid={!!errors.email} />
+            {errors.email && <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">{errors.email}</p>}
+          </div>
+          <div>
+            <Label htmlFor="password">Contraseña</Label>
+            <Input id="password" type="password" autoComplete="new-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} aria-invalid={!!errors.password} />
+            {errors.password && <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">{errors.password}</p>}
+          </div>
+          <div>
+            <Label htmlFor="confirm">Confirmar contraseña</Label>
+            <Input id="confirm" type="password" autoComplete="new-password" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} aria-invalid={!!errors.confirm} />
+            {errors.confirm && <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">{errors.confirm}</p>}
+          </div>
+          <Button type="submit" className="w-full btn-signal">Continuar</Button>
+          <p className="text-center text-xs text-[color:var(--color-ink-soft)]">
+            ¿Ya tienes cuenta? <Link to="/login" className="underline">Inicia sesión</Link>
           </p>
-          <ul className="muted-text mt-8 space-y-3 text-sm">
-            <li>✓ 30 días de prueba gratuita</li>
-            <li>✓ Soporte en español</li>
-            <li>✓ Cancela cuando quieras</li>
-          </ul>
-        </section>
-
-        <section className="card mx-auto w-full max-w-md p-6 sm:p-8">
-          <h2 className="font-display text-2xl font-semibold">
-            Crea tu cuenta de negocio
-          </h2>
-          <p className="muted-text mt-1 text-sm">
-            ¿Ya tienes cuenta?{" "}
-            <Link to="/login" className="text-[var(--primary)] underline">
-              Inicia sesión
-            </Link>
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-            <div className="space-y-1.5">
-              <Label htmlFor="business_name">Nombre del negocio</Label>
-              <Input
-                id="business_name"
-                value={form.business_name}
-                onChange={(e) =>
-                  setForm({ ...form, business_name: e.target.value })
-                }
-                placeholder="Ej. Estudio Navaja"
-                maxLength={120}
-                aria-invalid={!!errors.business_name}
-              />
-              {errors.business_name && (
-                <p className="text-xs text-destructive">{errors.business_name}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="tu@negocio.com"
-                maxLength={255}
-                aria-invalid={!!errors.email}
-              />
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Contraseña</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
-                  }
-                  placeholder="Mínimo 8 caracteres"
-                  minLength={8}
-                  maxLength={72}
-                  aria-invalid={!!errors.password}
-                />
+        </form>
+      ) : (
+        <form onSubmit={handleFinalSubmit} className="space-y-4">
+          <h2 className="display-md">Paso 2 · Tu negocio</h2>
+          <div>
+            <Label htmlFor="businessName">Nombre del negocio</Label>
+            <Input id="businessName" value={form.businessName} onChange={(e) => setForm({ ...form, businessName: e.target.value })} placeholder="La Barbería Sur" />
+            {errors.businessName && <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">{errors.businessName}</p>}
+          </div>
+          <div>
+            <Label htmlFor="category">Categoría</Label>
+            <select
+              id="category"
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              className="w-full rounded-md border border-[color:var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+            >
+              {BUSINESS_CATEGORY_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <Label>Plan</Label>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+              {(['free', 'pro'] as const).map((p) => (
                 <button
                   type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
-                  aria-label={
-                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-                  }
+                  key={p}
+                  onClick={() => setForm({ ...form, plan: p })}
+                  className={`rounded-xl border px-4 py-3 text-left transition ${form.plan === p ? 'border-[var(--color-signal)] bg-[var(--color-cream)]' : 'border-[color:var(--color-border)]'}`}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  <p className="font-display text-lg capitalize">{p}</p>
+                  <p className="text-xs text-[color:var(--color-ink-soft)]">{p === 'free' ? 'Hasta 100 clientes' : 'Ilimitado + IA'}</p>
                 </button>
-              </div>
-              {errors.password && (
-                <p className="text-xs text-destructive">{errors.password}</p>
-              )}
+              ))}
             </div>
+          </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="business_type">Tipo de negocio</Label>
-              <Select
-                value={form.business_type}
-                onValueChange={(v) => setForm({ ...form, business_type: v })}
-              >
-                <SelectTrigger
-                  id="business_type"
-                  aria-invalid={!!errors.business_type}
-                >
-                  <SelectValue placeholder="Selecciona una opción" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUSINESS_CATEGORY_OPTIONS.map((option) => (
-                    <SelectItem key={option.label} value={option.label}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.business_type && (
-                <p className="text-xs text-destructive">{errors.business_type}</p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full"
-              disabled={submitting}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Creando...
-                </>
-              ) : (
-                "Crear cuenta de mi negocio"
-              )}
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>Atrás</Button>
+            <Button type="submit" disabled={submitting} className="btn-signal flex-1">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Crear negocio'}
             </Button>
-
-            <p className="text-center text-xs text-muted">
-              Al crear tu cuenta aceptas nuestros Términos y Política de
-              Privacidad.
-            </p>
-          </form>
-        </section>
-      </main>
-    </div>
-  );
+          </div>
+        </form>
+      )}
+    </AuthSplit>
+  )
 }
