@@ -39,12 +39,26 @@ With owner Bearer token:
 | `GET /clients/businesses-clients?businessId=` | 200 |
 | `GET /businesses/:id/campaigns` | 200 |
 
+## Supabase checks
+
+```bash
+SB="https://lajrjnjyvbpaaspzgpvh.supabase.co"
+SERVICE_KEY="<from backend/.dev.vars>"
+
+for table in businesses clients visits campaigns staff_keys loyalty_configs rewards client_business_loyalty; do
+  echo -n "$table: "
+  curl -sS -o /dev/null -w "%{http_code}\n" "$SB/rest/v1/$table?limit=1" \
+    -H "apikey: $SERVICE_KEY" -H "Authorization: Bearer $SERVICE_KEY"
+done
+```
+
+All tables should return `200`. See [`docs/SUPABASE.md`](SUPABASE.md).
+
 ## Known worker names
 
 | Purpose | Worker |
 |---------|--------|
 | Live frontend | `tanstack-start-app` |
 | Live API (frontend points here) | `nexoleal-backend` |
-| CI backend on main push | `nexoleal-backend-production` |
 
-Keep `nexoleal-backend` and `nexoleal-backend-production` in sync when schema or routes change.
+Only **2 production workers** should exist. Delete any legacy `nexoleal-backend-production`.
