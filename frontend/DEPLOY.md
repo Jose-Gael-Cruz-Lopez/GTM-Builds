@@ -47,9 +47,8 @@ After a successful revamp deploy, `/manifest.webmanifest` returns JSON (not 404)
 
 ## GitHub secrets (CI)
 
-| Secret | Example value |
-|--------|---------------|
-| `CLOUDFLARE_API_TOKEN` | Workers deploy token |
-| `VITE_SUPABASE_URL` | `https://lajrjnjyvbpaaspzgpvh.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key |
-| `VITE_API_URL` | `https://nexoleal-backend.nexoleal.workers.dev` |
+| Secret | Required | Notes |
+|--------|----------|-------|
+| `CLOUDFLARE_API_TOKEN` | Yes | Workers deploy token |
+| `CLOUDFLARE_ACCOUNT_ID` | Yes | Cloudflare account |
+| `VITE_SUPABASE_*` | No | Loaded from committed `.env.production` |
