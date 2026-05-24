@@ -1,16 +1,22 @@
-# Panel Photography Placeholders
+# Landing panel photography
 
-These are placeholder gradient JPGs (1600×1000) for the five scroll-stack panels. Replace each with a real photograph matching the described mood/composition before launching publicly.
+Editorial cinematic photos used as backgrounds for the 5 ScrollStack
+use-case panels. Dimensions: 1600×1000 (16:10), optimized JPEG ~150–300 KB.
 
-| File | Vertical | Photograph guidance |
-|---|---|---|
-| `cafeteria.jpg` | Cafetería | Barista pouring espresso, warm wood counter, soft morning side-light. Wide composition with breathing room top-left for headline. |
-| `retail.jpg` | Retail | Small boutique interior, hand-to-hand paper bag handover, linen/paper textures, soft natural light. |
-| `salon.jpg` | Salón | Stylist's hands at the mirror, blurred reflection, warm clay tones, intimate composition. |
-| `restaurante.jpg` | Restaurante | Family/group table, warm overhead pendant, plates mid-meal, candlelight. |
-| `servicios.jpg` | Servicios | Independent professional's desk — laptop, plant, ceramic mug, neutral linen background. |
+All current images are sourced from the Unsplash free library
+(unsplash.com/license), which permits commercial and non-commercial use
+without attribution. Files are cropped to focal subject and saved
+progressive for fast first-paint.
 
-Each photo should:
-- Have **clear breathing room** in the lower-left third (for the section index + chip) and centered horizontally (for the headline).
-- Use **muted, warm tones** that complement the paper background.
-- Be exported at **1600×1000 JPG ~120kB**.
+| File              | Subject               | Source        |
+| ----------------- | --------------------- | ------------- |
+| `cafeteria.jpg`   | Barista pouring latte | Unsplash      |
+| `retail.jpg`      | Boutique shop window  | Unsplash      |
+| `salon.jpg`       | Hair salon interior   | Unsplash      |
+| `restaurante.jpg` | Restaurant dining room| Unsplash      |
+| `servicios.jpg`   | Tailor hands & fabric | Unsplash      |
+
+When replacing with brand photography, keep the same dimensions and
+prefer a single human subject or quiet interior — the panel veil
+(`linear-gradient` overlay in `ScrollStackPanel.tsx`) needs the lower
+half of the image to be moderately dark for white headline legibility.
