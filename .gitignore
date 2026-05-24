@@ -9,6 +9,7 @@ dist/
 .env
 .env.*
 !.env.example
+!frontend/.env.production
 .dev.vars
 *.local
 

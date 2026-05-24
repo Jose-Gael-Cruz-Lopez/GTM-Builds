@@ -25,13 +25,16 @@ npm run build
 npx wrangler deploy
 ```
 
-Build-time env (from `.env` or export):
+Build-time env is loaded from [`.env.production`](.env.production) (committed — anon key is public). Worker runtime SSR vars are in [`wrangler.jsonc`](wrangler.jsonc) `vars`.
 
+```bash
+cd frontend
+npm ci
+npm run build
+npx wrangler deploy
 ```
-VITE_SUPABASE_URL=https://lajrjnjyvbpaaspzgpvh.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<anon key>
-VITE_API_URL=https://nexoleal-backend.nexoleal.workers.dev
-```
+
+Optional local override: copy `.env.example` to `.env` for dev.
 
 ## Verify
 
