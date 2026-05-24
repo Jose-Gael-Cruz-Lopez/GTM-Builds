@@ -24,10 +24,7 @@ export function ConsumerJoin() {
         }}
       >
         {/* Copy */}
-        <div
-          className={revealed ? "soft-rise" : "opacity-0"}
-          style={{ transitionDelay: "100ms" }}
-        >
+        <div className={revealed ? "soft-rise" : "opacity-0"} style={{ transitionDelay: "100ms" }}>
           <span
             style={{
               fontFamily: "var(--font-sans)",
@@ -65,8 +62,8 @@ export function ConsumerJoin() {
               margin: "1.25rem 0 0",
             }}
           >
-            Regístrate con tu número en segundos. Acumula visitas, desbloquea descuentos y
-            comparte tu código con amigos para ganar más.
+            Regístrate con tu número en segundos. Acumula visitas, desbloquea descuentos y comparte
+            tu código con amigos para ganar más.
           </p>
 
           <div
@@ -185,7 +182,14 @@ export function ConsumerJoin() {
               </p>
             </div>
 
-            <div style={{ marginTop: "1.25rem", display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+            <div
+              style={{
+                marginTop: "1.25rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.625rem",
+              }}
+            >
               {[
                 { label: "Tu código de invitación", value: "REF-551-7842" },
                 { label: "Sellos acumulados", value: "4 / 10" },
