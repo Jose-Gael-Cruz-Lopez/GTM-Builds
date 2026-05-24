@@ -25,6 +25,12 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Supabase CLI temp
+supabase/.temp/
+
+# Local smoke-test credentials
+SMOKE-TEST-ACCOUNT.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
