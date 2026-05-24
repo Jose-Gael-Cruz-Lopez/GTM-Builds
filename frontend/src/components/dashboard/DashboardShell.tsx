@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   BarChart3,
   Gift,
@@ -40,48 +41,54 @@ const NAV_ITEMS: {
   id: DashboardNavId;
   label: string;
   icon: typeof LayoutDashboard;
-  href: (id: string) => string;
+  to:
+    | "/dashboard/$businessId"
+    | "/dashboard/$businessId/clients"
+    | "/dashboard/$businessId/visits"
+    | "/dashboard/$businessId/redemptions"
+    | "/campaigns/$businessId"
+    | "/settings/$businessId";
   mobileTab?: boolean;
 }[] = [
   {
     id: "resumen",
     label: "Resumen",
     icon: LayoutDashboard,
-    href: (id) => `/dashboard/${id}`,
+    to: "/dashboard/$businessId",
     mobileTab: true,
   },
   {
     id: "clientes",
     label: "Clientes",
     icon: Users,
-    href: (id) => `/dashboard/${id}/clients`,
+    to: "/dashboard/$businessId/clients",
     mobileTab: true,
   },
   {
     id: "visitas",
     label: "Visitas",
     icon: Footprints,
-    href: (id) => `/dashboard/${id}/visits`,
+    to: "/dashboard/$businessId/visits",
     mobileTab: true,
   },
   {
     id: "recompensas",
     label: "Recompensas",
     icon: Gift,
-    href: (id) => `/dashboard/${id}/redemptions`,
+    to: "/dashboard/$businessId/redemptions",
   },
   {
     id: "campanas",
     label: "Campañas",
     icon: Megaphone,
-    href: (id) => `/campaigns/${id}`,
+    to: "/campaigns/$businessId",
     mobileTab: true,
   },
   {
     id: "config",
     label: "Configuración",
     icon: Settings,
-    href: (id) => `/settings/${id}`,
+    to: "/settings/$businessId",
     mobileTab: true,
   },
 ];
@@ -116,12 +123,13 @@ function SidebarNav({
 }) {
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
-      {NAV_ITEMS.map(({ id, label, icon: Icon, href }) => {
+      {NAV_ITEMS.map(({ id, label, icon: Icon, to }) => {
         const active = activeNav === id;
         return (
-          <a
+          <Link
             key={id}
-            href={href(businessId)}
+            to={to}
+            params={{ businessId }}
             onClick={onNavigate}
             className={cn(
               "flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--duration)] ease-[var(--ease-out-expo)]",
@@ -133,7 +141,7 @@ function SidebarNav({
           >
             <Icon className="h-4 w-4 shrink-0" aria-hidden />
             {label}
-          </a>
+          </Link>
         );
       })}
       <div className="mt-auto border-t border-[color:var(--color-border)] pt-4">
@@ -202,7 +210,6 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const mobileTabs = NAV_ITEMS.filter((item) => item.mobileTab);
-  const campaignsGenerateHref = `/campaigns/${businessId}?action=generate`;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-paper)] text-[color:var(--color-ink)]">
@@ -248,14 +255,16 @@ export function DashboardShell({
               </div>
             </div>
 
-            <a
-              href={campaignsGenerateHref}
+            <Link
+              to="/campaigns/$businessId"
+              params={{ businessId }}
+              search={{ tab: "all", action: "generate" }}
               className="btn-signal hidden items-center gap-2 text-sm sm:inline-flex"
             >
               <BarChart3 className="h-4 w-4" aria-hidden />
               <span className="hidden md:inline">Generar campaña con IA</span>
               <span className="md:hidden">Campaña IA</span>
-            </a>
+            </Link>
           </div>
         </header>
 
@@ -268,12 +277,13 @@ export function DashboardShell({
         aria-label="Navegación principal"
       >
         <div className="grid grid-cols-5">
-          {mobileTabs.map(({ id, label, icon: Icon, href }) => {
+          {mobileTabs.map(({ id, label, icon: Icon, to }) => {
             const active = activeNav === id;
             return (
-              <a
+              <Link
                 key={id}
-                href={href(businessId)}
+                to={to}
+                params={{ businessId }}
                 className={cn(
                   "flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors",
                   active ? "text-[color:var(--color-ink)]" : "text-[color:var(--color-ink-soft)]",
@@ -285,7 +295,7 @@ export function DashboardShell({
                   aria-hidden
                 />
                 {label}
-              </a>
+              </Link>
             );
           })}
         </div>

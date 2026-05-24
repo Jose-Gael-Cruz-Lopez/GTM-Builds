@@ -1,12 +1,12 @@
 import { RouteError } from "@/components/RouteError";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 
-import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
 import { analyticsApi } from "@/lib/api/analytics";
 import { ApiError } from "@/lib/api-client";
+import { requireSession } from "@/lib/auth-guards";
 import { useOwnedBusiness } from "@/hooks/use-owned-business";
 import { useSession } from "@/hooks/use-session";
 
@@ -21,15 +21,8 @@ import { ChurnRiskList } from "@/components/dashboard/ChurnRiskList";
 import { AnalyticsEmptyState } from "@/components/dashboard/AnalyticsEmptyState";
 
 export const Route = createFileRoute("/dashboard/$businessId")({
-  beforeLoad: async ({ params }) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      throw redirect({
-        href: `/login?redirect=${encodeURIComponent(`/dashboard/${params.businessId}`)}`,
-      });
-    }
+  beforeLoad: async ({ params, location }) => {
+    await requireSession(location.pathname || `/dashboard/${params.businessId}`);
   },
   component: DashboardPage,
   errorComponent: RouteError,

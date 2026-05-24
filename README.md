@@ -4,13 +4,24 @@
 
 [![Backend CI](https://github.com/Jose-Gael-Cruz-Lopez/GTM-Builds/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/Jose-Gael-Cruz-Lopez/GTM-Builds/actions/workflows/backend-ci.yml)
 [![Frontend CI](https://github.com/Jose-Gael-Cruz-Lopez/GTM-Builds/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/Jose-Gael-Cruz-Lopez/GTM-Builds/actions/workflows/frontend-ci.yml)
+[![Frontend](https://img.shields.io/badge/frontend-live-brightgreen)](https://tanstack-start-app.nexoleal.workers.dev)
+[![Backend API](https://img.shields.io/badge/API-live-brightgreen)](https://nexoleal-backend.nexoleal.workers.dev/health)
 
-| Service | URL |
-|---------|-----|
-| **Frontend** | https://tanstack-start-app.nexoleal.workers.dev |
-| **Backend API** | https://nexoleal-backend.nexoleal.workers.dev |
-| **Health check** | https://nexoleal-backend.nexoleal.workers.dev/health |
-| **Supabase** | https://lajrjnjyvbpaaspzgpvh.supabase.co |
+## Producción (Cloudflare Workers)
+
+| Servicio | Worker | URL |
+|----------|--------|-----|
+| **App (frontend)** | `tanstack-start-app` | https://tanstack-start-app.nexoleal.workers.dev |
+| **API (backend)** | `nexoleal-backend` | https://nexoleal-backend.nexoleal.workers.dev |
+| **Health check** | — | https://nexoleal-backend.nexoleal.workers.dev/health |
+| **Supabase** | — | https://lajrjnjyvbpaaspzgpvh.supabase.co |
+
+**Último deploy (2026-05-24):** revamp completo (PR #5). Workers: frontend `244d3eab`, backend `08c58bd9`.
+
+| Entorno local | URL |
+|---------------|-----|
+| Frontend dev | http://localhost:8080 |
+| Backend dev | http://localhost:8787 |
 
 NexoLeal digitaliza programas de lealtad para PYMES: monedero digital para clientes, escáner seguro para staff, y dashboard con campañas IA para dueños de negocio.
 
@@ -165,14 +176,26 @@ alter table public.businesses add column if not exists logo_url text;
 
 ## Deploy
 
-| Target | Trigger | Comando manual |
-|--------|---------|----------------|
-| Backend | Push a `main` (`backend/**`) | `cd backend && npx wrangler deploy` |
-| Frontend | Push a `main` (`frontend/**`) | `cd frontend && npm run build && npx wrangler deploy` |
+### Cloudflare Workers
 
-Secrets de Cloudflare (backend): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, `TOKEN_SECRET`, `NIM_API_KEY`.
+| Target | Worker name | Trigger | Comando manual |
+|--------|-------------|---------|----------------|
+| Frontend | `tanstack-start-app` | Push a `main` (`frontend/**`) | `cd frontend && npm run build && npx wrangler deploy` |
+| Backend (default) | `nexoleal-backend` | Manual o `wrangler deploy` | `cd backend && npx wrangler deploy` |
+| Backend (CI prod env) | `nexoleal-backend-production` | Push a `main` (`backend/**`) | `cd backend && npm run deploy:production` |
+| Backend (staging) | `nexoleal-backend-staging` | Push a `develop` | `cd backend && npm run deploy:staging` |
 
-Secrets de GitHub (frontend CI): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_API_URL`, `CLOUDFLARE_API_TOKEN`.
+Guías detalladas: [`backend/DEPLOY.md`](backend/DEPLOY.md) · [`frontend/DEPLOY.md`](frontend/DEPLOY.md)
+
+### Secrets
+
+**Cloudflare (backend worker):** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, `TOKEN_SECRET`, `NIM_API_KEY`
+
+**GitHub Actions:** `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_API_URL` (debe ser `https://nexoleal-backend.nexoleal.workers.dev`)
+
+### CORS
+
+El backend permite el origen del frontend vía `FRONTEND_ORIGIN` en [`backend/wrangler.toml`](backend/wrangler.toml) (incluye `localhost:8080` y la URL de Workers).
 
 ---
 

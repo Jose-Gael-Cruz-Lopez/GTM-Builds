@@ -203,6 +203,39 @@ visitRoutes.post('/', requireStaff(), async (c) => {
   )
 })
 
+// ─── GET /visits/business-visits ──────────────────────────────────────────────
+// Admin view of all visits for a business. Supports date range filtering.
+// Must be registered before /:visitId so "business-visits" is not parsed as a UUID.
+
+visitRoutes.get('/business-visits', requireAdmin(), rateLimit({ keyPrefix: 'visits-list' }), async (c) => {
+  const businessId = c.req.param('businessId') ?? c.req.query('businessId')
+  if (!businessId) return c.json(err('VALIDATION_ERROR', 'businessId required'), 400)
+
+  const url = new URL(c.req.url)
+  const from = url.searchParams.get('from') // ISO date string
+  const to = url.searchParams.get('to')     // ISO date string
+  const limit = Math.min(100, parseInt(url.searchParams.get('limit') ?? '50', 10))
+  const offset = parseInt(url.searchParams.get('offset') ?? '0', 10)
+
+  const db = createSupabaseClient(c.env, 'service')
+
+  const filters: NonNullable<Parameters<typeof db.get>[1]>['filters'] = [
+    { column: 'business_id', operator: 'eq', value: businessId },
+  ]
+
+  if (from) filters.push({ column: 'created_at', operator: 'gte', value: from })
+  if (to) filters.push({ column: 'created_at', operator: 'lte', value: to })
+
+  const visits = await db.get('visits', {
+    filters,
+    order: 'created_at.desc',
+    limit,
+    offset,
+  })
+
+  return c.json(ok({ visits, count: visits.length }), 200)
+})
+
 // ─── GET /visits/:visitId ─────────────────────────────────────────────────────
 // Get a single visit by ID. Accessible by the client who made the visit or admin.
 
@@ -261,38 +294,6 @@ visitRoutes.get('/me/visits', requireAnyAuth(), async (c) => {
   if (businessId) {
     filters.push({ column: 'business_id', operator: 'eq', value: businessId })
   }
-
-  const visits = await db.get('visits', {
-    filters,
-    order: 'created_at.desc',
-    limit,
-    offset,
-  })
-
-  return c.json(ok({ visits, count: visits.length }), 200)
-})
-
-// ─── GET /businesses/:businessId/visits ───────────────────────────────────────
-// Admin view of all visits for a business. Supports date range filtering.
-
-visitRoutes.get('/business-visits', requireAdmin(), rateLimit({ keyPrefix: 'visits-list' }), async (c) => {
-  const businessId = c.req.param('businessId') ?? c.req.query('businessId')
-  if (!businessId) return c.json(err('VALIDATION_ERROR', 'businessId required'), 400)
-
-  const url = new URL(c.req.url)
-  const from = url.searchParams.get('from') // ISO date string
-  const to = url.searchParams.get('to')     // ISO date string
-  const limit = Math.min(100, parseInt(url.searchParams.get('limit') ?? '50', 10))
-  const offset = parseInt(url.searchParams.get('offset') ?? '0', 10)
-
-  const db = createSupabaseClient(c.env, 'service')
-
-  const filters: NonNullable<Parameters<typeof db.get>[1]>['filters'] = [
-    { column: 'business_id', operator: 'eq', value: businessId },
-  ]
-
-  if (from) filters.push({ column: 'created_at', operator: 'gte', value: from })
-  if (to) filters.push({ column: 'created_at', operator: 'lte', value: to })
 
   const visits = await db.get('visits', {
     filters,

@@ -1,5 +1,5 @@
 import { RouteError } from "@/components/RouteError";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -8,8 +8,8 @@ import { es } from "date-fns/locale";
 import { Copy, MoreHorizontal, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
 import { adminApi, isAdminRouteUnavailable } from "@/lib/admin-api";
+import { requireSession } from "@/lib/auth-guards";
 import { useOwnedBusiness } from "@/hooks/use-owned-business";
 import { useSession } from "@/hooks/use-session";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -51,15 +51,8 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/dashboard/$businessId/clients")({
   validateSearch: (search) => searchSchema.parse(search),
-  beforeLoad: async ({ params }) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      throw redirect({
-        href: `/login?redirect=${encodeURIComponent(`/dashboard/${params.businessId}/clients`)}`,
-      });
-    }
+  beforeLoad: async ({ params, location }) => {
+    await requireSession(location.pathname || `/dashboard/${params.businessId}/clients`);
   },
   component: ClientsPage,
   errorComponent: RouteError,
