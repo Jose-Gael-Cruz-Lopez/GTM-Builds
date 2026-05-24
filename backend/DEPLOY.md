@@ -42,7 +42,7 @@ npm run deploy:production      # nexoleal-backend-production
 
 ## Per-deploy checklist
 
-- [ ] `npm test` passes (24 tests)
+- [ ] `npm test` passes (25 tests)
 - [ ] `npx tsc --noEmit` passes
 - [ ] `FRONTEND_ORIGIN` in `wrangler.toml` includes the deployed frontend URL
 - [ ] Supabase migrations applied if schema changed
