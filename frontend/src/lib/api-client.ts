@@ -1,4 +1,6 @@
 import { supabase } from '@/integrations/supabase/client'
+import { getStaffKey } from '@/lib/staff-key-storage'
+import { toast } from 'sonner'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://nexoleal-backend.nexoleal.workers.dev'
 
@@ -35,7 +37,7 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
   }
 
   if (staffKey) {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('nexoleal:staff-key') : null
+    const stored = typeof window !== 'undefined' ? await getStaffKey() : null
     if (stored) finalHeaders.set('X-Staff-Key', stored)
   }
 
@@ -69,6 +71,19 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
   }
 
   if (!parsed.success) {
+    if (res.status === 429) {
+      const retryAfter = res.headers.get('Retry-After')
+      const seconds = retryAfter ? parseInt(retryAfter, 10) : 60
+      toast.error(
+        `Demasiadas solicitudes. Intenta de nuevo en ${Number.isFinite(seconds) ? seconds : 60}s.`,
+      )
+    }
+    if ((res.status === 401 || res.status === 403) && typeof window !== 'undefined') {
+      const path = window.location.pathname
+      if (!path.startsWith('/login') && !path.startsWith('/signup')) {
+        window.location.href = `/login?reason=expired&redirect=${encodeURIComponent(path)}`
+      }
+    }
     throw new ApiError(parsed.error.code, parsed.error.message, res.status)
   }
   return parsed.data

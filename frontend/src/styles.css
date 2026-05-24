@@ -340,3 +340,26 @@
   overflow: hidden;
   background: var(--bg-elevated);
 }
+
+@keyframes scan-bubble-rise {
+  from {
+    transform: translateY(0);
+    opacity: 0.75;
+  }
+  to {
+    transform: translateY(-72px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[scan-bubble-rise_var\(--dur\)_ease-out_var\(--delay\)_forwards\] {
+    animation: fade-celebrate 200ms ease-out forwards !important;
+    transform: none !important;
+  }
+}
+
+@keyframes fade-celebrate {
+  from { opacity: 0; }
+  to { opacity: 0.85; }
+}

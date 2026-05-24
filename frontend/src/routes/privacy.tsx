@@ -1,8 +1,10 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute } from '@tanstack/react-router'
 import { AppShell } from '@/components/layout/AppShell'
 
 export const Route = createFileRoute('/privacy')({
   component: Privacy,
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: 'Privacidad · NexoLeal' }] }),
 })
 

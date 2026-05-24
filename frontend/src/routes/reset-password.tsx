@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
@@ -10,6 +11,7 @@ import { AuthSplit } from '@/components/auth/AuthSplit'
 
 export const Route = createFileRoute('/reset-password')({
   component: ResetPasswordPage,
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: 'Crear nueva contraseña · NexoLeal' }] }),
 })
 

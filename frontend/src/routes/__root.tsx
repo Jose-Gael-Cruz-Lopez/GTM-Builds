@@ -3,13 +3,14 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
-  useRouter,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
+import { RouteError } from "@/components/RouteError";
 import { NotFoundGlyph, IsoScene } from "@/components/ui/iso-scene";
 
 function NotFoundComponent() {
@@ -30,40 +31,8 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
-  const router = useRouter();
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg-paper)] px-4">
-      <IsoScene
-        title="Algo salió mal"
-        description="No pudimos cargar esta página. Intenta de nuevo o vuelve al inicio."
-        action={
-          <div className="flex flex-wrap justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                router.invalidate();
-                reset();
-              }}
-              className="btn-signal text-sm"
-            >
-              Reintentar
-            </button>
-            <a
-              href="/"
-              className="inline-flex items-center justify-center rounded-full border border-[color:var(--color-border)] px-5 py-2 text-sm font-medium hover:bg-current/5"
-            >
-              Ir al inicio
-            </a>
-          </div>
-        }
-      >
-        <NotFoundGlyph />
-      </IsoScene>
-    </div>
-  );
+function ErrorComponent(props: { error: Error; reset: () => void }) {
+  return <RouteError {...props} />;
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -85,10 +54,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Monedero digital, validación segura por QR y campañas con IA para que tus clientes regresen.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "/og-image.svg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "/og-image.svg" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/icon-192.svg" },
       {
         rel: "preconnect",
         href: "https://fonts.googleapis.com",
@@ -126,6 +101,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    void import("@/lib/axe-dev").then((m) => m.initAxeDev());
+    void import("@/lib/register-sw").then((m) => m.registerServiceWorker());
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

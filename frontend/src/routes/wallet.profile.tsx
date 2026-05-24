@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, redirect, useNavigate, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Loader2, LogOut } from 'lucide-react'
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/wallet/profile')({
     if (!session) throw redirect({ to: '/login', search: { redirect: '/wallet/profile' } })
   },
   component: WalletProfile,
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: 'Mi perfil · NexoLeal' }] }),
 })
 

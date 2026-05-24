@@ -21,10 +21,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WalletIndexRouteImport } from './routes/wallet.index'
 import { Route as WalletProfileRouteImport } from './routes/wallet.profile'
 import { Route as WalletBusinessIdRouteImport } from './routes/wallet.$businessId'
+import { Route as SettingsBusinessIdRouteImport } from './routes/settings.$businessId'
 import { Route as JoinBusinessIdRouteImport } from './routes/join.$businessId'
 import { Route as DashboardBusinessIdRouteImport } from './routes/dashboard.$businessId'
 import { Route as CampaignsBusinessIdRouteImport } from './routes/campaigns.$businessId'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as DashboardBusinessIdVisitsRouteImport } from './routes/dashboard.$businessId.visits'
+import { Route as DashboardBusinessIdClientsRouteImport } from './routes/dashboard.$businessId.clients'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -86,6 +89,11 @@ const WalletBusinessIdRoute = WalletBusinessIdRouteImport.update({
   path: '/wallet/$businessId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsBusinessIdRoute = SettingsBusinessIdRouteImport.update({
+  id: '/settings/$businessId',
+  path: '/settings/$businessId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JoinBusinessIdRoute = JoinBusinessIdRouteImport.update({
   id: '/join/$businessId',
   path: '/join/$businessId',
@@ -106,6 +114,18 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardBusinessIdVisitsRoute =
+  DashboardBusinessIdVisitsRouteImport.update({
+    id: '/visits',
+    path: '/visits',
+    getParentRoute: () => DashboardBusinessIdRoute,
+  } as any)
+const DashboardBusinessIdClientsRoute =
+  DashboardBusinessIdClientsRouteImport.update({
+    id: '/clients',
+    path: '/clients',
+    getParentRoute: () => DashboardBusinessIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -119,11 +139,14 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/campaigns/$businessId': typeof CampaignsBusinessIdRoute
-  '/dashboard/$businessId': typeof DashboardBusinessIdRoute
+  '/dashboard/$businessId': typeof DashboardBusinessIdRouteWithChildren
   '/join/$businessId': typeof JoinBusinessIdRoute
+  '/settings/$businessId': typeof SettingsBusinessIdRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
+  '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -137,11 +160,14 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/campaigns/$businessId': typeof CampaignsBusinessIdRoute
-  '/dashboard/$businessId': typeof DashboardBusinessIdRoute
+  '/dashboard/$businessId': typeof DashboardBusinessIdRouteWithChildren
   '/join/$businessId': typeof JoinBusinessIdRoute
+  '/settings/$businessId': typeof SettingsBusinessIdRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet': typeof WalletIndexRoute
+  '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -156,11 +182,14 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/campaigns/$businessId': typeof CampaignsBusinessIdRoute
-  '/dashboard/$businessId': typeof DashboardBusinessIdRoute
+  '/dashboard/$businessId': typeof DashboardBusinessIdRouteWithChildren
   '/join/$businessId': typeof JoinBusinessIdRoute
+  '/settings/$businessId': typeof SettingsBusinessIdRoute
   '/wallet/$businessId': typeof WalletBusinessIdRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
+  '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -178,9 +207,12 @@ export interface FileRouteTypes {
     | '/campaigns/$businessId'
     | '/dashboard/$businessId'
     | '/join/$businessId'
+    | '/settings/$businessId'
     | '/wallet/$businessId'
     | '/wallet/profile'
     | '/wallet/'
+    | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/visits'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -196,9 +228,12 @@ export interface FileRouteTypes {
     | '/campaigns/$businessId'
     | '/dashboard/$businessId'
     | '/join/$businessId'
+    | '/settings/$businessId'
     | '/wallet/$businessId'
     | '/wallet/profile'
     | '/wallet'
+    | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/visits'
   id:
     | '__root__'
     | '/'
@@ -214,9 +249,12 @@ export interface FileRouteTypes {
     | '/campaigns/$businessId'
     | '/dashboard/$businessId'
     | '/join/$businessId'
+    | '/settings/$businessId'
     | '/wallet/$businessId'
     | '/wallet/profile'
     | '/wallet/'
+    | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/visits'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -231,8 +269,9 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   CampaignsBusinessIdRoute: typeof CampaignsBusinessIdRoute
-  DashboardBusinessIdRoute: typeof DashboardBusinessIdRoute
+  DashboardBusinessIdRoute: typeof DashboardBusinessIdRouteWithChildren
   JoinBusinessIdRoute: typeof JoinBusinessIdRoute
+  SettingsBusinessIdRoute: typeof SettingsBusinessIdRoute
   WalletBusinessIdRoute: typeof WalletBusinessIdRoute
   WalletProfileRoute: typeof WalletProfileRoute
   WalletIndexRoute: typeof WalletIndexRoute
@@ -324,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletBusinessIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/$businessId': {
+      id: '/settings/$businessId'
+      path: '/settings/$businessId'
+      fullPath: '/settings/$businessId'
+      preLoaderRoute: typeof SettingsBusinessIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/join/$businessId': {
       id: '/join/$businessId'
       path: '/join/$businessId'
@@ -352,8 +398,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/$businessId/visits': {
+      id: '/dashboard/$businessId/visits'
+      path: '/visits'
+      fullPath: '/dashboard/$businessId/visits'
+      preLoaderRoute: typeof DashboardBusinessIdVisitsRouteImport
+      parentRoute: typeof DashboardBusinessIdRoute
+    }
+    '/dashboard/$businessId/clients': {
+      id: '/dashboard/$businessId/clients'
+      path: '/clients'
+      fullPath: '/dashboard/$businessId/clients'
+      preLoaderRoute: typeof DashboardBusinessIdClientsRouteImport
+      parentRoute: typeof DashboardBusinessIdRoute
+    }
   }
 }
+
+interface DashboardBusinessIdRouteChildren {
+  DashboardBusinessIdClientsRoute: typeof DashboardBusinessIdClientsRoute
+  DashboardBusinessIdVisitsRoute: typeof DashboardBusinessIdVisitsRoute
+}
+
+const DashboardBusinessIdRouteChildren: DashboardBusinessIdRouteChildren = {
+  DashboardBusinessIdClientsRoute: DashboardBusinessIdClientsRoute,
+  DashboardBusinessIdVisitsRoute: DashboardBusinessIdVisitsRoute,
+}
+
+const DashboardBusinessIdRouteWithChildren =
+  DashboardBusinessIdRoute._addFileChildren(DashboardBusinessIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -367,8 +440,9 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   CampaignsBusinessIdRoute: CampaignsBusinessIdRoute,
-  DashboardBusinessIdRoute: DashboardBusinessIdRoute,
+  DashboardBusinessIdRoute: DashboardBusinessIdRouteWithChildren,
   JoinBusinessIdRoute: JoinBusinessIdRoute,
+  SettingsBusinessIdRoute: SettingsBusinessIdRoute,
   WalletBusinessIdRoute: WalletBusinessIdRoute,
   WalletProfileRoute: WalletProfileRoute,
   WalletIndexRoute: WalletIndexRoute,

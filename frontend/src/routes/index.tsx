@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowRight, Sparkles, Shield, Zap, BarChart3, MessageCircle } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
@@ -6,6 +7,7 @@ import { useOwnedBusiness } from '@/hooks/use-owned-business'
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
+  errorComponent: RouteError,
   head: () => ({
     meta: [
       { title: 'NexoLeal · Convierte cada visita en una razón para volver' },

@@ -1,4 +1,6 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
+import { routeMeta } from '@/lib/route-meta'
 import { useState } from 'react'
 import { z } from 'zod'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
@@ -18,7 +20,12 @@ const searchSchema = z.object({
 export const Route = createFileRoute('/login')({
   validateSearch: (s) => searchSchema.parse(s),
   component: LoginPage,
-  head: () => ({ meta: [{ title: 'Iniciar sesión · NexoLeal' }] }),
+  errorComponent: RouteError,
+  head: () =>
+    routeMeta(
+      'Iniciar sesión · NexoLeal',
+      'Accede a tu panel de lealtad o monedero digital de NexoLeal.',
+    ),
 })
 
 const loginSchema = z.object({

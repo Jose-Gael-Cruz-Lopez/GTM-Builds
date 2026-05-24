@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, redirect, useNavigate, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
@@ -21,6 +22,7 @@ export const Route = createFileRoute('/wallet/$businessId')({
     if (!session) throw redirect({ to: '/login', search: { redirect: `/wallet/${params.businessId}` } })
   },
   component: WalletDetail,
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: 'Mi tarjeta · NexoLeal' }] }),
 })
 

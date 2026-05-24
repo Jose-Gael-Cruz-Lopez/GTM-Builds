@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
@@ -7,6 +8,7 @@ import { businessesApi } from '@/lib/api/businesses'
 
 export const Route = createFileRoute('/auth/callback')({
   component: AuthCallback,
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: 'Confirmando · NexoLeal' }] }),
 })
 

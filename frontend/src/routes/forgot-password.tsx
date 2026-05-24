@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -11,6 +12,7 @@ import { AuthSplit } from '@/components/auth/AuthSplit'
 
 export const Route = createFileRoute('/forgot-password')({
   component: ForgotPasswordPage,
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: 'Recuperar contraseña · NexoLeal' }] }),
 })
 

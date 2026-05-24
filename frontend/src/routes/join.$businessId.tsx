@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -24,6 +25,7 @@ import { useSession } from '@/hooks/use-session'
 
 export const Route = createFileRoute('/join/$businessId')({
   component: JoinPage,
+  errorComponent: RouteError,
   head: ({ params }) => ({
     meta: [
       { title: `Únete · NexoLeal` },

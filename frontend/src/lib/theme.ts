@@ -23,26 +23,47 @@ export const tokens = {
   motion: { ease: [0.22, 1, 0.36, 1] as const, duration: 0.32, durationSlow: 0.6 },
 } as const
 
-// Framer Motion presets
+function reducedMotion(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+// Framer Motion presets — transforms gated under reduced-motion
 export const motionPresets = {
-  fadeUp: {
-    initial: { opacity: 0, y: 16 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: tokens.motion.duration, ease: tokens.motion.ease },
-  },
-  revealStagger: {
-    initial: { opacity: 0, y: 24 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: tokens.motion.durationSlow, ease: tokens.motion.ease },
-  },
-  pulseSubtle: {
-    animate: { scale: [1, 1.02, 1] },
-    transition: { duration: 2.4, ease: 'easeInOut', repeat: Infinity },
-  },
-  scanZoom: {
-    animate: { scale: [1, 1.02, 1] },
-    transition: { duration: 0.4, ease: tokens.motion.ease },
-  },
+  fadeUp: reducedMotion()
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        transition: { duration: 0.2 },
+      }
+    : {
+        initial: { opacity: 0, y: 16 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: tokens.motion.duration, ease: tokens.motion.ease },
+      },
+  revealStagger: reducedMotion()
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        transition: { duration: 0.2 },
+      }
+    : {
+        initial: { opacity: 0, y: 24 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: tokens.motion.durationSlow, ease: tokens.motion.ease },
+      },
+  pulseSubtle: reducedMotion()
+    ? { animate: { opacity: [1, 0.85, 1] }, transition: { duration: 2.4, repeat: Infinity } }
+    : {
+        animate: { scale: [1, 1.02, 1] },
+        transition: { duration: 2.4, ease: 'easeInOut', repeat: Infinity },
+      },
+  scanZoom: reducedMotion()
+    ? { animate: { opacity: [1, 0.7, 1] }, transition: { duration: 0.2 } }
+    : {
+        animate: { scale: [1, 1.02, 1] },
+        transition: { duration: 0.4, ease: tokens.motion.ease },
+      },
 }
 
 // Recharts color palette

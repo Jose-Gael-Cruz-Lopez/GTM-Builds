@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/RouteError"
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -18,6 +19,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute('/signup')({
   validateSearch: (s) => searchSchema.parse(s),
   component: SignupPage,
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: 'Crear cuenta · NexoLeal' }] }),
 })
 
