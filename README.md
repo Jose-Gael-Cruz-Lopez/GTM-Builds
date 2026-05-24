@@ -257,7 +257,7 @@ alter table public.businesses add column if not exists logo_url text;
 | Backend (CI prod env) | `nexoleal-backend-production` | Push a `main` (`backend/**`) | `cd backend && npm run deploy:production` |
 | Backend (staging) | `nexoleal-backend-staging` | Push a `develop` | `cd backend && npm run deploy:staging` |
 
-Guías detalladas: [`backend/DEPLOY.md`](backend/DEPLOY.md) · [`frontend/DEPLOY.md`](frontend/DEPLOY.md)
+Guías detalladas: [`backend/DEPLOY.md`](backend/DEPLOY.md) · [`frontend/DEPLOY.md`](frontend/DEPLOY.md) · [`docs/ENV.md`](docs/ENV.md)
 
 ### Secrets
 
@@ -307,6 +307,7 @@ Cada QR está firmado con HMAC-SHA256 y expira en 90 segundos. Tras el primer es
 | [`docs/archive/frontend-revamp-prompts/`](docs/archive/frontend-revamp-prompts/) | Revamp prompts 05–12 (completados) |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Historial de cambios |
 | [`docs/VERIFICATION.md`](docs/VERIFICATION.md) | Checklist post-deploy |
+| [`docs/ENV.md`](docs/ENV.md) | Referencia de variables de entorno |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Guía de contribución |
 
 ---
