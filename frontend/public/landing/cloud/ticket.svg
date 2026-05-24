@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 110" width="70" height="110">
+<path d="M5 5h60v100h-60z" fill="#f9f6ef" stroke="#1a1a18" stroke-width="1.4"/>
+<g stroke="#1a1a18" stroke-width="1" opacity="0.85">
+<line x1="12" y1="20" x2="58" y2="20"/>
+<line x1="12" y1="30" x2="48" y2="30"/>
+<line x1="12" y1="40" x2="58" y2="40"/>
+<line x1="12" y1="50" x2="40" y2="50"/>
+</g>
+<text x="35" y="74" text-anchor="middle" font-family="Fraunces,serif" font-weight="600" font-size="16" fill="#1a1a18">RECIBO</text>
+<g stroke="#1a1a18" stroke-dasharray="2 2">
+<line x1="5" y1="90" x2="65" y2="90"/>
+</g>
+<text x="35" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="#3e3c36">#000241</text>
+</svg>
