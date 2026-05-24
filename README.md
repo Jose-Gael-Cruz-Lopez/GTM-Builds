@@ -16,7 +16,7 @@
 | **Health check** | — | https://nexoleal-backend.nexoleal.workers.dev/health |
 | **Supabase** | — | https://lajrjnjyvbpaaspzgpvh.supabase.co |
 
-**Último deploy (2026-05-24):** revamp completo (PR #5). Workers: frontend `244d3eab`, backend `08c58bd9`.
+**Último deploy (2026-05-24):** PR #7 merged + env fix. Workers: frontend `b91eca32`, backend `7ce781ed`.
 
 | Entorno local | URL |
 |---------------|-----|
