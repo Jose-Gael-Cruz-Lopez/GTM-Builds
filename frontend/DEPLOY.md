@@ -45,6 +45,8 @@ curl -s https://tanstack-start-app.nexoleal.workers.dev/manifest.webmanifest
 
 After a successful revamp deploy, `/manifest.webmanifest` returns JSON (not 404).
 
+Platform health audit: [`docs/HEALTH.md`](../docs/HEALTH.md)
+
 ## GitHub secrets (CI)
 
 | Secret | Required | Notes |

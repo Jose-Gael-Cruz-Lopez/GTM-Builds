@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Queries Supabase JS directly to find a business owned by the current user.
- * Sidesteps the broken `GET /businesses/:id` RLS issue documented in the gap analysis.
+ * Falls back to direct Supabase query when API business read is unavailable.
  */
 export function useOwnedBusiness() {
   const [userId, setUserId] = useState<string | null>(null);

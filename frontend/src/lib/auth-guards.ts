@@ -31,7 +31,7 @@ export async function requireClient(pathname: string) {
 }
 
 /**
- * Owner of a business — verifies via Supabase JS (sidesteps the GET /businesses/:id RLS bug).
+ * Owner of a business — verifies via Supabase JS (direct query on businesses table).
  */
 export async function requireOwner(businessId: string, pathname: string) {
   const session = await requireSession(pathname);

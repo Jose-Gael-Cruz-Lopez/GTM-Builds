@@ -61,6 +61,8 @@ curl https://nexoleal-backend.nexoleal.workers.dev/health
 # {"success":true,"data":{"status":"ok","version":"0.1.0","ts":"..."}}
 ```
 
+Platform health: [`docs/HEALTH.md`](../docs/HEALTH.md) · Supabase: [`docs/SUPABASE.md`](../docs/SUPABASE.md)
+
 ## Secrets (Cloudflare)
 
 Set on the **default** worker (`nexoleal-backend`):
