@@ -23,9 +23,27 @@ function buildQrPayload(phone: string): string {
 }
 
 const MOCK_DISCOUNTS = [
-  { id: "1", title: "10% en tu próxima compra", business: "La Barbería Sur", expires: "31 may", active: true },
-  { id: "2", title: "Café gratis al acumular 5 visitas", business: "Café Contigo", expires: "15 jun", active: true },
-  { id: "3", title: "2x1 en bebidas los martes", business: "Café Contigo", expires: "Vence en 3 días", active: false },
+  {
+    id: "1",
+    title: "10% en tu próxima compra",
+    business: "La Barbería Sur",
+    expires: "31 may",
+    active: true,
+  },
+  {
+    id: "2",
+    title: "Café gratis al acumular 5 visitas",
+    business: "Café Contigo",
+    expires: "15 jun",
+    active: true,
+  },
+  {
+    id: "3",
+    title: "2x1 en bebidas los martes",
+    business: "Café Contigo",
+    expires: "Vence en 3 días",
+    active: false,
+  },
 ];
 
 function UserDashboard() {
@@ -82,9 +100,7 @@ function UserDashboard() {
         <div className="flex items-start justify-between">
           <div>
             <p className="eyebrow text-[color:var(--color-signal)]">Hola,</p>
-            <h1 className="display-md text-[color:var(--color-cream)]">
-              •••• {phone.slice(-4)}
-            </h1>
+            <h1 className="display-md text-[color:var(--color-cream)]">•••• {phone.slice(-4)}</h1>
           </div>
           <button
             type="button"
@@ -102,7 +118,13 @@ function UserDashboard() {
             Muéstrale este QR al negocio
           </p>
 
-          <RadialCountdown seconds={secondsLeft} total={CYCLE} size={240} stroke={5} className="mt-4">
+          <RadialCountdown
+            seconds={secondsLeft}
+            total={CYCLE}
+            size={240}
+            stroke={5}
+            className="mt-4"
+          >
             <div className="flex flex-col items-center gap-2">
               {qrPayload ? (
                 <QRCodeSVG

@@ -2,11 +2,11 @@
 
 ## Live
 
-| | |
-|---|---|
-| **Worker** | `tanstack-start-app` |
-| **URL** | https://tanstack-start-app.nexoleal.workers.dev |
-| **Config** | [`wrangler.jsonc`](wrangler.jsonc) |
+|            |                                                 |
+| ---------- | ----------------------------------------------- |
+| **Worker** | `tanstack-start-app`                            |
+| **URL**    | https://tanstack-start-app.nexoleal.workers.dev |
+| **Config** | [`wrangler.jsonc`](wrangler.jsonc)              |
 
 ## CI/CD
 
@@ -49,8 +49,8 @@ Platform health audit: [`docs/HEALTH.md`](../docs/HEALTH.md)
 
 ## GitHub secrets (CI)
 
-| Secret | Required | Notes |
-|--------|----------|-------|
-| `CLOUDFLARE_API_TOKEN` | Yes | Workers deploy token |
-| `CLOUDFLARE_ACCOUNT_ID` | Yes | Cloudflare account |
-| `VITE_SUPABASE_*` | No | Loaded from committed `.env.production` |
+| Secret                  | Required | Notes                                   |
+| ----------------------- | -------- | --------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Yes      | Workers deploy token                    |
+| `CLOUDFLARE_ACCOUNT_ID` | Yes      | Cloudflare account                      |
+| `VITE_SUPABASE_*`       | No       | Loaded from committed `.env.production` |
