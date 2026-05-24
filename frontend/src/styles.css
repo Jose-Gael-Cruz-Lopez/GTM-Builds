@@ -400,3 +400,198 @@
     opacity: 0.85;
   }
 }
+
+/* ============================================================
+   Editorial landing surface — scoped via [data-surface="editorial"]
+   Adds paper backgrounds, citrine accent, vertical chip tones,
+   monumental Fraunces display sizing, and cinematic motion.
+   Does NOT override existing wallet/dashboard/scanner tokens.
+   ============================================================ */
+
+[data-surface="editorial"] {
+  /* Surfaces */
+  --paper: #f0ede6;
+  --paper-warm: #eae5d8;
+
+  /* Ink */
+  --ink: #1a1a18;
+  --ink-soft: #3e3c36;
+  --ink-mute: #6b6760;
+
+  /* Accent */
+  --signal-citrine: #e7f26a;
+
+  /* Vertical chip tones */
+  --chip-coral: #f26c4f;
+  --chip-sage: #c9d9b8;
+  --chip-stone: #d9d2c5;
+  --chip-mist: #bfd4d8;
+  --chip-clay: #e2b79a;
+
+  /* Veils & lines */
+  --veil: rgba(15, 12, 8, 0.3);
+  --veil-strong: rgba(15, 12, 8, 0.55);
+  --hair: rgba(26, 26, 24, 0.12);
+
+  /* Fluid display scale */
+  --display-xl: clamp(2.75rem, 7.2vw, 6.5rem);
+  --display-lg: clamp(2.25rem, 5.4vw, 4.75rem);
+  --display-md: clamp(1.75rem, 3.6vw, 3rem);
+
+  /* Motion */
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-veil: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-rise: 900ms;
+  --dur-veil: 700ms;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+[data-surface="editorial"] .font-display {
+  font-family: var(--font-display);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 50;
+  letter-spacing: -0.025em;
+}
+
+/* Reveal-gated animations: hidden until data-revealed="true" */
+[data-surface="editorial"] .rise-line {
+  display: inline-block;
+  transform: translate3d(0, 110%, 0);
+  will-change: transform;
+}
+[data-surface="editorial"] .rise-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  line-height: inherit;
+}
+[data-surface="editorial"] [data-revealed="true"] .rise-line {
+  animation: line-rise var(--dur-rise) var(--ease-editorial) forwards;
+}
+[data-surface="editorial"] [data-revealed="true"] .rise-line:nth-child(2) {
+  animation-delay: 80ms;
+}
+[data-surface="editorial"] [data-revealed="true"] .rise-line:nth-child(3) {
+  animation-delay: 160ms;
+}
+[data-surface="editorial"] [data-revealed="true"] .rise-line:nth-child(4) {
+  animation-delay: 240ms;
+}
+[data-surface="editorial"] [data-revealed="true"] .rise-line:nth-child(5) {
+  animation-delay: 320ms;
+}
+
+[data-surface="editorial"] .soft-rise {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+}
+[data-surface="editorial"] [data-revealed="true"] .soft-rise {
+  animation: soft-rise 700ms 320ms ease-out forwards;
+}
+[data-surface="editorial"] [data-revealed="true"] .soft-rise.delay-1 {
+  animation-delay: 460ms;
+}
+[data-surface="editorial"] [data-revealed="true"] .soft-rise.delay-2 {
+  animation-delay: 600ms;
+}
+
+[data-surface="editorial"] .veil-layer {
+  clip-path: inset(0 0 100% 0);
+}
+[data-surface="editorial"] [data-revealed="true"] .veil-layer {
+  animation: veil-clear var(--dur-veil) var(--ease-veil) forwards;
+}
+
+[data-surface="editorial"] .ken-burns {
+  transform: scale(1.04);
+  transition: transform 1200ms var(--ease-editorial);
+}
+[data-surface="editorial"] [data-revealed="true"] .ken-burns {
+  transform: scale(1);
+}
+
+[data-surface="editorial"] .cloud-item {
+  animation: drift var(--drift-dur, 11s) var(--ease-editorial) infinite;
+  animation-delay: var(--drift-delay, 0s);
+  will-change: transform;
+}
+
+[data-surface="editorial"] .arrow-bounce {
+  animation: arrow-nudge 2400ms ease-in-out infinite;
+}
+
+[data-surface="editorial"] .citrine-pulse {
+  animation: citrine-pulse 1400ms ease-out 1 forwards;
+}
+
+@keyframes line-rise {
+  from {
+    transform: translate3d(0, 110%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes soft-rise {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes veil-clear {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(var(--rot, 0deg));
+  }
+  50% {
+    transform: translate3d(var(--dx, 12px), var(--dy, -10px), 0)
+      rotate(calc(var(--rot, 0deg) + 1.5deg));
+  }
+}
+@keyframes arrow-nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+@keyframes citrine-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(231, 242, 106, 0.55);
+  }
+  60% {
+    box-shadow: 0 0 0 18px rgba(231, 242, 106, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(231, 242, 106, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="editorial"] .rise-line,
+  [data-surface="editorial"] .soft-rise,
+  [data-surface="editorial"] .veil-layer,
+  [data-surface="editorial"] .ken-burns,
+  [data-surface="editorial"] .cloud-item,
+  [data-surface="editorial"] .arrow-bounce,
+  [data-surface="editorial"] .citrine-pulse {
+    animation: none !important;
+    transform: none !important;
+    clip-path: none !important;
+    opacity: 1 !important;
+  }
+}
