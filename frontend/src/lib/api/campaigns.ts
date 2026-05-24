@@ -29,20 +29,41 @@ export type ListCampaignsResponse =
   | { campaigns: Campaign[]; total: number }
   | { campaigns: GroupedCampaigns; total: number }
 
+export interface GenerateCampaignsRequest {
+  targetSegment?: CampaignTargetSegment
+  objective?: string
+  tone?: string
+}
+
 export interface UpdateCampaignPatch {
   title?: string
   messageTemplate?: string
   targetSegment?: CampaignTargetSegment
   sendTiming?: string
   expectedLift?: string
-  status?: 'archived'
+  status?: 'archived' | 'sent'
+  sentAt?: string
+}
+
+export interface CampaignStatsResponse {
+  campaign: Campaign
+  stats: {
+    targetAudience: number
+    generatedBy: string
+    aiModel: string | null
+    sentCount: number | null
+    openRate: number | null
+    redemptionCount: number | null
+    estimatedLift: string
+    note?: string
+  }
 }
 
 export const campaignsApi = {
-  generate: (businessId: string) =>
+  generate: (businessId: string, body?: GenerateCampaignsRequest) =>
     apiFetch<GenerateCampaignsResponse>(
       `/businesses/${businessId}/campaigns/generate`,
-      { method: 'POST' }
+      { method: 'POST', body: body ?? {} }
     ),
   list: (businessId: string, status?: CampaignStatus) =>
     apiFetch<ListCampaignsResponse>(
@@ -61,5 +82,9 @@ export const campaignsApi = {
     apiFetch<{ campaign: Campaign }>(
       `/businesses/${businessId}/campaigns/${campaignId}`,
       { method: 'PATCH', body: patch }
+    ),
+  stats: (businessId: string, campaignId: string) =>
+    apiFetch<CampaignStatsResponse>(
+      `/businesses/${businessId}/campaigns/${campaignId}/stats`
     ),
 }

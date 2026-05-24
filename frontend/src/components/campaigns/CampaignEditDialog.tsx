@@ -3,10 +3,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
 import { campaignsApi } from "@/lib/api/campaigns"
 import { ApiError } from "@/lib/api-client"
+import type { CampaignTargetSegment } from "@/integrations/supabase/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -16,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { SEGMENT_OPTIONS, SEND_TIMING_OPTIONS } from "@/components/campaigns/segment-utils"
 
 interface CampaignEditDialogProps {
   businessId: string
@@ -33,7 +42,8 @@ export function CampaignEditDialog({
   const qc = useQueryClient()
   const [title, setTitle] = useState("")
   const [messageTemplate, setMessageTemplate] = useState("")
-  const [sendTiming, setSendTiming] = useState("")
+  const [targetSegment, setTargetSegment] = useState<CampaignTargetSegment>("at_risk")
+  const [sendTiming, setSendTiming] = useState<string>(SEND_TIMING_OPTIONS[0].value)
   const [expectedLift, setExpectedLift] = useState("")
 
   const detail = useQuery({
@@ -46,7 +56,9 @@ export function CampaignEditDialog({
     if (!c) return
     setTitle(c.title)
     setMessageTemplate(c.message_template)
-    setSendTiming(c.send_timing)
+    setTargetSegment(c.target_segment)
+    const knownTiming = SEND_TIMING_OPTIONS.find((o) => o.value === c.send_timing)
+    setSendTiming(knownTiming?.value ?? c.send_timing)
     setExpectedLift(c.expected_lift)
   }, [detail.data])
 
@@ -55,6 +67,7 @@ export function CampaignEditDialog({
       campaignsApi.update(businessId, campaignId, {
         title,
         messageTemplate,
+        targetSegment,
         sendTiming,
         expectedLift,
       }),
@@ -70,9 +83,9 @@ export function CampaignEditDialog({
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle>Editar campaña</DialogTitle>
+          <DialogTitle className="font-display">Editar campaña</DialogTitle>
           <DialogDescription>
-            Ajusta el mensaje y los detalles antes de enviar.
+            Ajusta el mensaje, el segmento y los detalles antes de enviar.
           </DialogDescription>
         </DialogHeader>
 
@@ -122,24 +135,53 @@ export function CampaignEditDialog({
 
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="campaign-timing">Cuándo enviar</Label>
-                <Input
-                  id="campaign-timing"
-                  value={sendTiming}
-                  onChange={(e) => setSendTiming(e.target.value)}
-                  placeholder="Ej: Martes 10:00"
-                />
+                <Label htmlFor="campaign-segment">Segmento objetivo</Label>
+                <Select
+                  value={targetSegment}
+                  onValueChange={(v) => setTargetSegment(v as CampaignTargetSegment)}
+                >
+                  <SelectTrigger id="campaign-segment">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SEGMENT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="campaign-lift">Lift esperado</Label>
-                <Input
-                  id="campaign-lift"
-                  value={expectedLift}
-                  onChange={(e) => setExpectedLift(e.target.value)}
-                  placeholder="Ej: +12% retorno"
-                />
+                <Label htmlFor="campaign-timing">Cuándo enviar</Label>
+                <Select value={sendTiming} onValueChange={setSendTiming}>
+                  <SelectTrigger id="campaign-timing">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SEND_TIMING_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="campaign-lift">Lift esperado</Label>
+              <Input
+                id="campaign-lift"
+                value={expectedLift}
+                onChange={(e) => setExpectedLift(e.target.value)}
+                placeholder="Ej: +12% retorno"
+              />
+            </div>
+
+            <p className="text-xs text-[var(--ink-soft)]">
+              La programación automática llegará pronto.
+            </p>
 
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose} disabled={save.isPending}>
