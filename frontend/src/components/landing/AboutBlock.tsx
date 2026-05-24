@@ -2,16 +2,14 @@ import { useRevealOnce } from "@/hooks/use-reveal-once";
 
 const DIARY = [
   {
-    title:
-      "Cómo un café de barrio recuperó el 40% de sus clientes con fidelidad en WhatsApp",
+    title: "Cómo un café de barrio recuperó el 40% de sus clientes con fidelidad en WhatsApp",
     date: "15 de mayo, 2026",
     img: "/landing/diary/d1.jpg",
     alt: "Café de barrio con clientes habituales",
     href: "#diario",
   },
   {
-    title:
-      "Cuatro errores comunes al lanzar un programa de puntos (y cómo evitarlos)",
+    title: "Cuatro errores comunes al lanzar un programa de puntos (y cómo evitarlos)",
     date: "2 de mayo, 2026",
     img: "/landing/diary/d2.jpg",
     alt: "Mostrador de negocio con tarjeta de fidelidad",
@@ -28,8 +26,7 @@ export function AboutBlock() {
       aria-label="Sobre NexoLeal"
       style={{
         background: "var(--paper)",
-        padding:
-          "clamp(4rem, 10vw, 9rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 8vw, 7rem)",
+        padding: "clamp(4rem, 10vw, 9rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 8vw, 7rem)",
       }}
     >
       <div
@@ -63,7 +60,9 @@ export function AboutBlock() {
                   marginBottom: "2rem",
                 }}
               >
-                <div>NexoLeal<sup style={{ fontSize: "0.6em" }}>®</sup></div>
+                <div>
+                  NexoLeal<sup style={{ fontSize: "0.6em" }}>®</sup>
+                </div>
                 <div>Est.</div>
                 <div>2025</div>
               </div>
@@ -103,20 +102,18 @@ export function AboutBlock() {
               >
                 <span className="rise-mask inline">
                   <span className="rise-line">
-                    Construimos NexoLeal para los negocios que recuerdan el
-                    nombre de cada cliente.
+                    Construimos NexoLeal para los negocios que recuerdan el nombre de cada cliente.
                   </span>
                 </span>{" "}
                 <span className="rise-mask inline">
                   <span className="rise-line">
-                    La fidelidad no se compra con descuentos: se gana con
-                    atención.
+                    La fidelidad no se compra con descuentos: se gana con atención.
                   </span>
                 </span>{" "}
                 <span className="rise-mask inline">
                   <span className="rise-line">
-                    Cada flujo, cada mensaje y cada recompensa fue diseñado
-                    para que volver sea la opción más natural.
+                    Cada flujo, cada mensaje y cada recompensa fue diseñado para que volver sea la
+                    opción más natural.
                   </span>
                 </span>
               </p>
@@ -187,8 +184,7 @@ function DiaryCard({
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "translateY(-4px)";
-        e.currentTarget.style.boxShadow =
-          "0 12px 28px -16px rgba(0,0,0,0.25)";
+        e.currentTarget.style.boxShadow = "0 12px 28px -16px rgba(0,0,0,0.25)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "translateY(0)";

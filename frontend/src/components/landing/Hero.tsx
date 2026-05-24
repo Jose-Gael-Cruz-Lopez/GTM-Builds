@@ -73,9 +73,8 @@ export function Hero() {
             margin: "1.75rem auto 0",
           }}
         >
-          La plataforma de fidelidad y retención para cafés, salones y pequeños
-          comercios en México. Sin apps. Sin tarjetas físicas. Solo
-          conversaciones que vuelven.
+          La plataforma de fidelidad y retención para cafés, salones y pequeños comercios en México.
+          Sin apps. Sin tarjetas físicas. Solo conversaciones que vuelven.
         </p>
 
         <div

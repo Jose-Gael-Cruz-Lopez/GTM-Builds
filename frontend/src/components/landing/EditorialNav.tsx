@@ -42,10 +42,7 @@ export function EditorialNav() {
 
   return (
     <>
-      <header
-        className="fixed inset-x-0 top-0 z-50"
-        style={{ padding: "1.25rem 1.5rem" }}
-      >
+      <header className="fixed inset-x-0 top-0 z-50" style={{ padding: "1.25rem 1.5rem" }}>
         <nav className="flex items-center justify-between" aria-label="Principal">
           {/* Left cluster: wordmark + lang chip */}
           <div className="flex items-center gap-3">
@@ -93,9 +90,7 @@ export function EditorialNav() {
           <div
             className="hidden md:flex items-center"
             style={{
-              background: scrolled
-                ? "rgba(255, 255, 255, 1)"
-                : "rgba(255, 255, 255, 0.92)",
+              background: scrolled ? "rgba(255, 255, 255, 1)" : "rgba(255, 255, 255, 0.92)",
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
               border: "1px solid var(--hair)",
@@ -174,13 +169,7 @@ export function EditorialNav() {
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((v) => !v)}
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-              >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 {mobileOpen ? (
                   <path
                     d="M5 5l10 10M15 5L5 15"
@@ -213,10 +202,7 @@ export function EditorialNav() {
           aria-modal="true"
           aria-label="Menú móvil"
         >
-          <div
-            className="flex flex-col h-full"
-            style={{ padding: "5.5rem 1.5rem 2rem" }}
-          >
+          <div className="flex flex-col h-full" style={{ padding: "5.5rem 1.5rem 2rem" }}>
             <nav className="flex flex-col gap-4" aria-label="Móvil">
               {NAV_LINKS.map((link, i) => (
                 <a

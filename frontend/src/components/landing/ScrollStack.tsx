@@ -51,11 +51,7 @@ export function ScrollStack() {
       }}
     >
       {useCasePanels.map((panel, i) => (
-        <ScrollStackPanel
-          key={panel.index}
-          panel={panel}
-          isLast={i === useCasePanels.length - 1}
-        />
+        <ScrollStackPanel key={panel.index} panel={panel} isLast={i === useCasePanels.length - 1} />
       ))}
 
       {/* Right-side panel indicator */}
@@ -81,9 +77,7 @@ export function ScrollStack() {
                 height: "8px",
                 width: isActive ? "20px" : "8px",
                 borderRadius: "9999px",
-                background: isActive
-                  ? "rgba(255,255,255,0.95)"
-                  : "rgba(255,255,255,0.45)",
+                background: isActive ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.45)",
                 transition: "all 280ms cubic-bezier(0.22, 1, 0.36, 1)",
               }}
             />

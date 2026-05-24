@@ -33,8 +33,7 @@ export function EditorialFooter() {
       id="diario"
       style={{
         background: "var(--paper-warm)",
-        padding:
-          "clamp(3rem, 8vw, 6rem) clamp(1.5rem, 5vw, 5rem) clamp(2rem, 5vw, 4rem)",
+        padding: "clamp(3rem, 8vw, 6rem) clamp(1.5rem, 5vw, 5rem) clamp(2rem, 5vw, 4rem)",
         color: "var(--ink)",
       }}
     >
@@ -71,8 +70,7 @@ export function EditorialFooter() {
           <div
             className="grid gap-x-12 gap-y-8 md:text-right"
             style={{
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(min(140px, 100%), max-content))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(140px, 100%), max-content))",
             }}
           >
             {LINK_GROUPS.map((group) => (
@@ -123,18 +121,42 @@ export function EditorialFooter() {
           <div>© 2026 NexoLeal. Todos los derechos reservados.</div>
           <div className="flex items-center gap-3">
             <SocialGlyph href="https://instagram.com" label="Instagram">
-              <rect x="3" y="3" width="14" height="14" rx="4" fill="none" stroke="currentColor" strokeWidth="1.4" />
+              <rect
+                x="3"
+                y="3"
+                width="14"
+                height="14"
+                rx="4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
               <circle cx="10" cy="10" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
               <circle cx="14.4" cy="5.6" r="0.9" fill="currentColor" />
             </SocialGlyph>
             <SocialGlyph href="https://linkedin.com" label="LinkedIn">
-              <rect x="3" y="3" width="14" height="14" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
+              <rect
+                x="3"
+                y="3"
+                width="14"
+                height="14"
+                rx="2.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
               <rect x="6" y="8" width="1.8" height="6.5" fill="currentColor" />
               <circle cx="6.9" cy="5.9" r="1.1" fill="currentColor" />
-              <path d="M10 14.5V8.5h1.8v1c0.4-0.7 1.2-1.2 2.2-1.2 1.6 0 2.4 1 2.4 2.7v3.5h-1.8v-3.3c0-0.9-0.4-1.3-1.2-1.3-0.9 0-1.4 0.6-1.4 1.5v3.1H10z" fill="currentColor" />
+              <path
+                d="M10 14.5V8.5h1.8v1c0.4-0.7 1.2-1.2 2.2-1.2 1.6 0 2.4 1 2.4 2.7v3.5h-1.8v-3.3c0-0.9-0.4-1.3-1.2-1.3-0.9 0-1.4 0.6-1.4 1.5v3.1H10z"
+                fill="currentColor"
+              />
             </SocialGlyph>
             <SocialGlyph href="https://x.com" label="X">
-              <path d="M4 4l5.4 7L4.3 16h1.4l4.5-4.4L13.4 16h2.6l-5.7-7.5L15.5 4h-1.4l-4.1 4L6.6 4H4z" fill="currentColor" />
+              <path
+                d="M4 4l5.4 7L4.3 16h1.4l4.5-4.4L13.4 16h2.6l-5.7-7.5L15.5 4h-1.4l-4.1 4L6.6 4H4z"
+                fill="currentColor"
+              />
             </SocialGlyph>
           </div>
         </div>
@@ -143,13 +165,7 @@ export function EditorialFooter() {
   );
 }
 
-function FooterLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <a
       href={href}
@@ -161,8 +177,7 @@ function FooterLink({
         lineHeight: 1.8,
         color: "var(--ink)",
         textDecoration: "none",
-        backgroundImage:
-          "linear-gradient(currentColor, currentColor)",
+        backgroundImage: "linear-gradient(currentColor, currentColor)",
         backgroundSize: "0 1px",
         backgroundPosition: "0 100%",
         backgroundRepeat: "no-repeat",

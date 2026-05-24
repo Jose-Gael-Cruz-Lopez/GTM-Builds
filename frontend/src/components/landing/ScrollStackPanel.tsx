@@ -20,11 +20,7 @@ function splitHeadlineIntoLines(text: string): string[] {
   }
   const a = Math.ceil(words.length / 3);
   const b = Math.ceil((words.length * 2) / 3);
-  return [
-    words.slice(0, a).join(" "),
-    words.slice(a, b).join(" "),
-    words.slice(b).join(" "),
-  ];
+  return [words.slice(0, a).join(" "), words.slice(a, b).join(" "), words.slice(b).join(" ")];
 }
 
 export function ScrollStackPanel({
@@ -73,8 +69,7 @@ export function ScrollStackPanel({
           className="absolute inset-0"
           aria-hidden="true"
           style={{
-            background:
-              "linear-gradient(to bottom, transparent 38%, var(--veil-strong) 100%)",
+            background: "linear-gradient(to bottom, transparent 38%, var(--veil-strong) 100%)",
           }}
         />
 

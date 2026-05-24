@@ -46,14 +46,10 @@ export function RecentAddings() {
       aria-label="Lo nuevo en NexoLeal"
       style={{
         background: "var(--paper)",
-        padding:
-          "clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 8vw, 7rem)",
+        padding: "clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 8vw, 7rem)",
       }}
     >
-      <div
-        className="mx-auto"
-        style={{ maxWidth: "min(1280px, 92vw)" }}
-      >
+      <div className="mx-auto" style={{ maxWidth: "min(1280px, 92vw)" }}>
         <div
           style={{
             fontFamily: "var(--font-sans)",
@@ -138,14 +134,12 @@ function ShowcaseTile(props: Showcase) {
       <div
         className="soft-rise delay-1 flex items-center justify-center"
         style={{
-          background:
-            "linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%)",
+          background: "linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%)",
           borderRadius: "24px",
           aspectRatio: "4 / 3",
           padding: "2rem",
           position: "relative",
-          boxShadow:
-            "0 1px 0 var(--hair), 0 24px 60px -32px rgba(26, 26, 24, 0.18)",
+          boxShadow: "0 1px 0 var(--hair), 0 24px 60px -32px rgba(26, 26, 24, 0.18)",
         }}
       >
         <img
