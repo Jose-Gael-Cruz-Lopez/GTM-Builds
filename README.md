@@ -471,6 +471,7 @@ Cada QR está firmado con HMAC-SHA256 y expira en 90 segundos. Tras el primer es
 | [`prompts/backend/`](prompts/backend/) | Construcción del API (10 prompts) |
 | [`prompts/frontend-integration/`](prompts/frontend-integration/) | Integración frontend inicial |
 | [`docs/archive/frontend-revamp-prompts/`](docs/archive/frontend-revamp-prompts/) | Revamp prompts 05–12 (completados) |
+| [`docs/INDEX.md`](docs/INDEX.md) | Índice de toda la documentación |
 | [`docs/HEALTH.md`](docs/HEALTH.md) | Auditoría de plataforma (Cloudflare + Supabase + CI) |
 | [`docs/SUPABASE.md`](docs/SUPABASE.md) | Setup Supabase, tablas, RLS |
 | [`docs/CLOUDFLARE.md`](docs/CLOUDFLARE.md) | Workers, KV, secrets, deploy |
