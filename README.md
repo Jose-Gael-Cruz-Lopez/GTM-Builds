@@ -136,11 +136,16 @@ GTM-Builds/
 │   │   ├── components/         # dashboard, scan, campaigns, settings, …
 │   │   ├── lib/api/            # Typed API client
 │   │   └── integrations/supabase/
+│   ├── .env.production         # Build env (committed, anon key)
 │   ├── supabase/migrations/    # Migraciones incrementales
 │   ├── public/                 # PWA manifest, service worker, OG image
-│   └── wrangler.jsonc
+│   └── wrangler.jsonc          # Worker config + runtime vars
+├── docs/
+│   ├── CHANGELOG.md            # Release notes
+│   ├── VERIFICATION.md         # Post-deploy checklist
+│   ├── CONTRIBUTING.md         # Branch workflow + checks
+│   └── archive/                # Prompts completados
 ├── prompts/                    # Prompts originales de construcción (agentes)
-├── docs/archive/               # Prompts completados (referencia histórica)
 └── .github/workflows/          # backend-ci.yml, frontend-ci.yml
 ```
 
@@ -273,6 +278,19 @@ El backend permite el origen del frontend vía `FRONTEND_ORIGIN` en [`backend/wr
 
 ---
 
+## Cambios recientes
+
+Ver [`docs/CHANGELOG.md`](docs/CHANGELOG.md) para el historial completo.
+
+| Fecha | Cambio |
+|-------|--------|
+| 2026-05-24 | PR #7: sidebar auth fix, visits API route order, business GET RLS, Supabase env en CI |
+| 2026-05-24 | `.env.production` + `wrangler.jsonc` vars para builds sin GitHub secrets |
+| 2026-05-23 | Revamp frontend prompts 05–12, settings, campaigns IA, redemptions |
+| 2026-05-23 | Migración brand fields + `campaigns.sent_at` |
+
+---
+
 ## Anti-fraude (QR tokens)
 
 Cada QR está firmado con HMAC-SHA256 y expira en 90 segundos. Tras el primer escaneo válido, el token se invalida en Cloudflare KV.
@@ -289,6 +307,7 @@ Cada QR está firmado con HMAC-SHA256 y expira en 90 segundos. Tras el primer es
 | [`docs/archive/frontend-revamp-prompts/`](docs/archive/frontend-revamp-prompts/) | Revamp prompts 05–12 (completados) |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Historial de cambios |
 | [`docs/VERIFICATION.md`](docs/VERIFICATION.md) | Checklist post-deploy |
+| [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Guía de contribución |
 
 ---
 
