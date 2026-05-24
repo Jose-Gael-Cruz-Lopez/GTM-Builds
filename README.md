@@ -77,6 +77,45 @@ Las PYMES de servicios (barberías, estéticas, veterinarias, cafeterías) pierd
 
 ---
 
+## Arquitectura
+
+```mermaid
+flowchart LR
+  subgraph Cliente
+    W[Monedero /wallet]
+    J[Join /join]
+  end
+
+  subgraph Staff
+    S[Escáner /scan]
+  end
+
+  subgraph Dueño
+    D[Dashboard /dashboard]
+    C[Campañas IA]
+  end
+
+  FE[TanStack Start\nCloudflare Worker]
+  API[Hono API\nnexoleal-backend]
+  SB[(Supabase\nAuth + Postgres)]
+  KV[(Cloudflare KV\nTokens + cache)]
+  NIM[NVIDIA NIM\nCampañas IA]
+
+  W --> FE
+  J --> FE
+  S --> FE
+  D --> FE
+  C --> FE
+  FE -->|Bearer JWT| API
+  FE -->|Auth session| SB
+  S -->|X-Staff-Key| API
+  API --> SB
+  API --> KV
+  API --> NIM
+```
+
+---
+
 ## Estructura del repositorio
 
 ```
@@ -154,7 +193,7 @@ cd backend
 cp .dev.vars.example .dev.vars   # llenar keys de Supabase, TOKEN_SECRET, NIM
 npm ci
 npm run dev                      # http://localhost:8787
-npm test                         # 24 tests
+npm test                         # 25 tests
 ```
 
 ### Frontend
@@ -169,12 +208,18 @@ npx tsc --noEmit
 npm run build
 ```
 
-Variables frontend (`.env`):
+Variables frontend:
+
+| Archivo | Uso |
+|---------|-----|
+| `.env` | Desarrollo local (copiar de `.env.example`) |
+| `.env.production` | Build de producción + CI (committed, anon key pública) |
+| `wrangler.jsonc` → `vars` | Runtime SSR en Cloudflare Worker |
 
 ```
 VITE_SUPABASE_URL=https://lajrjnjyvbpaaspzgpvh.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=<anon key>
-VITE_API_URL=http://localhost:8787   # o URL de producción
+VITE_API_URL=http://localhost:8787   # local, o URL de producción
 ```
 
 ---
