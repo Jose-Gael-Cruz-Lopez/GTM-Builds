@@ -16,6 +16,10 @@ export interface UpdateBusinessPatch {
   name?: string
   isActive?: boolean
   plan?: BusinessPlan
+  /** Extended brand fields — backend may ignore until schema supports them */
+  logo_url?: string
+  primary_color?: string
+  tagline?: string
 }
 
 export interface UpdateLoyaltyConfigPatch {

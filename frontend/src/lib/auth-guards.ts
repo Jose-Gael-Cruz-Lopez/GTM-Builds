@@ -35,3 +35,6 @@ export async function requireOwner(businessId: string, pathname: string) {
   }
   return session
 }
+
+/** Alias — backend admin auth = business owner. */
+export const requireAdmin = requireOwner
