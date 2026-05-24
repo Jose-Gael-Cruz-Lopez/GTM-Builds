@@ -4,19 +4,20 @@
 
 | | |
 |---|---|
-| **Worker (primary)** | `nexoleal-backend` |
+| **Worker** | `nexoleal-backend` |
 | **URL** | https://nexoleal-backend.nexoleal.workers.dev |
 | **Health** | https://nexoleal-backend.nexoleal.workers.dev/health |
 | **Config** | [`wrangler.toml`](wrangler.toml) |
 
-Additional Workers (CI):
+There is **one production backend worker**. The frontend (`tanstack-start-app`) calls this URL via `VITE_API_URL`.
+
+Optional staging worker (only if you use a `develop` branch):
 
 | Env | Worker name | Trigger |
 |-----|-------------|---------|
 | `staging` | `nexoleal-backend-staging` | Push to `develop` |
-| `production` | `nexoleal-backend-production` | Push to `main` |
 
-The frontend `.env` / GitHub `VITE_API_URL` should point at **`nexoleal-backend`** unless you migrate to the production env worker.
+> **Cleanup:** If you still see `nexoleal-backend-production` in the Cloudflare dashboard, it was a legacy CI target. Safe to delete — nothing uses it anymore.
 
 ## One-time setup — done
 
@@ -32,17 +33,23 @@ cd backend
 # Local dev
 npm run dev                    # http://localhost:8787
 
-# Primary worker (used by live frontend today)
-npx wrangler deploy
+# Production (manual or CI — same worker)
+npm run deploy                 # → nexoleal-backend
 
-# CI environments
-npm run deploy:staging         # nexoleal-backend-staging
-npm run deploy:production      # nexoleal-backend-production
+# Staging only
+npm run deploy:staging         # → nexoleal-backend-staging
 ```
+
+## CI/CD
+
+Push to `main` with changes under `backend/**` runs [Backend CI](../.github/workflows/backend-ci.yml):
+
+1. Tests + typecheck
+2. `npm run deploy` → **`nexoleal-backend`**
 
 ## Per-deploy checklist
 
-- [ ] `npm test` passes (24 tests)
+- [ ] `npm test` passes (25 tests)
 - [ ] `npx tsc --noEmit` passes
 - [ ] `FRONTEND_ORIGIN` in `wrangler.toml` includes the deployed frontend URL
 - [ ] Supabase migrations applied if schema changed
@@ -56,6 +63,8 @@ curl https://nexoleal-backend.nexoleal.workers.dev/health
 
 ## Secrets (Cloudflare)
 
+Set on the **default** worker (`nexoleal-backend`):
+
 ```bash
 npx wrangler secret put SUPABASE_URL          # https://lajrjnjyvbpaaspzgpvh.supabase.co
 npx wrangler secret put SUPABASE_ANON_KEY
@@ -64,7 +73,7 @@ npx wrangler secret put TOKEN_SECRET
 npx wrangler secret put NIM_API_KEY
 ```
 
-Repeat with `--env staging` / `--env production` for CI workers.
+For staging only, add `--env staging`.
 
 ## GitHub secrets (CI)
 

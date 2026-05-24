@@ -181,8 +181,7 @@ alter table public.businesses add column if not exists logo_url text;
 | Target | Worker name | Trigger | Comando manual |
 |--------|-------------|---------|----------------|
 | Frontend | `tanstack-start-app` | Push a `main` (`frontend/**`) | `cd frontend && npm run build && npx wrangler deploy` |
-| Backend (default) | `nexoleal-backend` | Manual o `wrangler deploy` | `cd backend && npx wrangler deploy` |
-| Backend (CI prod env) | `nexoleal-backend-production` | Push a `main` (`backend/**`) | `cd backend && npm run deploy:production` |
+| Backend | `nexoleal-backend` | Push a `main` (`backend/**`) o manual | `cd backend && npm run deploy` |
 | Backend (staging) | `nexoleal-backend-staging` | Push a `develop` | `cd backend && npm run deploy:staging` |
 
 Guías detalladas: [`backend/DEPLOY.md`](backend/DEPLOY.md) · [`frontend/DEPLOY.md`](frontend/DEPLOY.md)
