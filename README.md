@@ -173,8 +173,9 @@ GTM-Builds/
 | `POST` | `/tokens/generate` | Bearer JWT | Genera QR token |
 | `POST` | `/tokens/validate` | X-Staff-Key | Valida y consume QR |
 | `POST` | `/visits` | X-Staff-Key | Registra visita |
+| `GET` | `/businesses/:id` | Bearer JWT | Perfil del negocio (service role tras auth) |
 | `GET` | `/clients/businesses-clients?businessId=` | Bearer JWT (owner) | Lista clientes |
-| `GET` | `/visits/business-visits?businessId=` | Bearer JWT (owner) | Feed visitas |
+| `GET` | `/visits/business-visits?businessId=` | Bearer JWT (owner) | Feed visitas (ruta fija, no `/:visitId`) |
 | `GET` | `/businesses/:id/rewards` | Bearer JWT (owner) | Recompensas |
 | `PATCH` | `/businesses/:id` | Bearer JWT (owner) | Actualizar negocio + marca |
 | `PATCH` | `/businesses/:id/campaigns/:id` | Bearer JWT (owner) | Editar / marcar enviada |
@@ -286,6 +287,8 @@ Cada QR está firmado con HMAC-SHA256 y expira en 90 segundos. Tras el primer es
 | [`prompts/backend/`](prompts/backend/) | Construcción del API (10 prompts) |
 | [`prompts/frontend-integration/`](prompts/frontend-integration/) | Integración frontend inicial |
 | [`docs/archive/frontend-revamp-prompts/`](docs/archive/frontend-revamp-prompts/) | Revamp prompts 05–12 (completados) |
+| [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Historial de cambios |
+| [`docs/VERIFICATION.md`](docs/VERIFICATION.md) | Checklist post-deploy |
 
 ---
 
