@@ -1,0 +1,27 @@
+# Dependencies & build output
+node_modules/
+dist/
+.output/
+.vinxi/
+.wrangler/
+
+# Environment & secrets (never commit)
+.env
+.env.*
+!.env.example
+.dev.vars
+*.local
+
+# OS & editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local-only docs with credentials
+SMOKE-TEST-ACCOUNT.md
+**/supabase/.temp/
+
+# Logs
+*.log
+npm-debug.log*
