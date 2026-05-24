@@ -27,6 +27,27 @@ NexoLeal digitaliza programas de lealtad para PYMES: monedero digital para clien
 
 ---
 
+## Quick start
+
+```bash
+# 1. Clone and install
+git clone https://github.com/Jose-Gael-Cruz-Lopez/GTM-Builds.git
+cd GTM-Builds
+
+# 2. Backend (terminal 1)
+cd backend && cp .dev.vars.example .dev.vars && npm ci && npm run dev
+
+# 3. Frontend (terminal 2)
+cd frontend && cp .env.example .env && npm ci && npm run dev
+
+# 4. Open
+open http://localhost:8080
+```
+
+Production app (no install): https://tanstack-start-app.nexoleal.workers.dev
+
+---
+
 ## Problema
 
 Las PYMES de servicios (barberías, estéticas, veterinarias, cafeterías) pierden datos con tarjetas físicas, sufren fraude de sellos, y no detectan cuándo un cliente deja de regresar.
