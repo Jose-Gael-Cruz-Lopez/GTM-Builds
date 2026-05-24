@@ -19,8 +19,6 @@ export function Hero() {
 
       <div className="mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:py-28">
         <div className="lg:col-span-7">
-
-
           <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Convierte visitas casuales en{" "}
             <span className="relative whitespace-nowrap">
@@ -34,9 +32,9 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            NexoLeal es el programa de fidelización 100% digital para PYMES.
-            Tus clientes acumulan sellos con un QR y vuelven más seguido.
-            Una sola plataforma para gestionar tu programa, sin complicaciones ni costos ocultos.
+            NexoLeal es el programa de fidelización 100% digital para PYMES. Tus clientes acumulan
+            sellos con un QR y vuelven más seguido. Una sola plataforma para gestionar tu programa,
+            sin complicaciones ni costos ocultos.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -46,11 +44,7 @@ export function Hero() {
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-12 px-6 text-base"
-            >
+            <Button size="lg" variant="outline" className="h-12 px-6 text-base">
               <PlayCircle className="mr-1 h-4 w-4" />
               Ver demo
             </Button>
@@ -58,16 +52,13 @@ export function Hero() {
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Prueba 30
-              días gratis
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Prueba 30 días gratis
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Sin tarjeta
-              de crédito
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Sin tarjeta de crédito
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Configuras
-              en 5 minutos
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Configuras en 5 minutos
             </span>
           </div>
         </div>
@@ -88,12 +79,8 @@ export function Hero() {
                   <span>Café Aurora</span>
                   <span>Tarjeta digital</span>
                 </div>
-                <div className="mt-6 font-display text-2xl font-semibold">
-                  Hola, Marina
-                </div>
-                <div className="mt-1 text-sm opacity-80">
-                  1 sello más para tu café gratis
-                </div>
+                <div className="mt-6 font-display text-2xl font-semibold">Hola, Marina</div>
+                <div className="mt-1 text-sm opacity-80">1 sello más para tu café gratis</div>
 
                 <div className="mt-6 grid grid-cols-5 gap-2">
                   {Array.from({ length: 10 }).map((_, i) => {
@@ -102,9 +89,7 @@ export function Hero() {
                       <div
                         key={i}
                         className={`flex aspect-square items-center justify-center rounded-lg border ${
-                          filled
-                            ? "border-white/40 bg-white/20"
-                            : "border-white/20 bg-white/5"
+                          filled ? "border-white/40 bg-white/20" : "border-white/20 bg-white/5"
                         }`}
                       >
                         {filled && <Stamp className="h-4 w-4" />}
@@ -133,9 +118,7 @@ export function Hero() {
                   <QrCode className="h-6 w-6" />
                 </div>
                 <div className="text-xs">
-                  <div className="font-semibold text-foreground">
-                    Crea tu QR
-                  </div>
+                  <div className="font-semibold text-foreground">Crea tu QR</div>
                   <div className="text-muted-foreground">Enseña este código al pagar.</div>
                 </div>
               </div>
@@ -152,9 +135,7 @@ export function Hero() {
               <div className="font-display text-xl font-semibold text-foreground">
                 +38% retención
               </div>
-              <div className="text-[10px] text-accent-foreground">
-                vs. mes anterior
-              </div>
+              <div className="text-[10px] text-accent-foreground">vs. mes anterior</div>
             </div>
           </div>
         </div>

@@ -17,6 +17,11 @@ export interface BusinessRow {
   owner_id: string
   is_active: boolean
   plan: BusinessPlan
+  tagline?: string | null
+  logo_url?: string | null
+  primary_color?: string | null
+  address?: string | null
+  phone?: string | null
   created_at: string
   updated_at: string
 }
@@ -155,6 +160,7 @@ export interface CampaignRow {
   expected_lift: string
   status: CampaignStatus
   generated_by: string
+  sent_at?: string | null
   created_at: string
   updated_at: string
 }

@@ -9,9 +9,7 @@ export function Footer() {
             <Sparkles className="h-4 w-4" />
           </span>
           <span className="font-display font-semibold">NexoLeal</span>
-          <span className="text-sm text-muted-foreground">
-            · Lealtad digital para PYMES
-          </span>
+          <span className="text-sm text-muted-foreground">· Lealtad digital para PYMES</span>
         </div>
 
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">

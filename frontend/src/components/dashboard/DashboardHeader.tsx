@@ -30,10 +30,7 @@ export function DashboardHeader({ businessName, businessId }: DashboardHeaderPro
   return (
     <header className="border-b bg-white">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-        <a
-          href={`/dashboard/${businessId}`}
-          className="flex items-center gap-2 text-black"
-        >
+        <a href={`/dashboard/${businessId}`} className="flex items-center gap-2 text-black">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Sparkles className="h-4 w-4" />
           </span>
@@ -51,12 +48,7 @@ export function DashboardHeader({ businessName, businessId }: DashboardHeaderPro
           {user?.email ? (
             <span className="hidden text-sm text-muted sm:inline">{user.email}</span>
           ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSignOut}
-            className="gap-2"
-          >
+          <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
             <LogOut className="h-4 w-4" />
             <span>Cerrar sesión</span>
           </Button>

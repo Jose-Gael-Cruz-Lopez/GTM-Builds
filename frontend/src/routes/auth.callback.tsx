@@ -1,79 +1,87 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
-import { supabase } from '@/integrations/supabase/client'
-import { businessesApi } from '@/lib/api/businesses'
+import { RouteError } from "@/components/RouteError";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { businessesApi } from "@/lib/api/businesses";
 
-export const Route = createFileRoute('/auth/callback')({
+export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
-  head: () => ({ meta: [{ title: 'Confirmando · NexoLeal' }] }),
-})
+  errorComponent: RouteError,
+  head: () => ({ meta: [{ title: "Confirmando · NexoLeal" }] }),
+});
 
 function AuthCallback() {
-  const navigate = useNavigate()
-  const [msg, setMsg] = useState('Confirmando tu cuenta…')
+  const navigate = useNavigate();
+  const [msg, setMsg] = useState("Confirmando tu cuenta…");
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     const run = async () => {
       // Supabase auto-exchanges the hash on the client. Wait briefly for it.
-      await new Promise((r) => setTimeout(r, 400))
-      const { data } = await supabase.auth.getSession()
-      if (cancelled) return
+      await new Promise((r) => setTimeout(r, 400));
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
 
       if (!data.session) {
-        toast.error('No pudimos confirmar tu cuenta. Inicia sesión manualmente.')
-        navigate({ to: '/login' })
-        return
+        toast.error("No pudimos confirmar tu cuenta. Inicia sesión manualmente.");
+        navigate({ to: "/login" });
+        return;
       }
 
       // Resume pending business creation if any.
-      const pending = localStorage.getItem('nexoleal:pending-business')
+      const pending = localStorage.getItem("nexoleal:pending-business");
       if (pending) {
         try {
-          const parsed = JSON.parse(pending) as { name: string; category: string; plan: 'free' | 'pro' }
-          setMsg('Creando tu negocio…')
+          const parsed = JSON.parse(pending) as {
+            name: string;
+            category: string;
+            plan: "free" | "pro";
+          };
+          setMsg("Creando tu negocio…");
           const created = await businessesApi.create({
             name: parsed.name,
             category: parsed.category as never,
             plan: parsed.plan,
-          })
-          localStorage.setItem('nexoleal:current-business-id', created.business.id)
-          localStorage.removeItem('nexoleal:pending-business')
-          toast.success('Cuenta confirmada')
-          navigate({ to: '/onboarding' })
-          return
+          });
+          localStorage.setItem("nexoleal:current-business-id", created.business.id);
+          localStorage.removeItem("nexoleal:pending-business");
+          toast.success("Cuenta confirmada");
+          navigate({ to: "/onboarding" });
+          return;
         } catch (err) {
-          console.error(err)
-          toast.error('Cuenta confirmada, pero no pudimos crear tu negocio. Inténtalo desde tu panel.')
+          console.error(err);
+          toast.error(
+            "Cuenta confirmada, pero no pudimos crear tu negocio. Inténtalo desde tu panel.",
+          );
         }
       }
 
       // Otherwise, role-aware redirect.
       const owned = await supabase
-        .from('businesses')
-        .select('id')
-        .eq('owner_id', data.session.user.id)
-        .eq('is_active', true)
+        .from("businesses")
+        .select("id")
+        .eq("owner_id", data.session.user.id)
+        .eq("is_active", true)
         .limit(1)
-        .maybeSingle()
+        .maybeSingle();
       if (owned.data?.id) {
-        navigate({ to: '/dashboard/$businessId', params: { businessId: owned.data.id } })
+        navigate({ to: "/dashboard/$businessId", params: { businessId: owned.data.id } });
       } else {
-        navigate({ to: '/wallet' })
+        navigate({ to: "/wallet" });
       }
-    }
-    run()
+    };
+    run();
     return () => {
-      cancelled = true
-    }
-  }, [navigate])
+      cancelled = true;
+    };
+  }, [navigate]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--color-bg-paper)]">
       <Loader2 className="h-6 w-6 animate-spin text-[color:var(--color-signal)]" />
       <p className="text-sm text-[color:var(--color-ink-soft)]">{msg}</p>
     </div>
-  )
+  );
 }

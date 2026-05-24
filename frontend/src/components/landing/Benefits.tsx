@@ -36,8 +36,8 @@ export function Benefits() {
               La tarjeta de cartón está muerta. Tus clientes también la perdieron.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Reemplaza el sello con tinta por un sistema que además te dice
-              quién es tu cliente, cuánto gasta y cuándo regresará.
+              Reemplaza el sello con tinta por un sistema que además te dice quién es tu cliente,
+              cuánto gasta y cuándo regresará.
             </p>
           </div>
 
@@ -52,9 +52,7 @@ export function Benefits() {
                   <span className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground">
                     <Icon className="h-5 w-5" />
                   </span>
-                  <h3 className="mt-4 font-display text-lg font-semibold">
-                    {b.title}
-                  </h3>
+                  <h3 className="mt-4 font-display text-lg font-semibold">{b.title}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{b.desc}</p>
                 </div>
               );

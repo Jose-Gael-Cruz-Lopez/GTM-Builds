@@ -1,11 +1,11 @@
-import { Link } from '@tanstack/react-router'
-import { Sparkles } from 'lucide-react'
+import { Link } from "@tanstack/react-router";
+import { Sparkles } from "lucide-react";
 
 interface Props {
-  headline: string
-  subtitle?: string
-  glyph?: React.ReactNode
-  children: React.ReactNode
+  headline: string;
+  subtitle?: string;
+  glyph?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 /**
@@ -21,7 +21,7 @@ export function AuthSplit({ headline, subtitle, glyph, children }: Props) {
           className="pointer-events-none absolute inset-0 opacity-60"
           style={{
             background:
-              'radial-gradient(circle at 20% 20%, rgba(245, 197, 24, 0.15), transparent 45%), radial-gradient(circle at 80% 80%, rgba(255, 45, 26, 0.12), transparent 50%)',
+              "radial-gradient(circle at 20% 20%, rgba(245, 197, 24, 0.15), transparent 45%), radial-gradient(circle at 80% 80%, rgba(255, 45, 26, 0.12), transparent 50%)",
           }}
           aria-hidden
         />
@@ -34,7 +34,9 @@ export function AuthSplit({ headline, subtitle, glyph, children }: Props) {
           {subtitle && <p className="mt-4 text-[color:var(--color-cream)]/75">{subtitle}</p>}
           {glyph && <div className="mt-10">{glyph}</div>}
         </div>
-        <p className="relative text-xs text-[color:var(--color-cream)]/40">© NexoLeal · Hecho en México</p>
+        <p className="relative text-xs text-[color:var(--color-cream)]/40">
+          © NexoLeal · Hecho en México
+        </p>
       </aside>
 
       <section className="flex items-center justify-center bg-[var(--color-bg-paper)] px-6 py-12 md:px-12">
@@ -47,5 +49,5 @@ export function AuthSplit({ headline, subtitle, glyph, children }: Props) {
         </div>
       </section>
     </div>
-  )
+  );
 }

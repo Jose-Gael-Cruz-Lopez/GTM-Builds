@@ -33,8 +33,7 @@ export function HowItWorks() {
             Empieza a fidelizar en 3 pasos
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Sin hardware, sin contratos, sin que tu equipo tenga que aprender un
-            sistema complicado.
+            Sin hardware, sin contratos, sin que tu equipo tenga que aprender un sistema complicado.
           </p>
         </div>
 
@@ -48,9 +47,7 @@ export function HowItWorks() {
                 style={{ boxShadow: "var(--shadow-soft)" }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-5xl font-semibold text-primary/15">
-                    {s.n}
-                  </span>
+                  <span className="font-display text-5xl font-semibold text-primary/15">{s.n}</span>
                   <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent-soft text-accent-foreground transition-colors group-hover:bg-accent">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -59,9 +56,7 @@ export function HowItWorks() {
                 <h3 className="mt-6 font-display text-xl font-semibold text-foreground">
                   {s.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {s.desc}
-                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
 
                 {i < steps.length - 1 && (
                   <div

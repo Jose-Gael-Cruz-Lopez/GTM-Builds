@@ -1,29 +1,25 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { RouteError } from "@/components/RouteError";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Copy,
-  Loader2,
-  Megaphone,
-  QrCode,
-  Sparkles,
-} from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { businessesApi } from "@/lib/api/businesses";
+import { BrandStep } from "@/components/onboarding/BrandStep";
+import { FinishStep } from "@/components/onboarding/FinishStep";
+import { RewardStep } from "@/components/onboarding/RewardStep";
+import { StepIndicator, type OnboardingStep } from "@/components/onboarding/StepIndicator";
+import { businessesApi, type CreateStaffKeyResponse } from "@/lib/api/businesses";
 import { ApiError } from "@/lib/api-client";
+import { STAFF_KEY_STORAGE, loadBrandSettings } from "@/lib/onboarding-brand";
+import { setStaffKey } from "@/lib/staff-key-storage";
 
 const searchSchema = z.object({
   businessId: z.string().uuid().optional(),
   business: z.string().trim().max(120).optional(),
   type: z.string().trim().max(60).optional(),
+  step: z.enum(["brand", "reward", "finish"]).optional(),
 });
 
 export const Route = createFileRoute("/onboarding")({
@@ -34,6 +30,7 @@ export const Route = createFileRoute("/onboarding")({
     }
   },
   component: OnboardingPage,
+  errorComponent: RouteError,
   head: () => ({
     meta: [
       { title: "Configura tu negocio · NexoLeal" },
@@ -46,47 +43,46 @@ export const Route = createFileRoute("/onboarding")({
   }),
 });
 
-type Step = "brand" | "reward" | "finish";
-
-const STEPS: Array<{
-  key: Step;
-  icon: typeof Sparkles;
-  title: string;
-  description: string;
-}> = [
-  {
-    key: "brand",
-    icon: Sparkles,
-    title: "Personaliza tu marca",
-    description:
-      "Sube tu logo y elige los colores que verán tus clientes al escanear el QR.",
-  },
-  {
-    key: "reward",
-    icon: QrCode,
-    title: "Crea tu primera recompensa",
-    description:
-      "Define cuántas visitas o compras se necesitan para ganar una recompensa.",
-  },
-  {
-    key: "finish",
-    icon: Megaphone,
-    title: "Imprime y comparte tu QR",
-    description:
-      "Descarga tu código QR único y empieza a sumar clientes frecuentes hoy mismo.",
-  },
-];
-
-const STEP_INDEX: Record<Step, number> = {
-  brand: 0,
-  reward: 1,
-  finish: 2,
-};
+function readCachedStaffKey(businessId: string): CreateStaffKeyResponse | null {
+  try {
+    const raw = sessionStorage.getItem(STAFF_KEY_STORAGE(businessId));
+    if (!raw) return null;
+    if (raw.startsWith("{")) {
+      return JSON.parse(raw) as CreateStaffKeyResponse;
+    }
+    return {
+      id: "cached",
+      label: "Dispositivo principal",
+      rawKey: raw,
+      headerValue: raw,
+      createdAt: new Date().toISOString(),
+    };
+  } catch {
+    return null;
+  }
+}
 
 function OnboardingPage() {
-  const { businessId, business, type } = Route.useSearch();
-  const [step, setStep] = useState<Step>("brand");
-  const currentIdx = STEP_INDEX[step];
+  const { businessId, business, type, step: stepParam } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const step: OnboardingStep = stepParam ?? "brand";
+
+  const businessName = business ?? "Tu negocio";
+  const businessCategory = type?.toLowerCase() ?? "negocio";
+
+  const brandQuery = useQuery({
+    queryKey: ["business", businessId, "brand"],
+    queryFn: () => loadBrandSettings(businessId!),
+    enabled: !!businessId,
+    staleTime: 60_000,
+  });
+  const brandTagline = brandQuery.data?.tagline ?? "";
+
+  const setStep = (next: OnboardingStep) => {
+    navigate({
+      search: (prev) => ({ ...prev, step: next }),
+    });
+  };
 
   const [stampsRequired, setStampsRequired] = useState(10);
   const [rewardDescription, setRewardDescription] = useState("Servicio gratis");
@@ -103,260 +99,107 @@ function OnboardingPage() {
     },
     onError: (e) => {
       const message =
-        e instanceof ApiError
-          ? e.message
-          : "No pudimos guardar tu recompensa. Intenta de nuevo.";
+        e instanceof ApiError ? e.message : "No pudimos guardar tu recompensa. Intenta de nuevo.";
       toast.error(message);
     },
   });
 
   const staffKeyQuery = useQuery({
     queryKey: ["business", businessId, "first-staff-key"],
-    queryFn: () =>
-      businessesApi.createStaffKey(businessId!, { label: "Default device" }),
-    enabled: step === "finish",
+    queryFn: async () => {
+      const cached = readCachedStaffKey(businessId!);
+      if (cached) return cached;
+      const created = await businessesApi.createStaffKey(businessId!, {
+        label: "Dispositivo principal",
+      });
+      try {
+        sessionStorage.setItem(STAFF_KEY_STORAGE(businessId!), JSON.stringify(created));
+      } catch {
+        // ignore
+      }
+      return created;
+    },
+    enabled: step === "finish" && !!businessId,
     staleTime: Infinity,
     retry: false,
   });
 
   useEffect(() => {
-    if (staffKeyQuery.data?.headerValue) {
-      try {
-        localStorage.setItem(
-          "nexoleal:staff-key",
-          staffKeyQuery.data.headerValue,
-        );
-      } catch {
-        // localStorage may be unavailable (private mode); silently ignore.
-      }
-    }
+    const header = staffKeyQuery.data?.headerValue;
+    if (!header) return;
+    void setStaffKey(header);
   }, [staffKeyQuery.data]);
 
+  const joinUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/join/${businessId ?? ""}`
+      : `/join/${businessId ?? ""}`;
+
+  if (!businessId) return null;
+
   return (
-    <div className="min-h-screen bg-[var(--bg)]">
-      <header className="border-b bg-white">
+    <div className="min-h-screen bg-[var(--color-bg-paper)]">
+      <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2 text-black">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+          <Link to="/" className="flex items-center gap-2 text-[color:var(--color-ink)]">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--color-signal)] text-[color:var(--color-ink)]">
               <Sparkles className="h-4 w-4" />
             </span>
             <span className="font-display text-lg font-semibold">NexoLeal</span>
           </Link>
-          <span className="text-sm text-muted">Onboarding</span>
+          <span className="text-sm text-[color:var(--color-ink-soft)]">Onboarding</span>
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:py-20">
-        <div className="badge mb-4">¡Bienvenido!</div>
-        <h1 className="page-title">
-          {business ? `Hola, ${business} 👋` : "Configuremos tu negocio"}
-        </h1>
-        <p className="muted-text mt-3 text-lg">
-          {type
-            ? `Vamos a dejar listo tu programa de lealtad para tu ${type.toLowerCase()} en 3 pasos rápidos.`
-            : "Vamos a dejar listo tu programa de lealtad en 3 pasos rápidos."}
-        </p>
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-16">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="eyebrow mb-3">¡Bienvenido!</div>
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-[color:var(--color-ink)] sm:text-4xl">
+            {business ? `Hola, ${business} 👋` : "Configuremos tu negocio"}
+          </h1>
+          <p className="mt-3 text-lg text-[color:var(--color-ink-soft)]">
+            {type
+              ? `Vamos a dejar listo tu programa de lealtad para tu ${type.toLowerCase()} en 3 pasos rápidos.`
+              : "Vamos a dejar listo tu programa de lealtad en 3 pasos rápidos."}
+          </p>
+        </div>
 
-        <ol className="mt-10 space-y-4">
-          {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            const isDone = i < currentIdx;
-            const isActive = i === currentIdx;
-            return (
-              <li
-                key={s.key}
-                className={`card flex items-start gap-4 p-5 transition ${
-                  isActive ? "ring-2 ring-[var(--ring)]" : ""
-                } ${isDone ? "opacity-70" : ""}`}
-              >
-                <div
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
-                    isDone
-                      ? "bg-[var(--secondary)] text-white"
-                      : isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-[var(--surface-2)] text-muted"
-                  }`}
-                >
-                  {isDone ? (
-                    <CheckCircle2 className="h-5 w-5" />
-                  ) : (
-                    <Icon className="h-5 w-5" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-                      Paso {i + 1}
-                    </span>
-                  </div>
-                  <h3 className="font-display text-lg font-semibold">{s.title}</h3>
-                  <p className="muted-text text-sm">{s.description}</p>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        <StepIndicator current={step} />
 
         <div className="mt-10">
           {step === "brand" && (
-            <div className="card p-6">
-              <h2 className="font-display text-xl font-semibold">
-                Personaliza tu marca
-              </h2>
-              <p className="muted-text mt-1 text-sm">
-                Pronto podrás subir tu logo y ajustar los colores de tu programa.
-                Por ahora seguimos con la configuración esencial — siempre puedes
-                volver a este paso desde el panel.
-              </p>
-
-              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                <Button variant="ghost" asChild>
-                  <Link to="/">Salir al inicio</Link>
-                </Button>
-                <Button size="lg" onClick={() => setStep("reward")}>
-                  Continuar <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <BrandStep
+              businessId={businessId}
+              businessName={businessName}
+              businessCategory={businessCategory}
+              rewardDescription={rewardDescription}
+              stampsRequired={stampsRequired}
+              onComplete={() => setStep("reward")}
+            />
           )}
 
           {step === "reward" && (
-            <form
-              className="card p-6"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (updateConfig.isPending) return;
-                updateConfig.mutate();
-              }}
-            >
-              <h2 className="font-display text-xl font-semibold">
-                Crea tu primera recompensa
-              </h2>
-              <p className="muted-text mt-1 text-sm">
-                Define cuántas visitas necesita un cliente para ganar y la
-                recompensa que recibirá.
-              </p>
-
-              <div className="mt-6 space-y-6">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="stamps">Visitas necesarias</Label>
-                    <span className="text-sm font-semibold tabular-nums">
-                      {stampsRequired}
-                    </span>
-                  </div>
-                  <Slider
-                    id="stamps"
-                    min={1}
-                    max={30}
-                    step={1}
-                    value={[stampsRequired]}
-                    onValueChange={(v) => setStampsRequired(v[0] ?? 10)}
-                  />
-                  <p className="muted-text text-xs">
-                    Recomendamos entre 8 y 12 visitas para tu primera recompensa.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="reward">Recompensa</Label>
-                  <Input
-                    id="reward"
-                    value={rewardDescription}
-                    onChange={(e) => setRewardDescription(e.target.value)}
-                    placeholder="Ej. Servicio gratis"
-                    maxLength={120}
-                    required
-                  />
-                  <p className="muted-text text-xs">
-                    Lo que el cliente recibe al completar las visitas. Máximo
-                    120 caracteres.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setStep("brand")}
-                  disabled={updateConfig.isPending}
-                >
-                  Volver
-                </Button>
-                <Button type="submit" size="lg" disabled={updateConfig.isPending}>
-                  {updateConfig.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Guardando…
-                    </>
-                  ) : (
-                    <>
-                      Guardar y continuar <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
+            <RewardStep
+              stampsRequired={stampsRequired}
+              rewardDescription={rewardDescription}
+              onStampsChange={setStampsRequired}
+              onRewardChange={setRewardDescription}
+              onBack={() => setStep("brand")}
+              onSubmit={() => updateConfig.mutate()}
+              isPending={updateConfig.isPending}
+            />
           )}
 
           {step === "finish" && (
-            <div className="card border-[var(--secondary)] bg-[color-mix(in_srgb,var(--secondary)_8%,white)] p-6">
-              <CheckCircle2 className="h-10 w-10 text-[var(--secondary)]" />
-              <h2 className="mt-3 font-display text-xl font-semibold">
-                ¡Tu negocio está listo!
-              </h2>
-              <p className="muted-text mt-1 text-sm">
-                Guarda esta llave del staff. Es lo que tu personal usará para
-                escanear códigos QR desde la caja.
-              </p>
-
-              {staffKeyQuery.isLoading && (
-                <div className="mt-4 flex items-center gap-2 text-sm text-muted">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Generando tu
-                  llave…
-                </div>
-              )}
-
-              {staffKeyQuery.isError && (
-                <p className="mt-4 text-sm text-destructive">
-                  No pudimos generar la llave del staff. Recarga esta página
-                  para intentarlo de nuevo.
-                </p>
-              )}
-
-              {staffKeyQuery.data?.headerValue && (
-                <>
-                  <div className="mt-4 rounded-lg border border-dashed bg-[var(--surface-2)] p-3">
-                    <code className="text-xs break-all">
-                      {staffKeyQuery.data.headerValue}
-                    </code>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => {
-                      const value = staffKeyQuery.data?.headerValue ?? "";
-                      void navigator.clipboard.writeText(value);
-                      toast.success("Copiado al portapapeles");
-                    }}
-                  >
-                    <Copy className="h-4 w-4" /> Copiar llave
-                  </Button>
-                </>
-              )}
-
-              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
-                <Button asChild size="lg">
-                  <a href={`/dashboard/${businessId ?? ""}`}>Ir al panel</a>
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <a href="/scan">Probar el escáner</a>
-                </Button>
-              </div>
-            </div>
+            <FinishStep
+              businessId={businessId}
+              businessName={businessName}
+              tagline={brandTagline}
+              joinUrl={joinUrl}
+              staffKey={staffKeyQuery.data}
+              staffKeyLoading={staffKeyQuery.isLoading}
+              staffKeyError={staffKeyQuery.isError}
+            />
           )}
         </div>
       </main>

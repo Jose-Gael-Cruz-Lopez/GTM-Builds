@@ -33,14 +33,19 @@ $$;
 -- 1. businesses
 -- ═══════════════════════════════════════════════════════════════════════════════
 create table if not exists public.businesses (
-  id          uuid primary key default gen_random_uuid(),
-  name        text not null,
-  category    text not null check (category in ('barbershop','salon','vet','cafe','gym','other')),
-  owner_id    uuid not null references auth.users(id) on delete cascade,
-  is_active   boolean not null default true,
-  plan        text not null default 'free' check (plan in ('free','pro')),
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
+  id              uuid primary key default gen_random_uuid(),
+  name            text not null,
+  category        text not null check (category in ('barbershop','salon','vet','cafe','gym','other')),
+  owner_id        uuid not null references auth.users(id) on delete cascade,
+  is_active       boolean not null default true,
+  plan            text not null default 'free' check (plan in ('free','pro')),
+  tagline         text,
+  logo_url        text,
+  primary_color   text,
+  address         text,
+  phone           text,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
 );
 
 create index if not exists idx_businesses_owner_id on public.businesses(owner_id);
@@ -173,6 +178,7 @@ create table if not exists public.campaigns (
   expected_lift     text not null,
   status            text not null default 'draft' check (status in ('draft','active','sent','archived')),
   generated_by      text not null default 'nvidia-nim',
+  sent_at           timestamptz,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );
@@ -332,6 +338,16 @@ create policy "Owners can read business loyalty_configs"
 
 -- staff_keys: never expose to anyone except service role.
 -- (No SELECT/INSERT/UPDATE policies → only service role can access.)
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- Schema upgrades (idempotent — safe on existing projects)
+-- ═══════════════════════════════════════════════════════════════════════════════
+alter table public.businesses add column if not exists tagline text;
+alter table public.businesses add column if not exists logo_url text;
+alter table public.businesses add column if not exists primary_color text;
+alter table public.businesses add column if not exists address text;
+alter table public.businesses add column if not exists phone text;
+alter table public.campaigns add column if not exists sent_at timestamptz;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- Done.

@@ -1,0 +1,27 @@
+{
+  "name": "NexoLeal",
+  "short_name": "NexoLeal",
+  "description": "Tu monedero de lealtad digital — sellos, recompensas y QR en un solo lugar.",
+  "start_url": "/wallet",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0D0D0D",
+  "theme_color": "#0D0D0D",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "lifestyle"]
+}

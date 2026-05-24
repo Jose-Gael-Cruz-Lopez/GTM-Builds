@@ -18,9 +18,7 @@ export function Card({ title, value, tone = "default", hint }: StatCardProps) {
   return (
     <div className="card p-5">
       <div className="text-sm muted-text">{title}</div>
-      <div className={`mt-2 font-display text-3xl font-bold ${TONE_CLASS[tone]}`}>
-        {value}
-      </div>
+      <div className={`mt-2 font-display text-3xl font-bold ${TONE_CLASS[tone]}`}>{value}</div>
       {hint ? <div className="mt-1 text-xs muted-text">{hint}</div> : null}
     </div>
   );

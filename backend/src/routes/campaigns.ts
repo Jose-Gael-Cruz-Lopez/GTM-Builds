@@ -244,7 +244,8 @@ campaignRoutes.patch('/:id/campaigns/:campaignId', requireAdmin(), async (c) => 
     targetSegment?: 'at_risk' | 'lost' | 'all' | 'frequent'
     sendTiming?: string
     expectedLift?: string
-    status?: 'archived'
+    status?: 'archived' | 'sent'
+    sentAt?: string
   }>().catch(() => null)
 
   if (!body || Object.keys(body).length === 0) {
@@ -264,7 +265,7 @@ campaignRoutes.patch('/:id/campaigns/:campaignId', requireAdmin(), async (c) => 
     return c.json(err('NOT_FOUND', 'Campaign not found'), 404)
   }
 
-  if (existing.status === 'sent') {
+  if (existing.status === 'sent' && body.status !== 'sent') {
     return c.json(err('VALIDATION_ERROR', 'Sent campaigns cannot be modified'), 400)
   }
 
@@ -275,6 +276,10 @@ campaignRoutes.patch('/:id/campaigns/:campaignId', requireAdmin(), async (c) => 
   if (body.sendTiming !== undefined) updates.send_timing = body.sendTiming
   if (body.expectedLift !== undefined) updates.expected_lift = body.expectedLift
   if (body.status === 'archived') updates.status = 'archived'
+  if (body.status === 'sent') {
+    updates.status = 'sent'
+    updates.sent_at = body.sentAt ?? new Date().toISOString()
+  }
 
   try {
     const [updated] = await db.patch(

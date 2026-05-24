@@ -37,10 +37,10 @@
   --color-muted-foreground: var(--ink-soft);
 
   --color-accent: var(--celebrate);
-  --color-accent-foreground: #FFFFFF;
+  --color-accent-foreground: #ffffff;
 
   --color-destructive: var(--status-risk);
-  --color-destructive-foreground: #FFFFFF;
+  --color-destructive-foreground: #ffffff;
 
   --color-border: var(--border);
   --color-input: var(--border);
@@ -70,37 +70,37 @@
 /* ---------- Token values ---------- */
 :root {
   /* Surfaces */
-  --bg-base: #0D0D0D;          /* Cleo near-black */
-  --bg-elevated: #1A1A1A;
-  --bg-paper: #F9F6EF;         /* Shopify warm off-white */
-  --surface: #FFFFFF;
-  --surface-soft: #F2EEE5;
-  --cream: #F5E8D8;            /* Cleo warm cream — wallet card body */
+  --bg-base: #0d0d0d; /* Cleo near-black */
+  --bg-elevated: #1a1a1a;
+  --bg-paper: #f9f6ef; /* Shopify warm off-white */
+  --surface: #ffffff;
+  --surface-soft: #f2eee5;
+  --cream: #f5e8d8; /* Cleo warm cream — wallet card body */
 
   /* Ink */
-  --ink: #0A0F1E;              /* deep navy */
-  --ink-soft: #4A5160;
+  --ink: #0a0f1e; /* deep navy */
+  --ink-soft: #4a5160;
 
   /* Signal & accents */
-  --signal: #F5C518;           /* Cleo yellow — primary CTA */
-  --celebrate: #FF2D1A;        /* La Revoltosa red — stamp wins only */
-  --health: #C8F02A;           /* MindMarket chartreuse — positive KPI */
-  --status-good: #16A34A;
-  --status-warn: #F59E0B;
-  --status-risk: #EF4444;
-  --scanner-warm: #C8A89A;     /* Kriss.AI dusty rose */
-  --data-blue: #2B8EFF;        /* Reventador electric blue — charts */
+  --signal: #f5c518; /* Cleo yellow — primary CTA */
+  --celebrate: #ff2d1a; /* La Revoltosa red — stamp wins only */
+  --health: #c8f02a; /* MindMarket chartreuse — positive KPI */
+  --status-good: #16a34a;
+  --status-warn: #f59e0b;
+  --status-risk: #ef4444;
+  --scanner-warm: #c8a89a; /* Kriss.AI dusty rose */
+  --data-blue: #2b8eff; /* Reventador electric blue — charts */
 
   /* Border */
   --border: rgba(10, 15, 30, 0.08);
 
   /* Shadow stack */
-  --shadow-soft: 0 1px 2px rgba(10,15,30,.04), 0 8px 24px rgba(10,15,30,.08);
-  --shadow-lifted: 0 1px 3px rgba(10,15,30,.06), 0 24px 48px -16px rgba(10,15,30,.22);
-  --shadow-card: 0 1px 2px rgba(10,15,30,.05), 0 12px 32px -8px rgba(10,15,30,.12);
+  --shadow-soft: 0 1px 2px rgba(10, 15, 30, 0.04), 0 8px 24px rgba(10, 15, 30, 0.08);
+  --shadow-lifted: 0 1px 3px rgba(10, 15, 30, 0.06), 0 24px 48px -16px rgba(10, 15, 30, 0.22);
+  --shadow-card: 0 1px 2px rgba(10, 15, 30, 0.05), 0 12px 32px -8px rgba(10, 15, 30, 0.12);
 
   /* Motion */
-  --ease-out-expo: cubic-bezier(.22,1,.36,1);
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
   --duration: 320ms;
   --duration-slow: 600ms;
 
@@ -111,8 +111,8 @@
   --bg-paper: var(--bg-base);
   --surface: var(--bg-elevated);
   --surface-soft: #242424;
-  --ink: #F5E8D8;
-  --ink-soft: #A8A29E;
+  --ink: #f5e8d8;
+  --ink-soft: #a8a29e;
   --border: rgba(245, 232, 216, 0.08);
 }
 
@@ -218,7 +218,9 @@
     border-radius: var(--radius-pill);
     padding: 0.75rem 1.5rem;
     font-weight: 600;
-    transition: transform var(--duration) var(--ease-out-expo), box-shadow var(--duration) var(--ease-out-expo);
+    transition:
+      transform var(--duration) var(--ease-out-expo),
+      box-shadow var(--duration) var(--ease-out-expo);
     box-shadow: var(--shadow-soft);
   }
 
@@ -229,7 +231,7 @@
 
   .btn-celebrate {
     background: var(--celebrate);
-    color: #FFFFFF;
+    color: #ffffff;
     border-radius: var(--radius-pill);
     padding: 0.75rem 1.5rem;
     font-weight: 600;
@@ -252,15 +254,31 @@
   }
 
   @keyframes scanner-pulse {
-    0%, 100% { transform: scale(1); opacity: 0.6; }
-    50% { transform: scale(1.06); opacity: 0.15; }
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.06);
+      opacity: 0.15;
+    }
   }
 
   /* ---- Stamp unlocked celebration ---- */
   @keyframes celebrate-pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.04); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.04);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
 
   .celebrate-pulse {
@@ -269,8 +287,12 @@
 
   /* ---- Marquee (La Revoltosa) ---- */
   @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
   }
 
   .marquee-track {
@@ -283,12 +305,21 @@
 
   /* ---- Shimmer for skeletons ---- */
   @keyframes shimmer {
-    0% { background-position: -400px 0; }
-    100% { background-position: 400px 0; }
+    0% {
+      background-position: -400px 0;
+    }
+    100% {
+      background-position: 400px 0;
+    }
   }
 
   .shimmer {
-    background: linear-gradient(90deg, var(--surface-soft) 0%, var(--cream) 50%, var(--surface-soft) 100%);
+    background: linear-gradient(
+      90deg,
+      var(--surface-soft) 0%,
+      var(--cream) 50%,
+      var(--surface-soft) 100%
+    );
     background-size: 800px 100%;
     animation: shimmer 1.6s linear infinite;
   }
@@ -301,7 +332,7 @@
     align-items: center;
     justify-content: center;
     border: 2px solid color-mix(in srgb, var(--ink) 14%, transparent);
-    background: rgba(255,255,255,0.4);
+    background: rgba(255, 255, 255, 0.4);
     transition: all var(--duration) var(--ease-out-expo);
   }
 
@@ -325,7 +356,9 @@
 
 /* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -339,4 +372,31 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--bg-elevated);
+}
+
+@keyframes scan-bubble-rise {
+  from {
+    transform: translateY(0);
+    opacity: 0.75;
+  }
+  to {
+    transform: translateY(-72px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[scan-bubble-rise_var\(--dur\)_ease-out_var\(--delay\)_forwards\] {
+    animation: fade-celebrate 200ms ease-out forwards !important;
+    transform: none !important;
+  }
+}
+
+@keyframes fade-celebrate {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.85;
+  }
 }
