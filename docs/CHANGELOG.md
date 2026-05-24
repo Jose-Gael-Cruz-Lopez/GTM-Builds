@@ -13,6 +13,8 @@ All notable changes to NexoLeal are documented here.
 ### Changed
 - Frontend CI bumped to Node.js 22.
 - README and deploy docs updated for live Cloudflare Workers URLs.
+- PR #8: Comprehensive docs (CHANGELOG, VERIFICATION, ENV, CONTRIBUTING).
+- PR #9: Consolidated backend CI to single worker `nexoleal-backend`.
 
 ## 2026-05-23
 
