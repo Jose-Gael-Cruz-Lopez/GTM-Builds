@@ -4,14 +4,12 @@ import { useState } from "react";
 import { z } from "zod";
 import { Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
 import { onboardingSearch } from "@/lib/auth";
-import { AuthSplit } from "@/components/auth/AuthSplit";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { SignupFlowShell } from "@/components/auth/SignupFlowShell";
 import { BUSINESS_CATEGORY_OPTIONS } from "@/lib/business-categories";
 
 const searchSchema = z.object({
@@ -68,6 +66,10 @@ function SignupPage() {
     plan: initialPlan ?? "free",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const businessStepOnly = stepParam === "business";
+  const totalSteps = businessStepOnly ? 1 : 2;
+  const stepNumber = step === 1 ? 1 : 2;
 
   const goStep2 = (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,176 +158,185 @@ function SignupPage() {
 
   if (step === "await") {
     return (
-      <AuthSplit
+      <SignupFlowShell
+        stepKey="await"
+        stepNumber={2}
+        totalSteps={2}
+        stepLabel="Confirma tu cuenta"
         headline="Revisa tu correo."
-        subtitle="Confirma tu cuenta para terminar la creación de tu negocio."
+        subtitle="Un clic en el enlace y terminamos de crear tu negocio."
       >
-        <div className="surface-paper p-8 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-cream)]">
-            <Mail className="h-6 w-6 text-[color:var(--color-ink)]" />
+        <div className="auth-flow-await">
+          <div className="auth-flow-await-icon">
+            <Mail className="h-6 w-6" />
           </div>
-          <h2 className="mt-6 font-display text-2xl">Te enviamos un enlace</h2>
-          <p className="mt-2 text-sm text-[color:var(--color-ink-soft)]">
-            Abre el correo en <strong>{form.email}</strong> y haz clic en el botón de confirmación.
-            Cuando regreses, tu negocio se creará automáticamente.
+          <p className="mt-5 font-display text-xl">Te enviamos un enlace</p>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
+            Abre el correo en <strong className="text-[var(--ink)]">{form.email}</strong> y confirma
+            tu cuenta. Cuando regreses, tu negocio se creará automáticamente.
           </p>
         </div>
-      </AuthSplit>
+      </SignupFlowShell>
     );
   }
 
-  const businessStepOnly = stepParam === "business";
+  const copy =
+    step === 1
+      ? {
+          stepKey: "account",
+          stepLabel: "Paso 1 · Cuenta",
+          headline: "Empecemos.",
+          subtitle: "Entra con Google en un clic. Sin contraseñas, sin fricción.",
+        }
+      : {
+          stepKey: "business",
+          stepLabel: businessStepOnly ? "Tu negocio" : "Paso 2 · Tu negocio",
+          headline: "Cuéntanos de tu negocio.",
+          subtitle: "Así se verá en la cartera digital de tus clientes.",
+        };
 
   return (
-    <AuthSplit
-      headline={step === 1 ? "Crea tu cuenta." : "Cuéntanos de tu negocio."}
-      subtitle={
-        step === 1
-          ? "Entra con Google y configura tu programa en minutos."
-          : "Esto aparecerá en la cartera digital de tus clientes."
-      }
+    <SignupFlowShell
+      stepKey={copy.stepKey}
+      stepNumber={businessStepOnly ? 1 : stepNumber}
+      totalSteps={totalSteps}
+      stepLabel={copy.stepLabel}
+      headline={copy.headline}
+      subtitle={copy.subtitle}
+      showBack={step === 2 && !businessStepOnly}
+      onBack={() => setStep(1)}
     >
-      {!businessStepOnly && (
-        <div className="mb-6 flex gap-2">
-          <span
-            className={`h-1 flex-1 rounded-full ${step !== 1 ? "bg-[var(--color-ink)]" : "bg-[var(--color-signal)]"}`}
-          />
-          <span
-            className={`h-1 flex-1 rounded-full ${step === 2 ? "bg-[var(--color-signal)]" : "bg-[var(--color-border)]"}`}
-          />
-        </div>
-      )}
-
       {step === 1 ? (
-        <div className="space-y-4">
-          <h2 className="display-md">Paso 1 · Cuenta</h2>
-          <GoogleSignInButton intent="business" label="Continuar con Google" />
+        <div>
+          <GoogleSignInButton intent="business" label="Continuar con Google" variant="flow" />
 
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-[color:var(--color-border)]" />
-            </div>
-            <p className="relative mx-auto w-fit bg-[var(--color-bg-paper)] px-3 text-xs text-[color:var(--color-ink-soft)]">
-              o
-            </p>
+          <div className="auth-flow-divider">
+            <span>o</span>
           </div>
 
           {!showEmailForm ? (
-            <Button
+            <button
               type="button"
-              variant="outline"
-              className="w-full"
+              className="auth-flow-btn auth-flow-btn-full auth-flow-btn-ghost"
               onClick={() => setShowEmailForm(true)}
             >
               Usar email y contraseña
-            </Button>
+            </button>
           ) : (
             <form onSubmit={goStep2} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
+              <div className="auth-flow-field">
+                <label htmlFor="email" className="auth-flow-label">
+                  Email
+                </label>
                 <Input
                   id="email"
                   type="email"
                   autoComplete="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="auth-flow-input"
                   aria-invalid={!!errors.email}
                 />
                 {errors.email && (
-                  <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
-                    {errors.email}
-                  </p>
+                  <p className="text-xs text-[color:var(--color-status-risk)]">{errors.email}</p>
                 )}
               </div>
-              <div>
-                <Label htmlFor="password">Contraseña</Label>
+              <div className="auth-flow-field">
+                <label htmlFor="password" className="auth-flow-label">
+                  Contraseña
+                </label>
                 <Input
                   id="password"
                   type="password"
                   autoComplete="new-password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="auth-flow-input"
                   aria-invalid={!!errors.password}
                 />
                 {errors.password && (
-                  <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
-                    {errors.password}
-                  </p>
+                  <p className="text-xs text-[color:var(--color-status-risk)]">{errors.password}</p>
                 )}
               </div>
-              <div>
-                <Label htmlFor="confirm">Confirmar contraseña</Label>
+              <div className="auth-flow-field">
+                <label htmlFor="confirm" className="auth-flow-label">
+                  Confirmar contraseña
+                </label>
                 <Input
                   id="confirm"
                   type="password"
                   autoComplete="new-password"
                   value={form.confirm}
                   onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+                  className="auth-flow-input"
                   aria-invalid={!!errors.confirm}
                 />
                 {errors.confirm && (
-                  <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
-                    {errors.confirm}
-                  </p>
+                  <p className="text-xs text-[color:var(--color-status-risk)]">{errors.confirm}</p>
                 )}
               </div>
-              <Button type="submit" className="w-full btn-signal">
+              <button
+                type="submit"
+                className="auth-flow-btn auth-flow-btn-full auth-flow-btn-primary mt-2"
+              >
                 Continuar
-              </Button>
+              </button>
             </form>
           )}
 
-          <p className="text-center text-xs text-[color:var(--color-ink-soft)]">
-            ¿Ya tienes cuenta?{" "}
-            <Link to="/login" className="underline">
-              Inicia sesión
-            </Link>
+          <p className="auth-flow-footnote">
+            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
           </p>
         </div>
       ) : (
-        <form onSubmit={handleFinalSubmit} className="space-y-4">
-          <h2 className="display-md">Paso 2 · Tu negocio</h2>
-          <div>
-            <Label htmlFor="businessName">Nombre del negocio</Label>
+        <form onSubmit={handleFinalSubmit} className="space-y-5">
+          <div className="auth-flow-field">
+            <label htmlFor="businessName" className="auth-flow-label">
+              Nombre del negocio
+            </label>
             <Input
               id="businessName"
               value={form.businessName}
               onChange={(e) => setForm({ ...form, businessName: e.target.value })}
               placeholder="La Barbería Sur"
+              className="auth-flow-input"
+              aria-invalid={!!errors.businessName}
             />
             {errors.businessName && (
-              <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
-                {errors.businessName}
-              </p>
+              <p className="text-xs text-[color:var(--color-status-risk)]">{errors.businessName}</p>
             )}
           </div>
-          <div>
-            <Label htmlFor="category">Categoría</Label>
-            <select
-              id="category"
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="w-full rounded-md border border-[color:var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
-            >
+
+          <div className="auth-flow-field">
+            <span className="auth-flow-label">Categoría</span>
+            <div className="auth-flow-chips">
               {BUSINESS_CATEGORY_OPTIONS.map((c) => (
-                <option key={c.value} value={c.value}>
+                <button
+                  type="button"
+                  key={`${c.value}-${c.label}`}
+                  data-active={form.category === c.value}
+                  className="auth-flow-chip"
+                  onClick={() => setForm({ ...form, category: c.value })}
+                >
                   {c.label}
-                </option>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
-          <div>
-            <Label>Plan</Label>
-            <div className="mt-1 grid grid-cols-2 gap-2">
+
+          <div className="auth-flow-field">
+            <span className="auth-flow-label">Plan</span>
+            <div className="auth-flow-plans">
               {(["free", "pro"] as const).map((p) => (
                 <button
                   type="button"
                   key={p}
+                  data-active={form.plan === p}
+                  className="auth-flow-plan"
                   onClick={() => setForm({ ...form, plan: p })}
-                  className={`rounded-xl border px-4 py-3 text-left transition ${form.plan === p ? "border-[var(--color-signal)] bg-[var(--color-cream)]" : "border-[color:var(--color-border)]"}`}
                 >
-                  <p className="font-display text-lg capitalize">{p}</p>
-                  <p className="text-xs text-[color:var(--color-ink-soft)]">
+                  <p className="auth-flow-plan-title">{p}</p>
+                  <p className="auth-flow-plan-desc">
                     {p === "free" ? "Hasta 100 clientes" : "Ilimitado + IA"}
                   </p>
                 </button>
@@ -333,22 +344,17 @@ function SignupPage() {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            {!businessStepOnly && (
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>
-                Atrás
-              </Button>
-            )}
-            <Button
+          <div className="auth-flow-actions">
+            <button
               type="submit"
               disabled={submitting}
-              className={`btn-signal ${businessStepOnly ? "w-full" : "flex-1"}`}
+              className="auth-flow-btn auth-flow-btn-full auth-flow-btn-primary inline-flex items-center justify-center gap-2"
             >
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear negocio"}
-            </Button>
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear negocio →"}
+            </button>
           </div>
         </form>
       )}
-    </AuthSplit>
+    </SignupFlowShell>
   );
 }
