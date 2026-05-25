@@ -1396,6 +1396,11 @@
   transition: transform 180ms var(--ease-editorial);
 }
 
+[data-surface="editorial"] .editorial-footer__social-icon {
+  display: block;
+  flex-shrink: 0;
+}
+
 [data-surface="editorial"] .editorial-footer__social-link:hover {
   transform: translateY(-1px);
 }

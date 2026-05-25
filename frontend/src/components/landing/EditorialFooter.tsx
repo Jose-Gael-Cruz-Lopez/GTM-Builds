@@ -128,23 +128,13 @@ export function EditorialFooter() {
               <circle cx="10" cy="10" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
               <circle cx="14.4" cy="5.6" r="0.9" fill="currentColor" />
             </SocialGlyph>
-            <SocialGlyph href="https://linkedin.com" label="LinkedIn">
-              <rect
-                x="3"
-                y="3"
-                width="14"
-                height="14"
-                rx="2.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
-              />
-              <rect x="6" y="8" width="1.8" height="6.5" fill="currentColor" />
-              <circle cx="6.9" cy="5.9" r="1.1" fill="currentColor" />
+            <SocialGlyph href="https://linkedin.com" label="LinkedIn" viewBox="0 0 24 24">
               <path
-                d="M10 14.5V8.5h1.8v1c0.4-0.7 1.2-1.2 2.2-1.2 1.6 0 2.4 1 2.4 2.7v3.5h-1.8v-3.3c0-0.9-0.4-1.3-1.2-1.3-0.9 0-1.4 0.6-1.4 1.5v3.1H10z"
+                d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"
                 fill="currentColor"
               />
+              <rect width="4" height="12" x="2" y="9" fill="currentColor" />
+              <circle cx="4" cy="4" r="2" fill="currentColor" />
             </SocialGlyph>
             <SocialGlyph href="https://x.com" label="X">
               <path
@@ -184,10 +174,12 @@ function SocialGlyph({
   href,
   label,
   children,
+  viewBox = "0 0 20 20",
 }: {
   href: string;
   label: string;
   children: React.ReactNode;
+  viewBox?: string;
 }) {
   return (
     <a
@@ -197,7 +189,13 @@ function SocialGlyph({
       rel="noopener noreferrer"
       className="editorial-footer__social-link"
     >
-      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+      <svg
+        width="20"
+        height="20"
+        viewBox={viewBox}
+        aria-hidden="true"
+        className="editorial-footer__social-icon"
+      >
         {children}
       </svg>
     </a>
