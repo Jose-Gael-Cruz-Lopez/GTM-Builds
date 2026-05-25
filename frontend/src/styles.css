@@ -1163,6 +1163,203 @@
   color: var(--ink);
 }
 
+/* Consumer client flow — register + personal dashboard */
+.consumer-flow-main-scroll {
+  justify-content: flex-start;
+  padding-top: 1.5rem;
+  padding-bottom: 4rem;
+}
+
+.consumer-panel {
+  width: 100%;
+  border-radius: 1.5rem;
+  border: 1px solid var(--hair);
+  background: rgba(255, 255, 255, 0.72);
+  padding: clamp(1.25rem, 4vw, 1.75rem);
+}
+
+.consumer-panel + .consumer-panel {
+  margin-top: 1rem;
+}
+
+.consumer-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.consumer-panel-title {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.consumer-panel-meta {
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.consumer-panel-body {
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.consumer-qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.consumer-qr-caption {
+  margin-top: 0.75rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.consumer-qr-timer {
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+.consumer-qr-refresh {
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--ink-mute);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 200ms ease;
+}
+
+.consumer-qr-refresh:hover {
+  color: var(--ink);
+}
+
+.consumer-referral-row {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid var(--hair);
+  background: rgba(231, 242, 106, 0.22);
+  padding: 0.65rem 0.65rem 0.65rem 1.25rem;
+}
+
+.consumer-referral-code {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+}
+
+.consumer-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 1px solid var(--hair);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    background 200ms ease;
+}
+
+.consumer-copy-btn:hover {
+  color: var(--ink);
+  background: #fff;
+}
+
+.consumer-discount-list {
+  margin-top: 0.75rem;
+}
+
+.consumer-discount-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--hair);
+}
+
+.consumer-discount-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.consumer-discount-title {
+  font-size: 0.875rem;
+  color: var(--ink);
+}
+
+.consumer-discount-business {
+  margin-top: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.consumer-discount-expires {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--ink-mute);
+}
+
+.consumer-badge {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.consumer-badge--active {
+  background: rgba(201, 217, 184, 0.45);
+  color: var(--ink);
+}
+
+.consumer-badge--warn {
+  background: rgba(255, 45, 26, 0.12);
+  color: var(--ink);
+}
+
+.consumer-greeting {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
 @keyframes auth-flow-step-enter {
   from {
     opacity: 0;
