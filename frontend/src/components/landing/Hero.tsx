@@ -3,6 +3,7 @@ import { FloatingCloud } from "./FloatingCloud";
 import { ScrollToExplore } from "./ScrollToExplore";
 import { useRevealOnce } from "@/hooks/use-reveal-once";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export function Hero() {
   const { ref } = useRevealOnce<HTMLDivElement>({ threshold: 0.1 });

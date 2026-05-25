@@ -179,8 +179,8 @@ function SignupPage() {
           </div>
           <p className="mt-5 font-display text-xl">{d.signup.awaitTitle}</p>
           <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
-            {d.signup.awaitBodyPre}{" "}
-            <strong className="text-[var(--ink)]">{form.email}</strong> {d.signup.awaitBodyPost}
+            {d.signup.awaitBodyPre} <strong className="text-[var(--ink)]">{form.email}</strong>{" "}
+            {d.signup.awaitBodyPost}
           </p>
         </div>
       </SignupFlowShell>
@@ -283,8 +283,7 @@ function SignupPage() {
           )}
 
           <p className="auth-flow-footnote">
-            {d.signup.alreadyHaveAccount}{" "}
-            <Link to="/login">{d.signup.goToLogin}</Link>
+            {d.signup.alreadyHaveAccount} <Link to="/login">{d.signup.goToLogin}</Link>
           </p>
         </div>
       ) : (
@@ -329,11 +328,7 @@ function SignupPage() {
               disabled={submitting}
               className="auth-flow-btn auth-flow-btn-full auth-flow-btn-primary inline-flex items-center justify-center gap-2"
             >
-              {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                d.signup.createBtnArrow
-              )}
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : d.signup.createBtnArrow}
             </button>
           </div>
         </form>

@@ -96,11 +96,7 @@ function LoginPage() {
       headline={d.login.headline}
       subtitle={d.login.subtitle}
     >
-      <GoogleSignInButton
-        intent="business"
-        label={d.signup.googleContinue}
-        variant="flow"
-      />
+      <GoogleSignInButton intent="business" label={d.signup.googleContinue} variant="flow" />
 
       <div className="auth-flow-divider">
         <span>{d.common.orDivider}</span>
@@ -180,8 +176,7 @@ function LoginPage() {
       )}
 
       <p className="auth-flow-footnote">
-        {d.login.newHere}{" "}
-        <Link to="/signup">{d.login.createAccount}</Link>
+        {d.login.newHere} <Link to="/signup">{d.login.createAccount}</Link>
       </p>
     </SignupFlowShell>
   );

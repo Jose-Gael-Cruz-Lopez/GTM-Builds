@@ -115,12 +115,30 @@ export function EditorialFooter() {
         <div className="editorial-footer__bottom">
           <div className="editorial-footer__social">
             <SocialGlyph href="https://instagram.com" label="Instagram">
-              <rect x="3" y="3" width="14" height="14" rx="4" fill="none" stroke="currentColor" strokeWidth="1.4" />
+              <rect
+                x="3"
+                y="3"
+                width="14"
+                height="14"
+                rx="4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
               <circle cx="10" cy="10" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
               <circle cx="14.4" cy="5.6" r="0.9" fill="currentColor" />
             </SocialGlyph>
             <SocialGlyph href="https://linkedin.com" label="LinkedIn">
-              <rect x="3" y="3" width="14" height="14" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
+              <rect
+                x="3"
+                y="3"
+                width="14"
+                height="14"
+                rx="2.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
               <rect x="6" y="8" width="1.8" height="6.5" fill="currentColor" />
               <circle cx="6.9" cy="5.9" r="1.1" fill="currentColor" />
               <path

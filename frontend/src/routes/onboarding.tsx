@@ -89,7 +89,7 @@ function OnboardingPage() {
   const { d } = useLocale();
   const { businessId, business, type, step: stepParam } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const step: OnboardingStep = stepParam ?? "brand";
+  const step: OnboardingStep = stepParam === "reward" ? "reward" : "brand";
 
   const businessName = business ?? "Tu negocio";
   const businessCategory = type?.toLowerCase() ?? "negocio";
