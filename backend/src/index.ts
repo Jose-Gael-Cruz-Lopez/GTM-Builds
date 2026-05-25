@@ -8,6 +8,7 @@ import { clientRoutes } from './routes/clients'
 import { visitRoutes } from './routes/visits'
 import { analyticsRoutes } from './routes/analytics'
 import { campaignRoutes } from './routes/campaigns'
+import { assistantRoutes } from './routes/assistant'
 import { consumerRoutes } from './routes/consumer'
 import { scannerRoutes } from './routes/scanner'
 import { recalculateClientStatuses } from './cron'
@@ -48,6 +49,7 @@ app.route('/scanner', scannerRoutes)
 app.route('/businesses', businessRoutes)
 app.route('/businesses', analyticsRoutes)
 app.route('/businesses', campaignRoutes)
+app.route('/businesses', assistantRoutes)
 
 // ─── Scheduled (cron) Handler ─────────────────────────────────────────────────
 // Triggered by `[triggers] crons` entries in wrangler.toml. Currently:
