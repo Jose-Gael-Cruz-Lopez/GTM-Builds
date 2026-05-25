@@ -41,7 +41,7 @@ function SignupPage() {
   const [step, setStep] = useState<1 | 2 | "await">(stepParam === "business" ? 2 : 1);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",

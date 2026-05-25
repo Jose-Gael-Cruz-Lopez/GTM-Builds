@@ -90,7 +90,6 @@ export function BrandStep({
           </p>
 
           <div className="mt-6 space-y-6">
-
             <ColorPicker
               value={brand.primaryColor}
               onChange={(primaryColor) => update({ primaryColor })}

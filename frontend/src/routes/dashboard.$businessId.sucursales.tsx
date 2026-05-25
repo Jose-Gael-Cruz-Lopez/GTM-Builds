@@ -39,7 +39,7 @@ function SucursalesPage() {
         </p>
       </div>
 
-     <IsoScene
+      <IsoScene
         title={`Sucursales de ${businessName || "tu local"}`}
         description={`Actualmente estás en el plan ${business?.plan?.toUpperCase() || "FREE"}. Aquí podrás dar de alta, editar y desactivar las sucursales de tu negocio.`}
         action={
