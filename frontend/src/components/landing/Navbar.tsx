@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { signOut } from "@/lib/auth";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 export function Navbar() {
   const { session, user } = useSession();
@@ -57,19 +58,11 @@ export function Navbar() {
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden sm:inline-flex text-black hover:bg-transparent hover:text-[var(--primary)]"
-                asChild
-              >
-                <Link to="/login">Iniciar sesión</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link to="/signup">Crear cuenta</Link>
-              </Button>
-            </>
+            <GoogleSignInButton
+              intent="business"
+              label="Entrar con Google"
+              className="btn-signal h-9 px-4 text-sm"
+            />
           )}
         </div>
       </div>

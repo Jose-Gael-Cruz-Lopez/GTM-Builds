@@ -1,2 +1,9 @@
 # NexoLeal Supabase project (https://lajrjnjyvbpaaspzgpvh.supabase.co)
 project_id = "lajrjnjyvbpaaspzgpvh"
+
+# Local dev only — hosted Google OAuth is configured in Supabase Dashboard
+# or via scripts/setup-google-oauth.sh + Management API.
+[auth.external.google]
+enabled = false
+# client_id = "env(GOOGLE_CLIENT_ID)"
+# secret = "env(GOOGLE_CLIENT_SECRET)"

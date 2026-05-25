@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { FloatingCloud } from "./FloatingCloud";
 import { ScrollToExplore } from "./ScrollToExplore";
 import { useRevealOnce } from "@/hooks/use-reveal-once";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 export function Hero() {
   const { ref } = useRevealOnce<HTMLDivElement>({ threshold: 0.1 });
@@ -84,29 +85,7 @@ export function Hero() {
           className="soft-rise delay-2 flex flex-wrap items-center justify-center gap-3"
           style={{ marginTop: "2.5rem" }}
         >
-          <Link
-            to="/signup"
-            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              background: "var(--ink)",
-              color: "var(--paper)",
-              padding: "0.875rem 1.5rem",
-              borderRadius: "9999px",
-              fontFamily: "var(--font-sans)",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              letterSpacing: "0.02em",
-              border: "1.5px solid var(--ink)",
-              // @ts-expect-error css var
-              "--tw-ring-color": "var(--ink)",
-            }}
-          >
-            Negocios
-            <span aria-hidden="true">→</span>
-          </Link>
+          <GoogleSignInButton intent="business" label="Negocios" variant="hero" />
           <Link
             to="/user/dashboard"
             className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
