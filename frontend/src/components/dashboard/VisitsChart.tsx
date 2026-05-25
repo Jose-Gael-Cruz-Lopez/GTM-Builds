@@ -48,7 +48,9 @@ export function VisitsChart({ businessId, defaultDays = 30, getPreviewData }: Vi
 
   if (!getPreviewData && visits.isLoading) return <AnalyticsCardSkeleton />;
 
-  if (!getPreviewData && (visits.isError || !chartData || chartData.labels.length === 0)) {
+  if (!chartData || chartData.labels.length === 0) {
+    if (getPreviewData) return <AnalyticsCardSkeleton />;
+
     return (
       <div className="surface-paper p-5">
         <div className="mb-4 flex items-center justify-between">
