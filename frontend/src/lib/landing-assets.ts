@@ -232,11 +232,6 @@ export type UseCasePanel = {
   ctaHref: string;
   bgImage: string;
   bgAlt: string;
-  pdfCard?: {
-    title: string;
-    href: string;
-    miniSvg: string;
-  };
 };
 
 export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
@@ -252,11 +247,6 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       ctaHref: "/signup",
       bgImage: "/landing/panels/cafeteria.jpg",
       bgAlt: "Barista preparando café en una cafetería de barrio",
-      pdfCard: {
-        title: d.landing.panels.cafeteria.pdfTitle,
-        href: "/landing/pdf/guia-cafeteria.pdf",
-        miniSvg: "/landing/cloud/stamp-cluster.svg",
-      },
     },
     {
       index: "02",
@@ -269,11 +259,6 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       ctaHref: "/signup",
       bgImage: "/landing/panels/retail.jpg",
       bgAlt: "Interior de una boutique con un cliente recibiendo una bolsa de papel",
-      pdfCard: {
-        title: d.landing.panels.retail.pdfTitle,
-        href: "/landing/pdf/guia-retail.pdf",
-        miniSvg: "/landing/cloud/ticket.svg",
-      },
     },
     {
       index: "03",
@@ -286,11 +271,6 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       ctaHref: "/signup",
       bgImage: "/landing/panels/restaurante.jpg",
       bgAlt: "Mesa familiar bajo luz cálida en un restaurante",
-      pdfCard: {
-        title: d.landing.panels.restaurante.pdfTitle,
-        href: "/landing/pdf/guia-restaurante.pdf",
-        miniSvg: "/landing/cloud/confetti-burst.svg",
-      },
     },
   ];
 }

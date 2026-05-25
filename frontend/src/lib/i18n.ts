@@ -121,6 +121,7 @@ export type Dictionary = {
   };
   userRegister: {
     back: string;
+    accessStep: string;
     eyebrow: string;
     title: string;
     subtitle: string;
@@ -138,16 +139,34 @@ export type Dictionary = {
   };
   landing: {
     aboutAriaLabel: string;
-    diaryRecent: string;
-    aboutParagraph1: string;
-    aboutParagraph2: string;
-    aboutParagraph3: string;
+    howItWorks: {
+      eyebrow: string;
+      title: string;
+      subtitle: string;
+      steps: { title: string; desc: string }[];
+    };
+    pricing: {
+      ariaLabel: string;
+      eyebrow: string;
+      title: string;
+      cta: string;
+      free: {
+        name: string;
+        price: string;
+        desc: string;
+        features: string[];
+        highlighted: boolean;
+      };
+      pro: {
+        name: string;
+        price: string;
+        desc: string;
+        features: string[];
+        highlighted: boolean;
+      };
+    };
     scrollStackAriaLabel: string;
     panelEyebrow: string;
-    download: string;
-    recentAddingsAriaLabel: string;
-    colors: string;
-    explore: string;
     footerMadeIn: string;
     footerRights: string;
     footerContact: {
@@ -169,26 +188,13 @@ export type Dictionary = {
       company: { heading: string; about: string; diary: string; contact: string; work: string };
       legal: { heading: string; terms: string; privacy: string; cookies: string };
     };
-    citrine: {
-      title: string;
-      description: string;
-      placeholder: string;
-      ariaLabel: string;
-      submit: string;
-      successMsg: string;
-      ariaOpen: string;
-    };
     scrollToExplore: string;
-    showcases: {
-      cafeteria: { chipLabel: string; name: string };
-      retail: { chipLabel: string; name: string };
-    };
     panels: {
-      cafeteria: { chipLabel: string; headline: string; ctaLabel: string; pdfTitle: string };
-      retail: { chipLabel: string; headline: string; ctaLabel: string; pdfTitle: string };
-      salon: { chipLabel: string; headline: string; ctaLabel: string; pdfTitle: string };
-      restaurante: { chipLabel: string; headline: string; ctaLabel: string; pdfTitle: string };
-      servicios: { chipLabel: string; headline: string; ctaLabel: string; pdfTitle: string };
+      cafeteria: { chipLabel: string; headline: string; ctaLabel: string };
+      retail: { chipLabel: string; headline: string; ctaLabel: string };
+      salon: { chipLabel: string; headline: string; ctaLabel: string };
+      restaurante: { chipLabel: string; headline: string; ctaLabel: string };
+      servicios: { chipLabel: string; headline: string; ctaLabel: string };
     };
   };
   appShell: {
@@ -243,6 +249,9 @@ export type Dictionary = {
     cameraActivate: string;
   };
   userDashboard: {
+    accessStep: string;
+    headline: string;
+    subtitle: string;
     hello: string;
     showQr: string;
     renewsIn: string;
@@ -259,6 +268,11 @@ export type Dictionary = {
     discount1: string;
     discount2: string;
     discount3: string;
+    discountBusiness1: string;
+    discountBusiness2: string;
+    expires1: string;
+    expires2: string;
+    expires3: string;
   };
   wallet: {
     title: string;
@@ -911,6 +925,7 @@ const es: Dictionary = {
   },
   userRegister: {
     back: "Regresar",
+    accessStep: "Cliente NexoLeal",
     eyebrow: "Cliente NexoLeal",
     title: "Únete al programa",
     subtitle: "Solo necesitamos tu número para identificarte en cada visita.",
@@ -928,19 +943,58 @@ const es: Dictionary = {
   },
   landing: {
     aboutAriaLabel: "Sobre NexoLeal",
-    diaryRecent: "Diario reciente",
-    aboutParagraph1:
-      "NexoLeal es software de fidelidad para negocios locales: tarjetas de sellos digitales, QR en mostrador y un panel para tu equipo.",
-    aboutParagraph2:
-      "Tus clientes guardan su tarjeta en el celular. Tu staff valida cada visita con un escáner. Tú ves quién vuelve y quién se está yendo.",
-    aboutParagraph3:
-      "Sin app que descargar, sin tarjetas de cartón y sin hojas de cálculo. Solo un programa claro que hace que volver sea lo más fácil.",
+    howItWorks: {
+      eyebrow: "Cómo funciona",
+      title: "Fidelidad digital en 3 pasos",
+      subtitle:
+        "NexoLeal reemplaza las tarjetas de cartón con sellos digitales, un QR en mostrador y campañas automáticas para que tus clientes vuelvan sin apps ni hardware extra.",
+      steps: [
+        {
+          title: "Registra tu negocio",
+          desc: "Crea tu cuenta, sube tu logo y define la recompensa que motivará a tus clientes a volver.",
+        },
+        {
+          title: "Tus clientes escanean un QR",
+          desc: "Coloca el código en caja. Cada visita suma un sello digital — sin apps que descargar ni plásticos.",
+        },
+        {
+          title: "Premia y reactiva en automático",
+          desc: "Recordatorios por WhatsApp cuando un cliente está por ganar premio o lleva tiempo sin volver.",
+        },
+      ],
+    },
+    pricing: {
+      ariaLabel: "Precios de NexoLeal",
+      eyebrow: "Precios",
+      title: "Empieza gratis, crece cuando quieras",
+      cta: "Crear cuenta gratis",
+      free: {
+        name: "Gratis",
+        price: "$0",
+        desc: "Para negocios que están empezando su programa de lealtad.",
+        features: [
+          "Hasta 100 clientes",
+          "Tarjeta digital con sellos",
+          "QR de mostrador",
+          "Panel de visitas y recompensas",
+        ],
+        highlighted: false,
+      },
+      pro: {
+        name: "Pro",
+        price: "Próximamente",
+        desc: "Para negocios que quieren escalar retención con inteligencia artificial.",
+        features: [
+          "Clientes ilimitados",
+          "Campañas con IA",
+          "Segmentación avanzada",
+          "Soporte prioritario",
+        ],
+        highlighted: true,
+      },
+    },
     scrollStackAriaLabel: "Casos de uso de NexoLeal",
     panelEyebrow: "Hecho para volver",
-    download: "Descargar",
-    recentAddingsAriaLabel: "Dos formas de fidelizar",
-    colors: "Colores",
-    explore: "Explorar",
     footerMadeIn: "Hecho en México · 2026",
     footerRights: "© 2026 NexoLeal. Todos los derechos reservados.",
     footerContact: {
@@ -968,50 +1022,32 @@ const es: Dictionary = {
       },
       legal: { heading: "Legal", terms: "Términos", privacy: "Privacidad", cookies: "Cookies" },
     },
-    citrine: {
-      title: "Hablemos",
-      description: "Cuéntanos en qué te ayudamos. Te respondemos en menos de 24 horas.",
-      placeholder: "Cuéntanos en qué te ayudamos…",
-      ariaLabel: "Tu mensaje",
-      submit: "Enviar",
-      successMsg: "Te respondemos en menos de 24 horas",
-      ariaOpen: "Abrir chat de soporte",
-    },
     scrollToExplore: "Desplaza para explorar",
-    showcases: {
-      cafeteria: { chipLabel: "Cafetería", name: "Tarjeta de Sellos · Plaza" },
-      retail: { chipLabel: "Retail", name: "QR de Mostrador · Palmer" },
-    },
     panels: {
       cafeteria: {
         chipLabel: "Cafetería",
         headline: "Programas de fidelidad que devuelven al cliente, taza tras taza",
         ctaLabel: "Empezar gratis",
-        pdfTitle: "Guía Cafetería",
       },
       retail: {
         chipLabel: "Retail",
         headline: "Convierte la primera compra en la primera de muchas",
         ctaLabel: "Empezar gratis",
-        pdfTitle: "Guía Retail",
       },
       salon: {
         chipLabel: "Salón",
         headline: "Recordatorios y recompensas que llenan tu agenda",
         ctaLabel: "Empezar gratis",
-        pdfTitle: "Guía Salón",
       },
       restaurante: {
         chipLabel: "Restaurante",
         headline: "De comensal a cliente recurrente, sin descuentos que duelan",
         ctaLabel: "Empezar gratis",
-        pdfTitle: "Guía Restaurante",
       },
       servicios: {
         chipLabel: "Servicios",
         headline: "Profesionales que recuerdan a cada cliente, sin spreadsheets",
         ctaLabel: "Empezar gratis",
-        pdfTitle: "Guía Servicios",
       },
     },
   },
@@ -1069,6 +1105,9 @@ const es: Dictionary = {
     cameraActivate: "Activar cámara",
   },
   userDashboard: {
+    accessStep: "Tu código personal",
+    headline: "Listo para tu próxima visita",
+    subtitle: "Muestra tu QR en caja. Se renueva solo cada 90 segundos.",
     hello: "Hola,",
     showQr: "Muéstrale este QR al negocio",
     renewsIn: "Se renueva en {n}s",
@@ -1085,6 +1124,11 @@ const es: Dictionary = {
     discount1: "10% en tu próxima compra",
     discount2: "Café gratis al acumular 5 visitas",
     discount3: "2x1 en bebidas los martes",
+    discountBusiness1: "La Barbería Sur",
+    discountBusiness2: "Café Contigo",
+    expires1: "31 may",
+    expires2: "15 jun",
+    expires3: "Vence en 3 días",
   },
   wallet: {
     title: "Mi cartera",
@@ -1777,6 +1821,7 @@ const en: Dictionary = {
   },
   userRegister: {
     back: "Go back",
+    accessStep: "NexoLeal Customer",
     eyebrow: "NexoLeal Customer",
     title: "Join the program",
     subtitle: "We just need your number to identify you on each visit.",
@@ -1794,19 +1839,58 @@ const en: Dictionary = {
   },
   landing: {
     aboutAriaLabel: "About NexoLeal",
-    diaryRecent: "Recent journal",
-    aboutParagraph1:
-      "NexoLeal is loyalty software for local businesses: digital stamp cards, counter QR codes, and a dashboard for your team.",
-    aboutParagraph2:
-      "Customers keep their card on their phone. Staff validates each visit with a scanner. You see who comes back and who is drifting away.",
-    aboutParagraph3:
-      "No app to download, no cardboard punch cards, no spreadsheets. Just a clear program that makes returning the easy choice.",
+    howItWorks: {
+      eyebrow: "How it works",
+      title: "Digital loyalty in 3 steps",
+      subtitle:
+        "NexoLeal replaces cardboard punch cards with digital stamps, a counter QR, and automated campaigns so customers return — no apps or extra hardware.",
+      steps: [
+        {
+          title: "Register your business",
+          desc: "Create your account, upload your logo, and define the reward that motivates customers to come back.",
+        },
+        {
+          title: "Customers scan a QR",
+          desc: "Place the code at checkout. Each visit adds a digital stamp — no apps to download, no plastic cards.",
+        },
+        {
+          title: "Reward and re-engage automatically",
+          desc: "WhatsApp reminders when a customer is close to a reward or hasn't visited in a while.",
+        },
+      ],
+    },
+    pricing: {
+      ariaLabel: "NexoLeal pricing",
+      eyebrow: "Pricing",
+      title: "Start free, grow when you're ready",
+      cta: "Create free account",
+      free: {
+        name: "Free",
+        price: "$0",
+        desc: "For businesses starting their loyalty program.",
+        features: [
+          "Up to 100 customers",
+          "Digital stamp card",
+          "Counter QR code",
+          "Visits and rewards dashboard",
+        ],
+        highlighted: false,
+      },
+      pro: {
+        name: "Pro",
+        price: "Coming soon",
+        desc: "For businesses ready to scale retention with artificial intelligence.",
+        features: [
+          "Unlimited customers",
+          "AI-powered campaigns",
+          "Advanced segmentation",
+          "Priority support",
+        ],
+        highlighted: true,
+      },
+    },
     scrollStackAriaLabel: "NexoLeal use cases",
     panelEyebrow: "Built to bring them back",
-    download: "Download",
-    recentAddingsAriaLabel: "Two ways to build loyalty",
-    colors: "Colors",
-    explore: "Explore",
     footerMadeIn: "Made in Mexico · 2026",
     footerRights: "© 2026 NexoLeal. All rights reserved.",
     footerContact: {
@@ -1834,50 +1918,32 @@ const en: Dictionary = {
       },
       legal: { heading: "Legal", terms: "Terms", privacy: "Privacy", cookies: "Cookies" },
     },
-    citrine: {
-      title: "Let's talk",
-      description: "Tell us how we can help. We'll get back to you in less than 24 hours.",
-      placeholder: "Tell us how we can help…",
-      ariaLabel: "Your message",
-      submit: "Send",
-      successMsg: "We'll get back to you in less than 24 hours",
-      ariaOpen: "Open support chat",
-    },
     scrollToExplore: "Scroll to explore",
-    showcases: {
-      cafeteria: { chipLabel: "Coffee shop", name: "Stamp Card · Plaza" },
-      retail: { chipLabel: "Retail", name: "Counter QR · Palmer" },
-    },
     panels: {
       cafeteria: {
         chipLabel: "Coffee shop",
         headline: "Loyalty programs that bring customers back, cup after cup",
         ctaLabel: "Start free",
-        pdfTitle: "Coffee Shop Guide",
       },
       retail: {
         chipLabel: "Retail",
         headline: "Turn the first purchase into the first of many",
         ctaLabel: "Start free",
-        pdfTitle: "Retail Guide",
       },
       salon: {
         chipLabel: "Salon",
         headline: "Reminders and rewards that fill your appointment book",
         ctaLabel: "Start free",
-        pdfTitle: "Salon Guide",
       },
       restaurante: {
         chipLabel: "Restaurant",
         headline: "From first-timer to regular, without painful discounts",
         ctaLabel: "Start free",
-        pdfTitle: "Restaurant Guide",
       },
       servicios: {
         chipLabel: "Services",
         headline: "Professionals who remember every client, without spreadsheets",
         ctaLabel: "Start free",
-        pdfTitle: "Services Guide",
       },
     },
   },
@@ -1934,6 +2000,9 @@ const en: Dictionary = {
     cameraActivate: "Activate camera",
   },
   userDashboard: {
+    accessStep: "Your personal code",
+    headline: "Ready for your next visit",
+    subtitle: "Show your QR at checkout. It renews automatically every 90 seconds.",
     hello: "Hello,",
     showQr: "Show this QR to the business",
     renewsIn: "Renews in {n}s",
@@ -1950,6 +2019,11 @@ const en: Dictionary = {
     discount1: "10% off your next purchase",
     discount2: "Free coffee after 5 visits",
     discount3: "2-for-1 drinks on Tuesdays",
+    discountBusiness1: "La Barbería Sur",
+    discountBusiness2: "Café Contigo",
+    expires1: "May 31",
+    expires2: "Jun 15",
+    expires3: "Expires in 3 days",
   },
   wallet: {
     title: "My wallet",

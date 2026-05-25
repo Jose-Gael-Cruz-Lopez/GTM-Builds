@@ -12,7 +12,6 @@ export function EditorialNav() {
     { label: d.nav.product, href: "#producto" },
     { label: d.nav.cases, href: "#casos" },
     { label: d.nav.pricing, href: "#precios" },
-    { label: d.nav.blog, href: "#diario" },
   ];
 
   useEffect(() => {

@@ -4,23 +4,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 export function AboutBlock() {
   const { ref } = useRevealOnce<HTMLDivElement>({ threshold: 0.25 });
   const { d } = useLocale();
-
-  const DIARY = [
-    {
-      title: d.landing.diaryRecent,
-      date: "15 de mayo, 2026",
-      img: "/landing/diary/d1.jpg",
-      alt: "Café de barrio con clientes habituales",
-      href: "#diario",
-    },
-    {
-      title: d.landing.diaryRecent,
-      date: "2 de mayo, 2026",
-      img: "/landing/diary/d2.jpg",
-      alt: "Mostrador de negocio con tarjeta de fidelidad",
-      href: "#diario",
-    },
-  ];
+  const { howItWorks } = d.landing;
 
   return (
     <section
@@ -31,204 +15,109 @@ export function AboutBlock() {
         padding: "clamp(4rem, 10vw, 9rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 8vw, 7rem)",
       }}
     >
-      <div
-        ref={ref}
-        className="mx-auto grid gap-x-12 gap-y-12"
-        style={{
-          maxWidth: "min(1280px, 92vw)",
-          gridTemplateColumns: "minmax(0, 1fr)",
-        }}
-      >
-        <div
-          className="grid"
+      <div ref={ref} className="mx-auto" style={{ maxWidth: "min(960px, 92vw)" }}>
+        <span
+          className="soft-rise"
           style={{
-            gridTemplateColumns: "minmax(0, 1fr)",
-            gap: "3rem",
+            display: "block",
+            fontFamily: "var(--font-sans)",
+            fontSize: "0.75rem",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "var(--ink-soft)",
+            marginBottom: "1.25rem",
           }}
         >
-          {/* Layout: stack on mobile, two columns on desktop */}
-          <div className="md:grid md:gap-x-12" style={{ gridTemplateColumns: "62% 1fr" }}>
-            {/* Left: kicker + paragraph */}
-            <div>
-              <div
-                className="soft-rise"
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 500,
-                  fontSize: "1.5rem",
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.02em",
-                  color: "var(--ink)",
-                  marginBottom: "2rem",
-                }}
-              >
-                <div>
-                  NexoLeal<sup style={{ fontSize: "0.6em" }}>®</sup>
-                </div>
-                <div>Est.</div>
-                <div>2025</div>
-              </div>
+          {howItWorks.eyebrow}
+        </span>
 
-              {/* Inset image floated left with shape-outside */}
-              <img
-                src="/landing/about/inset.jpg"
-                alt="Cliente mostrando su tarjeta de sellos en el celular"
-                width={160}
-                height={220}
-                loading="lazy"
-                decoding="async"
-                className="soft-rise"
-                style={{
-                  float: "left",
-                  width: "clamp(110px, 16vw, 180px)",
-                  height: "auto",
-                  marginRight: "1.25rem",
-                  marginBottom: "0.5rem",
-                  borderRadius: "4px",
-                  shapeOutside: "margin-box",
-                }}
-              />
-
-              <p
-                className="font-display"
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 400,
-                  fontSize: "var(--display-md)",
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.015em",
-                  color: "var(--ink)",
-                  textWrap: "pretty",
-                  margin: 0,
-                }}
-              >
-                <span className="rise-mask inline">
-                  <span className="rise-line">{d.landing.aboutParagraph1}</span>
-                </span>{" "}
-                <span className="rise-mask inline">
-                  <span className="rise-line">{d.landing.aboutParagraph2}</span>
-                </span>{" "}
-                <span className="rise-mask inline">
-                  <span className="rise-line">{d.landing.aboutParagraph3}</span>
-                </span>
-              </p>
-              <div style={{ clear: "both" }} />
-            </div>
-
-            {/* Right: diary cards */}
-            <div
-              className="md:flex md:flex-col md:gap-4 mt-12 md:mt-0"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "1rem",
-              }}
-            >
-              <div
-                style={{
-                  textAlign: "right",
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  color: "var(--ink-soft)",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {d.landing.diaryRecent} <span aria-hidden="true">↓</span>
-              </div>
-              {DIARY.map((entry) => (
-                <DiaryCard key={entry.img} {...entry} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function DiaryCard({
-  title,
-  date,
-  img,
-  alt,
-  href,
-}: {
-  title: string;
-  date: string;
-  img: string;
-  alt: string;
-  href: string;
-}) {
-  return (
-    <a
-      href={href}
-      className="soft-rise block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-      style={{
-        background: "var(--paper-warm)",
-        borderRadius: "18px",
-        border: "1px solid var(--hair)",
-        overflow: "hidden",
-        textDecoration: "none",
-        color: "var(--ink)",
-        transition: "transform 220ms var(--ease-editorial), box-shadow 220ms",
-        boxShadow: "0 1px 0 var(--hair)",
-        // @ts-expect-error css var
-        "--tw-ring-color": "var(--ink)",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-4px)";
-        e.currentTarget.style.boxShadow = "0 12px 28px -16px rgba(0,0,0,0.25)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "0 1px 0 var(--hair)";
-      }}
-    >
-      <img
-        src={img}
-        alt={alt}
-        width={880}
-        height={605}
-        loading="lazy"
-        decoding="async"
-        style={{
-          width: "100%",
-          height: "auto",
-          aspectRatio: "16 / 11",
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
-      <div style={{ padding: "1rem 1.125rem 1.25rem" }}>
-        <div
+        <h2
+          className="font-display soft-rise"
           style={{
             fontFamily: "var(--font-display)",
             fontWeight: 500,
-            fontSize: "1.0625rem",
-            lineHeight: 1.25,
-            letterSpacing: "-0.01em",
+            fontSize: "var(--display-lg)",
+            lineHeight: 1.05,
+            letterSpacing: "-0.02em",
             color: "var(--ink)",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
+            maxWidth: "22ch",
+            margin: 0,
           }}
         >
-          {title}
-        </div>
-        <div
+          {howItWorks.title}
+        </h2>
+
+        <p
+          className="soft-rise delay-1"
           style={{
-            marginTop: "0.5rem",
             fontFamily: "var(--font-sans)",
-            fontSize: "0.75rem",
+            fontSize: "1.0625rem",
+            lineHeight: 1.6,
             color: "var(--ink-soft)",
+            maxWidth: "52ch",
+            margin: "1.5rem 0 0",
           }}
         >
-          {date}
-        </div>
+          {howItWorks.subtitle}
+        </p>
+
+        <ol
+          className="grid gap-6 md:grid-cols-3"
+          style={{ marginTop: "3rem", listStyle: "none", padding: 0 }}
+        >
+          {howItWorks.steps.map((step, index) => (
+            <li
+              key={step.title}
+              className={`soft-rise ${index === 0 ? "" : index === 1 ? "delay-1" : "delay-2"}`}
+              style={{
+                background: "var(--paper-warm)",
+                border: "1px solid var(--hair)",
+                borderRadius: "18px",
+                padding: "1.5rem 1.375rem 1.625rem",
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 500,
+                  fontSize: "1.75rem",
+                  lineHeight: 1,
+                  letterSpacing: "-0.02em",
+                  color: "var(--ink-soft)",
+                  opacity: 0.35,
+                }}
+              >
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 500,
+                  fontSize: "1.125rem",
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.01em",
+                  color: "var(--ink)",
+                  margin: "0.75rem 0 0",
+                }}
+              >
+                {step.title}
+              </h3>
+              <p
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "0.9375rem",
+                  lineHeight: 1.55,
+                  color: "var(--ink-soft)",
+                  margin: "0.625rem 0 0",
+                }}
+              >
+                {step.desc}
+              </p>
+            </li>
+          ))}
+        </ol>
       </div>
-    </a>
+    </section>
   );
 }
