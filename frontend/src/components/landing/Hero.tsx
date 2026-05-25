@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { FloatingCloud } from "./FloatingCloud";
 import { ScrollToExplore } from "./ScrollToExplore";
 import { useRevealOnce } from "@/hooks/use-reveal-once";
-import { useLocale } from "@/contexts/LocaleContext";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 export function Hero() {
   const { ref } = useRevealOnce<HTMLDivElement>({ threshold: 0.1 });
@@ -108,6 +108,7 @@ export function Hero() {
             {d.hero.ctaBusiness}
             <span aria-hidden="true">→</span>
           </Link>
+          <GoogleSignInButton intent="business" label="Negocios" variant="hero" />
           <Link
             to="/user/dashboard"
             className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
