@@ -22,7 +22,6 @@ export type Dictionary = {
     body: string;
     ctaBusiness: string;
     ctaConsumer: string;
-    retentionCardAlt: string;
   };
   notFound: {
     title: string;
@@ -811,7 +810,6 @@ const es: Dictionary = {
     body: "Tarjetas de sellos en el celular, QR en mostrador y un panel para ver quién regresa. Sin app propia. Sin plástico.",
     ctaBusiness: "Negocios",
     ctaConsumer: "Clientes",
-    retentionCardAlt: "Retención mensual +18%",
   },
   notFound: {
     title: "Página no encontrada",
@@ -1684,7 +1682,6 @@ const en: Dictionary = {
     body: "Digital stamp cards, a counter QR, and a dashboard to see who returns. No custom app. No plastic.",
     ctaBusiness: "Businesses",
     ctaConsumer: "Customers",
-    retentionCardAlt: "Monthly retention +18%",
   },
   notFound: {
     title: "Page not found",
