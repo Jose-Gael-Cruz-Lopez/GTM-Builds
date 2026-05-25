@@ -2,7 +2,7 @@ import { RouteError } from "@/components/RouteError";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
-import { Building2, ChevronRight, TrendingUp, Users } from "lucide-react";
+import { Building2, Bot, ChevronRight, TrendingUp, Users } from "lucide-react";
 
 import { businessesApi } from "@/lib/api/businesses";
 import { analyticsApi } from "@/lib/api/analytics";
@@ -105,7 +105,7 @@ function DashboardPage() {
       activeNav="resumen"
       ownerFirstName={ownerFirstName}
     >
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Link
           to="/dashboard/$businessId/sucursales"
           params={{ businessId }}
@@ -139,6 +139,26 @@ function DashboardPage() {
             <p className="font-display font-semibold">Lista de clientes</p>
             <p className="mt-0.5 text-xs text-[color:var(--color-ink-soft)]">
               Frecuencia y estado de cada cliente
+            </p>
+          </div>
+          <ChevronRight
+            className="h-4 w-4 shrink-0 text-[color:var(--color-ink-soft)] transition-transform group-hover:translate-x-0.5"
+            aria-hidden
+          />
+        </Link>
+
+        <Link
+          to="/dashboard/$businessId/assistant"
+          params={{ businessId }}
+          className="surface-paper group flex items-center gap-4 p-5 transition-shadow hover:shadow-[var(--shadow-soft)]"
+        >
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[var(--color-signal)]">
+            <Bot className="h-6 w-6 text-[color:var(--color-ink)]" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-display font-semibold">Asistente IA</p>
+            <p className="mt-0.5 text-xs text-[color:var(--color-ink-soft)]">
+              Resumen rápido, campañas y recomendaciones
             </p>
           </div>
           <ChevronRight
