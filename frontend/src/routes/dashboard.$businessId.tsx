@@ -19,7 +19,16 @@ import { RetentionChart } from "@/components/dashboard/RetentionChart";
 import { PeakHoursHeatmap } from "@/components/dashboard/PeakHoursHeatmap";
 import { WeeklyInsightCard } from "@/components/dashboard/WeeklyInsightCard";
 import { ChurnRiskList } from "@/components/dashboard/ChurnRiskList";
-import { AnalyticsEmptyState } from "@/components/dashboard/AnalyticsEmptyState";
+import { DemoPreviewBanner } from "@/components/dashboard/DemoPreviewBanner";
+import {
+  DEMO_CHURN,
+  DEMO_CLIENTS,
+  DEMO_PEAK_HOURS,
+  DEMO_RETENTION,
+  DEMO_REWARDS_30D,
+  DEMO_STATS,
+  getDemoVisits,
+} from "@/lib/demo-dashboard-data";
 
 export const Route = createFileRoute("/dashboard/$businessId")({
   beforeLoad: async ({ params, location }) => {
@@ -97,7 +106,19 @@ function DashboardPage() {
   const activeClients = stats.data?.activeClients ?? 0;
   const activePct = totalClients > 0 ? Math.round((activeClients / totalClients) * 100) : 0;
   const retention60 = retention.data?.windows.find((w) => w.days === 60)?.retentionRate ?? null;
-  const isEmpty = stats.data && stats.data.totalClients === 0;
+  const isEmpty = stats.data != null && stats.data.totalClients === 0;
+  const showDemoPreview = isEmpty;
+
+  const displayStats = showDemoPreview ? DEMO_STATS : stats.data;
+  const displayActiveClients = displayStats?.activeClients ?? 0;
+  const displayActivePct =
+    displayStats && displayStats.totalClients > 0
+      ? Math.round((displayActiveClients / displayStats.totalClients) * 100)
+      : activePct;
+  const displayRetention60 = showDemoPreview
+    ? (DEMO_RETENTION.windows.find((w) => w.days === 60)?.retentionRate ?? null)
+    : retention60;
+  const demoVisitsSparkline = showDemoPreview ? getDemoVisits(30).values.slice(-7) : undefined;
 
   return (
     <DashboardShell
@@ -173,22 +194,29 @@ function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiTile
           title="Visitas hoy"
-          value={stats.data?.visitsToday ?? "—"}
+          value={displayStats?.visitsToday ?? "—"}
           href={`/dashboard/${businessId}/visits`}
-          isLoading={stats.isLoading && stats.data === undefined}
+          isLoading={!showDemoPreview && stats.isLoading && stats.data === undefined}
           delta={null}
           statusTone="neutral"
         />
         <KpiTile
           title="Clientes activos"
-          value={activeClients}
+          value={displayActiveClients}
           href={`/dashboard/${businessId}/clients?status=active`}
-          isLoading={stats.isLoading && stats.data === undefined}
-          healthChip={activePct >= 60}
+          isLoading={!showDemoPreview && stats.isLoading && stats.data === undefined}
+          healthChip={displayActivePct >= 60}
           healthLabel="Saludable"
           statusTone="good"
         />
-        {visits.isLoading ? (
+        {showDemoPreview ? (
+          <KpiTile
+            title="Recompensas (30d)"
+            value={DEMO_REWARDS_30D}
+            statusTone="health"
+            sparklineData={demoVisitsSparkline}
+          />
+        ) : visits.isLoading ? (
           <KpiTileSkeleton />
         ) : (
           <KpiTile
@@ -198,24 +226,56 @@ function DashboardPage() {
             sparklineData={visits.data?.values.slice(-7)}
           />
         )}
-        {retention.isLoading ? (
+        {showDemoPreview ? (
+          <KpiTile
+            title="Retención (60d)"
+            value={displayRetention60 != null ? `${displayRetention60}%` : "—"}
+            healthChip={displayRetention60 != null && displayRetention60 >= 50}
+            statusTone="good"
+          />
+        ) : retention.isLoading ? (
           <KpiTileSkeleton />
         ) : (
           <KpiTile
             title="Retención (60d)"
-            value={retention60 != null ? `${retention60}%` : "—"}
-            healthChip={retention60 != null && retention60 >= 50}
+            value={displayRetention60 != null ? `${displayRetention60}%` : "—"}
+            healthChip={displayRetention60 != null && displayRetention60 >= 50}
             statusTone="good"
           />
         )}
       </div>
 
-      {isEmpty ? (
-        <AnalyticsEmptyState
-          className="mt-8"
-          title="Aún no tienes datos"
-          description="Comparte tu QR con tus clientes y empezarás a ver visitas y métricas aquí en cuanto registren su primer escaneo."
-        />
+      {showDemoPreview ? (
+        <>
+          <DemoPreviewBanner />
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <Suspense fallback={<KpiTileSkeleton />}>
+                <VisitsChart businessId={businessId} getPreviewData={getDemoVisits} />
+              </Suspense>
+            </div>
+            <div className="lg:col-span-4">
+              <SegmentCards businessId={businessId} data={DEMO_CLIENTS} isLoading={false} />
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <RetentionChart data={DEMO_RETENTION} isLoading={false} />
+            <PeakHoursHeatmap data={DEMO_PEAK_HOURS} isLoading={false} />
+          </div>
+
+          <div className="mt-6">
+            <WeeklyInsightCard
+              businessId={businessId}
+              peakHours={DEMO_PEAK_HOURS}
+              isLoading={false}
+            />
+          </div>
+
+          <div className="mt-6">
+            <ChurnRiskList data={DEMO_CHURN} isLoading={false} businessId={businessId} />
+          </div>
+        </>
       ) : (
         <>
           <div className="mt-8 grid gap-6 lg:grid-cols-12">
