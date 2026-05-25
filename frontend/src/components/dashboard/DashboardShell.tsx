@@ -79,7 +79,6 @@ const NAV_ITEM_DEFS: {
   },
   {
     id: "escaner",
-    label: "Escanear QR",
     icon: Scan,
     to: "/scan",
     mobileTab: true,

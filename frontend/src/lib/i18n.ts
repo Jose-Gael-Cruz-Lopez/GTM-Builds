@@ -352,6 +352,7 @@ export type Dictionary = {
       clientes: string;
       visitas: string;
       recompensas: string;
+      escaner: string;
       campanas: string;
       marketing: string;
       config: string;
@@ -1180,6 +1181,7 @@ const es: Dictionary = {
       clientes: "Clientes",
       visitas: "Visitas",
       recompensas: "Recompensas",
+      escaner: "Escanear QR",
       campanas: "Campañas",
       marketing: "Marketing",
       config: "Configuración",
@@ -2045,6 +2047,7 @@ const en: Dictionary = {
       clientes: "Clients",
       visitas: "Visits",
       recompensas: "Rewards",
+      escaner: "Scan QR",
       campanas: "Campaigns",
       marketing: "Marketing",
       config: "Settings",

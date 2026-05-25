@@ -97,23 +97,33 @@ function ClientsPage() {
 
   const unavailable = list.error && isAdminRouteUnavailable(list.error);
 
-  const filtered = useMemo(() => {
+  const rows = useMemo(() => {
     if (!list.data?.items) return [];
-    let items = [...list.data.items];
+    return list.data.items.map((client, index) => ({
+      client,
+      displayIndex: (search.page - 1) * search.limit + index + 1,
+    }));
+  }, [list.data, search.page, search.limit]);
+
+  const filtered = useMemo(() => {
+    let items = [...rows];
     const q = (search.q ?? "").trim().toLowerCase();
     if (q) {
-      items = items.filter((c) => c.fullName.toLowerCase().includes(q));
+      const numeric = q.replace(/^cliente\s*/i, "").trim();
+      if (/^\d+$/.test(numeric)) {
+        const target = Number(numeric);
+        items = items.filter((row) => row.displayIndex === target);
+      }
     }
     if (search.sort === "total_visits") {
-      items.sort((a, b) => b.totalVisits - a.totalVisits);
+      items.sort((a, b) => b.client.totalVisits - a.client.totalVisits);
     } else if (search.sort === "stamps") {
-      items.sort((a, b) => b.stampCount - a.stampCount);
+      items.sort((a, b) => b.client.stampCount - a.client.stampCount);
     }
     return items;
-  }, [list.data, search.q, search.sort]);
+  }, [rows, search.q, search.sort]);
 
-  const selected = filtered.find((c) => c.clientId === selectedId);
-  const selectedIndex = filtered.findIndex((c) => c.clientId === selectedId);
+  const selectedRow = filtered.find((row) => row.client.clientId === selectedId);
 
   const copyJoin = () => {
     const url = `${window.location.origin}/join/${businessId}`;
@@ -166,7 +176,7 @@ function ClientsPage() {
               />
               <Input
                 className="pl-9"
-                placeholder="Buscar por nombre…"
+                placeholder="Buscar por número (ej. Cliente 3)…"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -253,37 +263,37 @@ function ClientsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((client, index) => (
+                    {filtered.map((row) => (
                       <TableRow
-                        key={client.clientId}
+                        key={row.client.clientId}
                         className="cursor-pointer hover:bg-[var(--color-cream)]/50"
-                        onClick={() => setSelectedId(client.clientId)}
+                        onClick={() => setSelectedId(row.client.clientId)}
                       >
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--color-cream)] text-xs font-semibold">
-                              C{index + 1}
+                              C{row.displayIndex}
                             </span>
-                            <span className="font-medium">Cliente {index + 1}</span>
+                            <span className="font-medium">Cliente {row.displayIndex}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="tabular-nums">{client.stampCount}</TableCell>
+                        <TableCell className="tabular-nums">{row.client.stampCount}</TableCell>
                         <TableCell>
                           <span className="inline-flex items-center gap-1.5 text-sm">
-                            <StatusDot tone={STATUS_TONE[client.status]} />
-                            {STATUS_LABEL[client.status]}
+                            <StatusDot tone={STATUS_TONE[row.client.status]} />
+                            {STATUS_LABEL[row.client.status]}
                           </span>
                         </TableCell>
                         <TableCell className="text-sm text-[color:var(--color-ink-soft)]">
-                          {client.lastVisitAt
-                            ? formatDistanceToNow(new Date(client.lastVisitAt), {
+                          {row.client.lastVisitAt
+                            ? formatDistanceToNow(new Date(row.client.lastVisitAt), {
                                 addSuffix: true,
                                 locale: es,
                               })
                             : "—"}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
-                          {client.totalVisits}
+                          {row.client.totalVisits}
                         </TableCell>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
@@ -293,12 +303,12 @@ function ClientsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setSelectedId(client.clientId)}>
+                              <DropdownMenuItem onClick={() => setSelectedId(row.client.clientId)}>
                                 Ver detalle
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
                                 <a
-                                  href={`/campaigns/${businessId}?action=generate&client=${client.clientId}`}
+                                  href={`/campaigns/${businessId}?action=generate&client=${row.client.clientId}`}
                                 >
                                   Generar campaña personal
                                 </a>
@@ -336,32 +346,34 @@ function ClientsPage() {
         </>
       )}
 
-      <Sheet open={!!selected} onOpenChange={(open) => !open && setSelectedId(null)}>
+      <Sheet open={!!selectedRow} onOpenChange={(open) => !open && setSelectedId(null)}>
         <SheetContent className="w-full sm:max-w-md">
-          {selected ? (
+          {selectedRow ? (
             <>
               <SheetHeader>
-                <SheetTitle className="font-display">Cliente {selectedIndex + 1}</SheetTitle>
+                <SheetTitle className="font-display">Cliente {selectedRow.displayIndex}</SheetTitle>
               </SheetHeader>
               <dl className="mt-6 space-y-4 text-sm">
                 <div>
                   <dt className="text-[color:var(--color-ink-soft)]">Estado</dt>
                   <dd className="mt-1 inline-flex items-center gap-1.5 font-medium">
-                    <StatusDot tone={STATUS_TONE[selected.status]} />
-                    {STATUS_LABEL[selected.status]}
+                    <StatusDot tone={STATUS_TONE[selectedRow.client.status]} />
+                    {STATUS_LABEL[selectedRow.client.status]}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-[color:var(--color-ink-soft)]">Sellos</dt>
-                  <dd className="mt-1 font-medium tabular-nums">{selected.stampCount}</dd>
+                  <dd className="mt-1 font-medium tabular-nums">{selectedRow.client.stampCount}</dd>
                 </div>
                 <div>
                   <dt className="text-[color:var(--color-ink-soft)]">Visitas totales</dt>
-                  <dd className="mt-1 font-medium tabular-nums">{selected.totalVisits}</dd>
+                  <dd className="mt-1 font-medium tabular-nums">
+                    {selectedRow.client.totalVisits}
+                  </dd>
                 </div>
               </dl>
               <a
-                href={`/campaigns/${businessId}?action=generate&client=${selected.clientId}`}
+                href={`/campaigns/${businessId}?action=generate&client=${selectedRow.client.clientId}`}
                 className="btn-signal mt-8 inline-flex w-full justify-center text-sm"
               >
                 Generar campaña para este cliente
