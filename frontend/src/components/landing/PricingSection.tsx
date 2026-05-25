@@ -50,10 +50,7 @@ export function PricingSection() {
           {pricing.title}
         </h2>
 
-        <div
-          className="grid gap-6 md:grid-cols-2"
-          style={{ marginTop: "2.5rem" }}
-        >
+        <div className="grid gap-6 md:grid-cols-2" style={{ marginTop: "2.5rem" }}>
           {plans.map((plan, index) => (
             <article
               key={plan.name}
