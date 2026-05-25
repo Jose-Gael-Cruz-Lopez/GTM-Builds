@@ -2,7 +2,7 @@ import { RouteError } from "@/components/RouteError";
 import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { z } from "zod";
-import { Loader2, Mail } from "lucide-react";
+import { Loader2, Mail, Eye, EyeOff, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,7 @@ function SignupPage() {
   const [step, setStep] = useState<1 | 2 | "await">(stepParam === "business" ? 2 : 1);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",
