@@ -5,7 +5,6 @@ import { CitrineBubble } from "@/components/landing/CitrineBubble";
 import { Hero } from "@/components/landing/Hero";
 import { ScrollStack } from "@/components/landing/ScrollStack";
 import { AboutBlock } from "@/components/landing/AboutBlock";
-import { RecentAddings } from "@/components/landing/RecentAddings";
 import { EditorialFooter } from "@/components/landing/EditorialFooter";
 
 export const Route = createFileRoute("/")({
@@ -30,7 +29,6 @@ function LandingPage() {
       <Hero />
       <ScrollStack />
       <AboutBlock />
-      <RecentAddings />
       <EditorialFooter />
       <CitrineBubble />
     </main>

@@ -1,6 +1,6 @@
 import { RouteError } from "@/components/RouteError";
 import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 import { Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { onboardingSearch } from "@/lib/auth";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SignupFlowShell } from "@/components/auth/SignupFlowShell";
 import { BUSINESS_CATEGORY_OPTIONS } from "@/lib/business-categories";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const searchSchema = z.object({
   step: z.enum(["business"]).optional(),
@@ -33,25 +34,10 @@ export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Crear cuenta · NexoLeal" }] }),
 });
 
-const step1Schema = z
-  .object({
-    email: z.string().trim().email("Email inválido"),
-    password: z.string().min(8, "Mínimo 8 caracteres"),
-    confirm: z.string(),
-  })
-  .refine((d) => d.password === d.confirm, {
-    path: ["confirm"],
-    message: "Las contraseñas no coinciden",
-  });
-
-const step2Schema = z.object({
-  businessName: z.string().trim().min(2, "Demasiado corto"),
-  category: z.string().min(1, "Elige una categoría"),
-});
-
 function SignupPage() {
   const navigate = useNavigate();
   const { step: stepParam } = Route.useSearch();
+  const { d } = useLocale();
   const [step, setStep] = useState<1 | 2 | "await">(stepParam === "business" ? 2 : 1);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -67,6 +53,30 @@ function SignupPage() {
   const businessStepOnly = stepParam === "business";
   const totalSteps = businessStepOnly ? 1 : 2;
   const stepNumber = step === 1 ? 1 : 2;
+
+  const step1Schema = useMemo(
+    () =>
+      z
+        .object({
+          email: z.string().trim().email(d.signup.emailInvalid),
+          password: z.string().min(8, d.signup.passwordMin),
+          confirm: z.string(),
+        })
+        .refine((data) => data.password === data.confirm, {
+          path: ["confirm"],
+          message: d.signup.confirmMismatch,
+        }),
+    [d],
+  );
+
+  const step2Schema = useMemo(
+    () =>
+      z.object({
+        businessName: z.string().trim().min(2, d.signup.businessNameShort),
+        category: z.string().min(1, d.signup.categoryRequired),
+      }),
+    [d],
+  );
 
   const goStep2 = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +98,7 @@ function SignupPage() {
       plan: "free",
     });
     localStorage.setItem("nexoleal:current-business-id", created.business.id);
-    toast.success("Negocio creado");
+    toast.success(d.signup.businessCreated);
     navigate({
       to: "/onboarding",
       search: onboardingSearch({
@@ -128,7 +138,7 @@ function SignupPage() {
       if (signErr) throw signErr;
 
       if (!signUpData.user) {
-        throw new Error("No pudimos crear tu cuenta. Inténtalo de nuevo en unos minutos.");
+        throw new Error(d.signup.errorCreate);
       }
 
       if (!signUpData.session) {
@@ -145,9 +155,9 @@ function SignupPage() {
       console.error(err);
       const message = (err as Error).message ?? "";
       const description = message.toLowerCase().includes("rate limit")
-        ? "No podemos enviar el correo de confirmación ahora mismo (límite del proveedor de correo). Espera unos minutos e inténtalo otra vez."
+        ? d.signup.errorRateLimit
         : message;
-      toast.error("No pudimos crear tu cuenta", { description });
+      toast.error(d.signup.errorCreate, { description });
     } finally {
       setSubmitting(false);
     }
@@ -159,56 +169,47 @@ function SignupPage() {
         stepKey="await"
         stepNumber={2}
         totalSteps={2}
-        stepLabel="Confirma tu cuenta"
-        headline="Revisa tu correo."
-        subtitle="Un clic en el enlace y terminamos de crear tu negocio."
+        stepLabel={d.signup.confirmStepLabel}
+        headline={d.signup.awaitHeadline}
+        subtitle={d.signup.awaitSubtitle}
       >
         <div className="auth-flow-await">
           <div className="auth-flow-await-icon">
             <Mail className="h-6 w-6" />
           </div>
-          <p className="mt-5 font-display text-xl">Te enviamos un enlace</p>
+          <p className="mt-5 font-display text-xl">{d.signup.awaitTitle}</p>
           <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
-            Abre el correo en <strong className="text-[var(--ink)]">{form.email}</strong> y confirma
-            tu cuenta. Cuando regreses, tu negocio se creará automáticamente.
+            {d.signup.awaitBodyPre} <strong className="text-[var(--ink)]">{form.email}</strong>{" "}
+            {d.signup.awaitBodyPost}
           </p>
         </div>
       </SignupFlowShell>
     );
   }
 
-  const copy =
-    step === 1
-      ? {
-          stepKey: "account",
-          stepLabel: "Paso 1 · Cuenta",
-          headline: "Empecemos.",
-          subtitle: "Entra con Google en un clic. Sin contraseñas, sin fricción.",
-        }
-      : {
-          stepKey: "business",
-          stepLabel: businessStepOnly ? "Tu negocio" : "Paso 2 · Tu negocio",
-          headline: "Cuéntanos de tu negocio.",
-          subtitle: "Así se verá en la cartera digital de tus clientes.",
-        };
-
   return (
     <SignupFlowShell
-      stepKey={copy.stepKey}
+      stepKey={step === 1 ? "account" : "business"}
       stepNumber={businessStepOnly ? 1 : stepNumber}
       totalSteps={totalSteps}
-      stepLabel={copy.stepLabel}
-      headline={copy.headline}
-      subtitle={copy.subtitle}
+      stepLabel={
+        step === 1
+          ? d.signup.step1Title
+          : businessStepOnly
+            ? d.signup.businessStepLabel
+            : d.signup.step2Title
+      }
+      headline={step === 1 ? d.signup.headline1 : d.signup.headline2}
+      subtitle={step === 1 ? d.signup.subtitle1 : d.signup.subtitle2}
       showBack={step === 2 && !businessStepOnly}
       onBack={() => setStep(1)}
     >
       {step === 1 ? (
         <div>
-          <GoogleSignInButton intent="business" label="Continuar con Google" variant="flow" />
+          <GoogleSignInButton intent="business" label={d.signup.googleContinue} variant="flow" />
 
           <div className="auth-flow-divider">
-            <span>o</span>
+            <span>{d.common.orDivider}</span>
           </div>
 
           {!showEmailForm ? (
@@ -217,7 +218,7 @@ function SignupPage() {
               className="auth-flow-btn auth-flow-btn-full auth-flow-btn-ghost"
               onClick={() => setShowEmailForm(true)}
             >
-              Usar email y contraseña
+              {d.signup.useEmailPassword}
             </button>
           ) : (
             <form onSubmit={goStep2} className="space-y-4">
@@ -240,7 +241,7 @@ function SignupPage() {
               </div>
               <div className="auth-flow-field">
                 <label htmlFor="password" className="auth-flow-label">
-                  Contraseña
+                  {d.login.passwordLabel}
                 </label>
                 <Input
                   id="password"
@@ -257,7 +258,7 @@ function SignupPage() {
               </div>
               <div className="auth-flow-field">
                 <label htmlFor="confirm" className="auth-flow-label">
-                  Confirmar contraseña
+                  {d.signup.confirmLabel}
                 </label>
                 <Input
                   id="confirm"
@@ -276,26 +277,26 @@ function SignupPage() {
                 type="submit"
                 className="auth-flow-btn auth-flow-btn-full auth-flow-btn-primary mt-2"
               >
-                Continuar
+                {d.signup.continueBtn}
               </button>
             </form>
           )}
 
           <p className="auth-flow-footnote">
-            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+            {d.signup.alreadyHaveAccount} <Link to="/login">{d.signup.goToLogin}</Link>
           </p>
         </div>
       ) : (
         <form onSubmit={handleFinalSubmit} className="space-y-5">
           <div className="auth-flow-field">
             <label htmlFor="businessName" className="auth-flow-label">
-              Nombre del negocio
+              {d.signup.businessNameLabel}
             </label>
             <Input
               id="businessName"
               value={form.businessName}
               onChange={(e) => setForm({ ...form, businessName: e.target.value })}
-              placeholder="La Barbería Sur"
+              placeholder={d.signup.businessNamePlaceholder}
               className="auth-flow-input"
               aria-invalid={!!errors.businessName}
             />
@@ -305,7 +306,7 @@ function SignupPage() {
           </div>
 
           <div className="auth-flow-field">
-            <span className="auth-flow-label">Categoría</span>
+            <span className="auth-flow-label">{d.signup.categoryLabel}</span>
             <div className="auth-flow-chips">
               {BUSINESS_CATEGORY_OPTIONS.map((c) => (
                 <button
@@ -327,7 +328,7 @@ function SignupPage() {
               disabled={submitting}
               className="auth-flow-btn auth-flow-btn-full auth-flow-btn-primary inline-flex items-center justify-center gap-2"
             >
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear negocio →"}
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : d.signup.createBtnArrow}
             </button>
           </div>
         </form>

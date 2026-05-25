@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthSplit } from "@/components/auth/AuthSplit";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/reset-password")({
 
 function ResetPasswordPage() {
   const navigate = useNavigate();
+  const { d } = useLocale();
   const [pwd, setPwd] = useState("");
   const [confirm, setConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -26,7 +28,6 @@ function ResetPasswordPage() {
     // Supabase puts access_token in the URL hash on email redirect.
     const hash = window.location.hash;
     if (hash.includes("access_token")) {
-      // The Supabase client picks it up automatically; just wait a tick.
       setTimeout(() => setReady(true), 200);
     } else {
       setReady(true);
@@ -36,18 +37,18 @@ function ResetPasswordPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pwd.length < 8) {
-      toast.error("La contraseña debe tener al menos 8 caracteres");
+      toast.error(d.resetPassword.errorMin);
       return;
     }
     if (pwd !== confirm) {
-      toast.error("Las contraseñas no coinciden");
+      toast.error(d.resetPassword.errorMismatch);
       return;
     }
     setSubmitting(true);
     const { error } = await supabase.auth.updateUser({ password: pwd });
     setSubmitting(false);
     if (error) {
-      toast.error("No pudimos actualizar tu contraseña", { description: error.message });
+      toast.error(d.resetPassword.errorUpdate, { description: error.message });
       return;
     }
     navigate({ to: "/login", search: { reset: "ok" } as never });
@@ -62,14 +63,11 @@ function ResetPasswordPage() {
   }
 
   return (
-    <AuthSplit
-      headline="Crea una nueva contraseña."
-      subtitle="Tu cuenta seguirá lista cuando termines."
-    >
-      <h2 className="display-md">Nueva contraseña</h2>
+    <AuthSplit headline={d.resetPassword.headline} subtitle={d.resetPassword.subtitle}>
+      <h2 className="display-md">{d.resetPassword.title}</h2>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div>
-          <Label htmlFor="pwd">Nueva contraseña</Label>
+          <Label htmlFor="pwd">{d.resetPassword.newPasswordLabel}</Label>
           <Input
             id="pwd"
             type="password"
@@ -79,7 +77,7 @@ function ResetPasswordPage() {
           />
         </div>
         <div>
-          <Label htmlFor="confirm">Confirmar contraseña</Label>
+          <Label htmlFor="confirm">{d.resetPassword.confirmLabel}</Label>
           <Input
             id="confirm"
             type="password"
@@ -89,7 +87,7 @@ function ResetPasswordPage() {
           />
         </div>
         <Button type="submit" disabled={submitting} className="w-full btn-signal">
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar contraseña"}
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : d.resetPassword.submit}
         </Button>
       </form>
     </AuthSplit>
