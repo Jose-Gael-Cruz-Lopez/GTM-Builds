@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import type { FileRouteTypes } from "@/routeTree.gen";
 import {
   BarChart3,
+  Building2,
   Gift,
   LayoutDashboard,
   LogOut,
@@ -9,6 +11,7 @@ import {
   Menu,
   Settings,
   Sparkles,
+  TrendingUp,
   UserPlus,
   Users,
   Footprints,
@@ -22,10 +25,12 @@ import { Badge } from "@/components/ui/badge";
 
 export type DashboardNavId =
   | "resumen"
+  | "sucursales"
   | "clientes"
   | "visitas"
   | "recompensas"
   | "campanas"
+  | "marketing"
   | "config";
 
 interface DashboardShellProps {
@@ -41,13 +46,7 @@ const NAV_ITEMS: {
   id: DashboardNavId;
   label: string;
   icon: typeof LayoutDashboard;
-  to:
-    | "/dashboard/$businessId"
-    | "/dashboard/$businessId/clients"
-    | "/dashboard/$businessId/visits"
-    | "/dashboard/$businessId/redemptions"
-    | "/campaigns/$businessId"
-    | "/settings/$businessId";
+  to: FileRouteTypes["to"];
   mobileTab?: boolean;
 }[] = [
   {
@@ -56,6 +55,13 @@ const NAV_ITEMS: {
     icon: LayoutDashboard,
     to: "/dashboard/$businessId",
     mobileTab: true,
+  },
+  {
+    id: "sucursales",
+    label: "Sucursales",
+    icon: Building2,
+    to: "/dashboard/$businessId/sucursales",
+    mobileTab: false,
   },
   {
     id: "clientes",
@@ -83,6 +89,13 @@ const NAV_ITEMS: {
     icon: Megaphone,
     to: "/campaigns/$businessId",
     mobileTab: true,
+  },
+  {
+    id: "marketing",
+    label: "Marketing",
+    icon: TrendingUp,
+    to: "/dashboard/$businessId/marketing",
+    mobileTab: false,
   },
   {
     id: "config",
