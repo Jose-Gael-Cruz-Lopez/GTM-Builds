@@ -1,5 +1,46 @@
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface AssistantAnalysisContext {
+  businessName: string
+  category: string
+  periodDays: number
+  visitCount: number
+  totalClients: number
+  newClients: number
+  frequentClients: number
+  lostClients: number
+  atRiskClients: number
+  peakDay: string
+  slowDay: string
+  peakHour: string
+  slowHour: string
+}
+
+export interface AssistantInsights {
+  segmentAnalysis: {
+    lostInsight: string
+    newInsight: string
+    frequentInsight: string
+  }
+  serviceAnalysis: {
+    slowPeriods: string[]
+    activePeriods: string[]
+    lowPerformanceReasons: string[]
+    predictions: string[]
+  }
+  recommendations: {
+    forLost: string
+    forFrequent: string
+    forNew: string
+    suggestedDiscountLost: number
+    suggestedDiscountFrequent: number
+    suggestedDiscountNew: number
+    suggestedVisitsForReward: number
+  }
+}
+
+
+
 export interface CampaignSuggestion {
   title: string
   messageTemplate: string
@@ -180,5 +221,168 @@ export async function generateCampaigns(
     const msg = error instanceof Error ? error.message : String(error)
     console.error('[NIM] Unexpected error:', msg)
     return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }
+  }
+}
+
+// ─── Assistant Business Insights ──────────────────────────────────────────────
+
+const FALLBACK_INSIGHTS: AssistantInsights = {
+  segmentAnalysis: {
+    lostInsight:
+      'Estos clientes probablemente encontraron alternativas o tuvieron una mala experiencia. Un descuento personalizado y un mensaje cercano puede traerlos de vuelta.',
+    newInsight:
+      'Los clientes nuevos están explorando. Un incentivo en su segunda visita los convierte en regulares más fácilmente.',
+    frequentInsight:
+      'Tus clientes más leales merecen reconocimiento. Un programa de puntos o descuento exclusivo los hará sentir valorados y seguirán eligiéndote.',
+  },
+  serviceAnalysis: {
+    slowPeriods: ['Lunes por la mañana', 'Miércoles al mediodía'],
+    activePeriods: ['Viernes por la tarde', 'Sábado todo el día'],
+    lowPerformanceReasons: [
+      'Los días de semana tienen menos tráfico por compromisos laborales de los clientes',
+      'El mediodía compite con horarios de comida y descanso',
+    ],
+    predictions: [
+      'Una promoción especial los lunes podría aumentar hasta un 25% las visitas ese día',
+      'Notificaciones el jueves invitando para el viernes elevan la asistencia del fin de semana',
+    ],
+  },
+  recommendations: {
+    forLost:
+      'Envía un mensaje personalizado con un descuento del 15–20% vigente por 2 semanas. El toque personal hace la diferencia.',
+    forFrequent:
+      'Ofrece una recompensa a partir de la 5.ª visita. Hazlos sentir parte de un club exclusivo.',
+    forNew:
+      'Ofrece un beneficio en su segunda visita (descuento o servicio extra). El objetivo es que regresen al menos 3 veces para crear el hábito.',
+    suggestedDiscountLost: 15,
+    suggestedDiscountFrequent: 10,
+    suggestedDiscountNew: 10,
+    suggestedVisitsForReward: 5,
+  },
+}
+
+const ASSISTANT_SYSTEM_PROMPT = `
+Eres un experto analista de negocios y marketing de retención para pequeños negocios en Latinoamérica.
+Recibes datos de visitas y clientes de un negocio local.
+Devuelves un análisis detallado y recomendaciones accionables en formato JSON.
+Usa lenguaje cercano, cálido y en español latinoamericano. Sin tecnicismos innecesarios.
+Responde SOLO con JSON válido. Sin markdown, sin texto adicional, sin explicaciones fuera del JSON.
+`.trim()
+
+function buildAssistantPrompt(ctx: AssistantAnalysisContext): string {
+  const categoryNames: Record<string, string> = {
+    barbershop: 'barbería',
+    salon: 'estética o salón de belleza',
+    vet: 'clínica veterinaria',
+    cafe: 'cafetería',
+    gym: 'gimnasio boutique',
+    other: 'negocio de servicios',
+  }
+
+  const schema = `{
+  "segmentAnalysis": {
+    "lostInsight": "1-2 oraciones: por qué se fueron estos clientes y qué los haría volver",
+    "newInsight": "1-2 oraciones: cómo convertir clientes nuevos en regulares",
+    "frequentInsight": "1-2 oraciones: cómo premiar y retener a los clientes frecuentes"
+  },
+  "serviceAnalysis": {
+    "slowPeriods": ["período tranquilo 1 (ej: Lunes por la mañana)", "período tranquilo 2"],
+    "activePeriods": ["período activo 1", "período activo 2"],
+    "lowPerformanceReasons": ["razón 1 de baja actividad", "razón 2"],
+    "predictions": ["predicción 1 si se actúa", "predicción 2"]
+  },
+  "recommendations": {
+    "forLost": "Recomendación específica para reactivar clientes perdidos",
+    "forFrequent": "Recomendación para premiar frecuentes",
+    "forNew": "Recomendación de incentivo para clientes nuevos",
+    "suggestedDiscountLost": 15,
+    "suggestedDiscountFrequent": 10,
+    "suggestedDiscountNew": 10,
+    "suggestedVisitsForReward": 5
+  }
+}`
+
+  return JSON.stringify({
+    negocio: ctx.businessName,
+    tipo: categoryNames[ctx.category] ?? ctx.category,
+    periodo: `Últimos ${ctx.periodDays} días`,
+    visitasAnalizadas: ctx.visitCount,
+    totalClientes: ctx.totalClients,
+    clientesNuevos: ctx.newClients,
+    clientesFrecuentes: ctx.frequentClients,
+    clientesPerdidos: ctx.lostClients,
+    clientesEnRiesgo: ctx.atRiskClients,
+    diaMasActivo: ctx.peakDay,
+    diaMasTranquilo: ctx.slowDay,
+    horaMasActiva: ctx.peakHour,
+    horaMasTranquila: ctx.slowHour,
+    instrucciones: `Analiza estos datos reales del negocio y devuelve exactamente este JSON (sin texto adicional): ${schema}`,
+  })
+}
+
+export async function analyzeBusinessInsights(
+  apiKey: string,
+  ctx: AssistantAnalysisContext
+): Promise<{ insights: AssistantInsights; usedFallback: boolean }> {
+  try {
+    const response = await fetch(NIM_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: NIM_MODEL,
+        max_tokens: 1024,
+        temperature: 0.7,
+        messages: [
+          { role: 'system', content: ASSISTANT_SYSTEM_PROMPT },
+          { role: 'user', content: buildAssistantPrompt(ctx) },
+        ],
+      }),
+    })
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({})) as { detail?: string; message?: string }
+      console.error(`[NIM Assistant] error ${response.status}: ${errBody.detail ?? errBody.message ?? response.statusText}`)
+      return { insights: FALLBACK_INSIGHTS, usedFallback: true }
+    }
+
+    const data = await response.json() as {
+      choices?: Array<{ message?: { content?: string } }>
+    }
+
+    const text = data.choices?.[0]?.message?.content
+    if (!text) {
+      console.error('[NIM Assistant] Empty response')
+      return { insights: FALLBACK_INSIGHTS, usedFallback: true }
+    }
+
+    const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim()
+
+    let parsed: AssistantInsights
+    try {
+      parsed = JSON.parse(cleaned) as AssistantInsights
+    } catch {
+      console.error('[NIM Assistant] Failed to parse JSON:', text.slice(0, 200))
+      return { insights: FALLBACK_INSIGHTS, usedFallback: true }
+    }
+
+    // Validate required fields exist
+    if (!parsed.segmentAnalysis || !parsed.serviceAnalysis || !parsed.recommendations) {
+      return { insights: FALLBACK_INSIGHTS, usedFallback: true }
+    }
+
+    // Fill missing numeric fields from fallback
+    parsed.recommendations.suggestedDiscountLost ??= FALLBACK_INSIGHTS.recommendations.suggestedDiscountLost
+    parsed.recommendations.suggestedDiscountFrequent ??= FALLBACK_INSIGHTS.recommendations.suggestedDiscountFrequent
+    parsed.recommendations.suggestedDiscountNew ??= FALLBACK_INSIGHTS.recommendations.suggestedDiscountNew
+    parsed.recommendations.suggestedVisitsForReward ??= FALLBACK_INSIGHTS.recommendations.suggestedVisitsForReward
+
+    return { insights: parsed, usedFallback: false }
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('[NIM Assistant] Unexpected error:', msg)
+    return { insights: FALLBACK_INSIGHTS, usedFallback: true }
   }
 }

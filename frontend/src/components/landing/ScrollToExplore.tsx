@@ -1,14 +1,14 @@
+import { useLocale } from "@/contexts/LocaleContext";
+
 type Props = {
   label?: string;
   tone?: "light" | "dark";
   className?: string;
 };
 
-export function ScrollToExplore({
-  label = "Desplaza para explorar",
-  tone = "dark",
-  className = "",
-}: Props) {
+export function ScrollToExplore({ label, tone = "dark", className = "" }: Props) {
+  const { d } = useLocale();
+  const resolvedLabel = label ?? d.landing.scrollToExplore;
   const color = tone === "light" ? "rgba(255, 255, 255, 0.85)" : "var(--ink-soft)";
   return (
     <div
@@ -22,7 +22,7 @@ export function ScrollToExplore({
         color,
       }}
     >
-      <span>{label}</span>
+      <span>{resolvedLabel}</span>
       <span className="arrow-bounce inline-flex">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path

@@ -1,5 +1,6 @@
 import { Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface ScanTopBarProps {
   businessName: string;
@@ -14,6 +15,7 @@ export function ScanTopBar({
   onSettingsClick,
   className,
 }: ScanTopBarProps) {
+  const { d } = useLocale();
   const settingsClass = cn(
     "inline-flex h-14 min-w-14 items-center justify-center rounded-[var(--radius-sm)]",
     "text-[color:var(--color-scanner-warm)] transition-colors",
@@ -35,14 +37,14 @@ export function ScanTopBar({
 
       <div className="flex justify-end">
         {settingsHref ? (
-          <a href={settingsHref} className={settingsClass} aria-label="Configuración">
+          <a href={settingsHref} className={settingsClass} aria-label={d.scan.settingsLabel}>
             <Settings className="h-6 w-6" aria-hidden />
           </a>
         ) : (
           <button
             type="button"
             className={settingsClass}
-            aria-label="Configurar llave de staff"
+            aria-label={d.scan.staffKeyLabel}
             onClick={onSettingsClick}
           >
             <Settings className="h-6 w-6" aria-hidden />

@@ -1,4 +1,5 @@
 import { useRevealOnce } from "@/hooks/use-reveal-once";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type Showcase = {
   chipLabel: string;
@@ -8,31 +9,7 @@ type Showcase = {
   visualAlt: string;
   swatches: string[];
   extra: number;
-  href: string;
 };
-
-const SHOWCASES: Showcase[] = [
-  {
-    chipLabel: "Cafetería",
-    chipTone: "coral",
-    name: "Tarjeta de Sellos · Plaza",
-    visual: "/landing/cloud/loyalty-card.svg",
-    visualAlt: "Tarjeta de sellos NexoLeal",
-    swatches: ["#f5e8d8", "#1a1a18", "#f5c518", "#e7f26a"],
-    extra: 4,
-    href: "/wallet/demo",
-  },
-  {
-    chipLabel: "Retail",
-    chipTone: "sage",
-    name: "QR de Mostrador · Palmer",
-    visual: "/landing/cloud/qr-code.svg",
-    visualAlt: "QR de mostrador NexoLeal",
-    swatches: ["#f0ede6", "#1a1a18", "#c9d9b8", "#e2b79a"],
-    extra: 3,
-    href: "/join/demo",
-  },
-];
 
 const CHIP_BG = {
   coral: "var(--chip-coral)",
@@ -40,10 +17,33 @@ const CHIP_BG = {
 };
 
 export function RecentAddings() {
+  const { d } = useLocale();
+
+  const SHOWCASES: Showcase[] = [
+    {
+      chipLabel: d.landing.showcases.cafeteria.chipLabel,
+      chipTone: "coral",
+      name: d.landing.showcases.cafeteria.name,
+      visual: "/landing/cloud/loyalty-card.svg",
+      visualAlt: "Tarjeta de sellos NexoLeal",
+      swatches: ["#f5e8d8", "#1a1a18", "#f5c518", "#e7f26a"],
+      extra: 4,
+    },
+    {
+      chipLabel: d.landing.showcases.retail.chipLabel,
+      chipTone: "sage",
+      name: d.landing.showcases.retail.name,
+      visual: "/landing/cloud/qr-code.svg",
+      visualAlt: "QR de mostrador NexoLeal",
+      swatches: ["#f0ede6", "#1a1a18", "#c9d9b8", "#e2b79a"],
+      extra: 3,
+    },
+  ];
+
   return (
     <section
       id="precios"
-      aria-label="Lo nuevo en NexoLeal"
+      aria-label={d.landing.recentAddingsAriaLabel}
       style={{
         background: "var(--paper)",
         padding: "clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 8vw, 7rem)",
@@ -60,7 +60,7 @@ export function RecentAddings() {
             marginBottom: "2rem",
           }}
         >
-          Lo nuevo en NexoLeal <span aria-hidden="true">↓</span>
+          {d.landing.recentAddingsAriaLabel} <span aria-hidden="true">↓</span>
         </div>
 
         <div
@@ -71,7 +71,7 @@ export function RecentAddings() {
           }}
         >
           {SHOWCASES.map((s) => (
-            <ShowcaseTile key={s.name} {...s} />
+            <ShowcaseTile key={s.name} {...s} colorsLabel={d.landing.colors} />
           ))}
         </div>
       </div>
@@ -79,11 +79,10 @@ export function RecentAddings() {
   );
 }
 
-function ShowcaseTile(props: Showcase) {
+function ShowcaseTile(props: Showcase & { colorsLabel: string }) {
   const { ref } = useRevealOnce<HTMLDivElement>({ threshold: 0.2 });
   return (
     <div ref={ref}>
-      {/* Top row: chip + name */}
       <div
         className="soft-rise"
         style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}
@@ -130,7 +129,6 @@ function ShowcaseTile(props: Showcase) {
         </div>
       </div>
 
-      {/* Featured visual tile */}
       <div
         className="soft-rise delay-1 flex items-center justify-center"
         style={{
@@ -157,75 +155,49 @@ function ShowcaseTile(props: Showcase) {
         />
       </div>
 
-      {/* Bottom row: swatches + CTA */}
-      <div
-        className="soft-rise delay-2 flex flex-wrap items-end justify-between gap-4"
-        style={{ marginTop: "1.25rem" }}
-      >
-        <div>
-          <div
+      <div className="soft-rise delay-2" style={{ marginTop: "1.25rem" }}>
+        <div
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: "0.7rem",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "var(--ink-soft)",
+            marginBottom: "0.5rem",
+          }}
+        >
+          {props.colorsLabel}
+        </div>
+        <div className="flex items-center gap-2">
+          {props.swatches.map((c) => (
+            <span
+              key={c}
+              aria-label={c}
+              style={{
+                display: "inline-block",
+                width: 14,
+                height: 14,
+                borderRadius: "9999px",
+                background: c,
+                border: "1px solid var(--hair)",
+              }}
+            />
+          ))}
+          <span
             style={{
               fontFamily: "var(--font-sans)",
               fontSize: "0.7rem",
               letterSpacing: "0.06em",
               textTransform: "uppercase",
               color: "var(--ink-soft)",
-              marginBottom: "0.5rem",
+              padding: "0.25rem 0.5rem",
+              border: "1px solid var(--hair)",
+              borderRadius: "9999px",
             }}
           >
-            Colores
-          </div>
-          <div className="flex items-center gap-2">
-            {props.swatches.map((c) => (
-              <span
-                key={c}
-                aria-label={c}
-                style={{
-                  display: "inline-block",
-                  width: 14,
-                  height: 14,
-                  borderRadius: "9999px",
-                  background: c,
-                  border: "1px solid var(--hair)",
-                }}
-              />
-            ))}
-            <span
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "0.7rem",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "var(--ink-soft)",
-                padding: "0.25rem 0.5rem",
-                border: "1px solid var(--hair)",
-                borderRadius: "9999px",
-              }}
-            >
-              +{props.extra}
-            </span>
-          </div>
+            +{props.extra}
+          </span>
         </div>
-        <a
-          href={props.href}
-          className="inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          style={{
-            background: "var(--ink)",
-            color: "var(--paper)",
-            padding: "0.625rem 1.25rem",
-            borderRadius: "9999px",
-            fontFamily: "var(--font-sans)",
-            fontSize: "0.8125rem",
-            fontWeight: 500,
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-            textDecoration: "none",
-            // @ts-expect-error css var
-            "--tw-ring-color": "var(--ink)",
-          }}
-        >
-          Explorar <span aria-hidden="true">→</span>
-        </a>
       </div>
     </div>
   );

@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ColorPicker } from "@/components/onboarding/ColorPicker";
-import { LogoUploader } from "@/components/onboarding/LogoUploader";
 import { OnboardingCardPreview } from "@/components/onboarding/OnboardingCardPreview";
+import { useLocale } from "@/contexts/LocaleContext";
 import {
   loadBrandSettings,
   persistBrandSettings,
@@ -34,6 +34,7 @@ export function BrandStep({
   stampsRequired,
   onComplete,
 }: BrandStepProps) {
+  const { d } = useLocale();
   const [brand, setBrand] = useState<BrandSettings>({
     logoUrl: null,
     primaryColor: tokens.color.signal,
@@ -60,16 +61,15 @@ export function BrandStep({
     try {
       const result = await persistBrandSettings(businessId, brand);
       if (!result.savedRemote) {
-        toast.message("Marca guardada localmente", {
-          description: "Revisa tu conexión e intenta sincronizar desde Configuración.",
+        toast.message(d.onboarding.brandSavedLocal, {
+          description: d.onboarding.brandSavedLocalHint,
         });
       } else {
-        toast.success("Marca guardada");
+        toast.success(d.onboarding.brandSaved);
       }
       onComplete();
     } catch (e) {
-      const message =
-        e instanceof ApiError ? e.message : "No pudimos guardar tu marca. Intenta de nuevo.";
+      const message = e instanceof ApiError ? e.message : d.onboarding.brandError;
       toast.error(message);
     } finally {
       setSaving(false);
@@ -84,9 +84,9 @@ export function BrandStep({
     <div className="surface-paper overflow-hidden">
       <div className="grid gap-8 p-6 lg:grid-cols-2 lg:p-8">
         <div>
-          <h2 className="font-display text-xl font-semibold">Personaliza tu marca</h2>
+          <h2 className="font-display text-xl font-semibold">{d.onboarding.brandTitle}</h2>
           <p className="mt-1 text-sm text-[color:var(--color-ink-soft)]">
-            Sube tu logo y elige los colores que verán tus clientes al escanear el QR.
+            {d.onboarding.brandDescription}
           </p>
 
           <div className="mt-6 space-y-6">
@@ -97,32 +97,32 @@ export function BrandStep({
             />
 
             <div className="space-y-2">
-              <Label htmlFor="tagline">Eslogan (opcional)</Label>
+              <Label htmlFor="tagline">{d.onboarding.taglineLabel}</Label>
               <Input
                 id="tagline"
                 value={brand.tagline}
                 onChange={(e) => update({ tagline: e.target.value.slice(0, 60) })}
-                placeholder="Ej. Tu café favorito, más cerca"
+                placeholder={d.onboarding.taglinePlaceholder}
                 maxLength={60}
               />
               <p className="text-xs text-[color:var(--color-ink-soft)]">
-                {brand.tagline.length}/60 caracteres
+                {d.onboarding.taglineChars.replace("{n}", String(brand.tagline.length))}
               </p>
             </div>
           </div>
 
           <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <Button variant="ghost" asChild>
-              <Link to="/">Salir al inicio</Link>
+              <Link to="/">{d.onboarding.exitToHome}</Link>
             </Button>
             <Button size="lg" onClick={handleContinue} disabled={saving}>
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Guardando…
+                  <Loader2 className="h-4 w-4 animate-spin" /> {d.onboarding.saving}
                 </>
               ) : (
                 <>
-                  Continuar <ArrowRight className="h-4 w-4" />
+                  {d.onboarding.continue} <ArrowRight className="h-4 w-4" />
                 </>
               )}
             </Button>
@@ -135,7 +135,7 @@ export function BrandStep({
             businessCategory={businessCategory}
             rewardDescription={rewardDescription}
             stampsRequired={stampsRequired}
-            logoUrl={brand.logoUrl}
+            logoUrl={null}
             primaryColor={primaryColor}
             tagline={brand.tagline}
           />

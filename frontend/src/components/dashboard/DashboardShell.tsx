@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import type { FileRouteTypes } from "@/routeTree.gen";
 import {
@@ -23,6 +23,8 @@ import { signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { useLocale } from "@/contexts/LocaleContext";
+import type { Dictionary } from "@/lib/i18n";
 
 export type DashboardNavId =
   | "resumen"
@@ -43,44 +45,38 @@ interface DashboardShellProps {
   children: React.ReactNode;
 }
 
-const NAV_ITEMS: {
+const NAV_ITEM_DEFS: {
   id: DashboardNavId;
-  label: string;
   icon: typeof LayoutDashboard;
   to: FileRouteTypes["to"];
   mobileTab?: boolean;
 }[] = [
   {
     id: "resumen",
-    label: "Resumen",
     icon: LayoutDashboard,
     to: "/dashboard/$businessId",
     mobileTab: true,
   },
   {
     id: "sucursales",
-    label: "Sucursales",
     icon: Building2,
     to: "/dashboard/$businessId/sucursales",
     mobileTab: false,
   },
   {
     id: "clientes",
-    label: "Clientes",
     icon: Users,
     to: "/dashboard/$businessId/clients",
     mobileTab: true,
   },
   {
     id: "visitas",
-    label: "Visitas",
     icon: Footprints,
     to: "/dashboard/$businessId/visits",
     mobileTab: true,
   },
   {
     id: "recompensas",
-    label: "Recompensas",
     icon: Gift,
     to: "/dashboard/$businessId/redemptions",
   },
@@ -93,29 +89,32 @@ const NAV_ITEMS: {
   },
   {
     id: "config",
-    label: "Configuración",
     icon: Settings,
     to: "/settings/$businessId",
     mobileTab: true,
   },
 ];
 
-function formatToday(): string {
-  return new Intl.DateTimeFormat("es-MX", {
+function navLabel(id: DashboardNavId, nav: Dictionary["dashboard"]["nav"]): string {
+  return nav[id];
+}
+
+function formatToday(locale: string): string {
+  return new Intl.DateTimeFormat(locale === "es" ? "es-MX" : "en-US", {
     weekday: "long",
     day: "numeric",
     month: "long",
   }).format(new Date());
 }
 
-function copyJoinUrl(businessId: string) {
+function copyJoinUrl(businessId: string, d: Dictionary) {
   const url =
     typeof window !== "undefined"
       ? `${window.location.origin}/join/${businessId}`
       : `/join/${businessId}`;
   navigator.clipboard.writeText(url).then(
-    () => toast.success("Enlace de invitación copiado"),
-    () => toast.error("No pudimos copiar el enlace"),
+    () => toast.success(d.dashboard.copyJoinLink),
+    () => toast.error(d.common.copyFailed),
   );
 }
 
@@ -128,9 +127,11 @@ function SidebarNav({
   activeNav: DashboardNavId;
   onNavigate?: () => void;
 }) {
+  const { d } = useLocale();
+
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
-      {NAV_ITEMS.map(({ id, label, icon: Icon, to }) => {
+      {NAV_ITEM_DEFS.map(({ id, icon: Icon, to }) => {
         const active = activeNav === id;
         return (
           <Link
@@ -147,7 +148,7 @@ function SidebarNav({
             aria-current={active ? "page" : undefined}
           >
             <Icon className="h-4 w-4 shrink-0" aria-hidden />
-            {label}
+            {navLabel(id, d.dashboard.nav)}
           </Link>
         );
       })}
@@ -158,7 +159,7 @@ function SidebarNav({
           className="flex w-full items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[color:var(--color-ink-soft)] transition-colors hover:bg-[var(--color-cream)]/60 hover:text-[color:var(--color-ink)]"
         >
           <LogOut className="h-4 w-4 shrink-0" aria-hidden />
-          Cerrar sesión
+          {d.dashboard.nav.signOut}
         </button>
       </div>
     </nav>
@@ -174,6 +175,8 @@ function SidebarBrand({
   businessName?: string | null;
   plan?: "free" | "pro" | null;
 }) {
+  const { d } = useLocale();
+
   return (
     <div className="border-b border-[color:var(--color-border)] px-4 py-5">
       <div className="flex items-center gap-3">
@@ -198,10 +201,10 @@ function SidebarBrand({
         variant="outline"
         size="sm"
         className="mt-4 w-full gap-2 border-[color:var(--color-border)] bg-[var(--color-cream)]/50 text-xs"
-        onClick={() => copyJoinUrl(businessId)}
+        onClick={() => copyJoinUrl(businessId, d)}
       >
         <UserPlus className="h-3.5 w-3.5" aria-hidden />
-        Invitar clientes
+        {d.dashboard.nav.inviteClients}
       </Button>
     </div>
   );
@@ -215,19 +218,18 @@ export function DashboardShell({
   ownerFirstName,
   children,
 }: DashboardShellProps) {
+  const { d, locale } = useLocale();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const mobileTabs = NAV_ITEMS.filter((item) => item.mobileTab);
+  const mobileTabs = useMemo(() => NAV_ITEM_DEFS.filter((item) => item.mobileTab), []);
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-paper)] text-[color:var(--color-ink)]">
-      {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[240px] flex-col border-r border-[color:var(--color-border)] bg-[var(--color-bg-paper)] lg:flex">
         <SidebarBrand businessId={businessId} businessName={businessName} plan={plan} />
         <SidebarNav businessId={businessId} activeNav={activeNav} />
       </aside>
 
       <div className="lg:pl-[240px]">
-        {/* Top bar */}
         <header className="sticky top-0 z-20 border-b border-[color:var(--color-border)] bg-[rgba(249,246,239,0.92)] backdrop-blur-md">
           <div className="flex items-center justify-between gap-4 px-4 py-4 md:px-6 lg:px-8">
             <div className="flex items-center gap-3">
@@ -237,7 +239,7 @@ export function DashboardShell({
                     variant="outline"
                     size="icon"
                     className="lg:hidden"
-                    aria-label="Abrir menú"
+                    aria-label={d.dashboard.openMenu}
                   >
                     <Menu className="h-5 w-5" />
                   </Button>
@@ -254,10 +256,10 @@ export function DashboardShell({
 
               <div>
                 <h1 className="font-display text-xl font-semibold tracking-tight md:text-2xl">
-                  Hola, {ownerFirstName ?? "equipo"}
+                  {d.dashboard.hello} {ownerFirstName ?? "equipo"}
                 </h1>
                 <p className="text-sm capitalize text-[color:var(--color-ink-soft)]">
-                  {formatToday()}
+                  {formatToday(locale)}
                 </p>
               </div>
             </div>
@@ -269,8 +271,8 @@ export function DashboardShell({
               className="btn-signal hidden items-center gap-2 text-sm sm:inline-flex"
             >
               <BarChart3 className="h-4 w-4" aria-hidden />
-              <span className="hidden md:inline">Generar campaña con IA</span>
-              <span className="md:hidden">Campaña IA</span>
+              <span className="hidden md:inline">{d.dashboard.generateCampaign}</span>
+              <span className="md:hidden">{d.dashboard.generateCampaignShort}</span>
             </Link>
           </div>
         </header>
@@ -278,13 +280,12 @@ export function DashboardShell({
         <main className="px-4 py-6 pb-24 md:px-6 lg:px-8 lg:py-8 lg:pb-8">{children}</main>
       </div>
 
-      {/* Mobile bottom tab nav */}
       <nav
         className="fixed inset-x-0 bottom-0 z-30 border-t border-[color:var(--color-border)] bg-[var(--color-bg-paper)] lg:hidden"
-        aria-label="Navegación principal"
+        aria-label={d.dashboard.openMenu}
       >
         <div className="grid grid-cols-5">
-          {mobileTabs.map(({ id, label, icon: Icon, to }) => {
+          {mobileTabs.map(({ id, icon: Icon, to }) => {
             const active = activeNav === id;
             return (
               <Link
@@ -301,7 +302,7 @@ export function DashboardShell({
                   className={cn("h-5 w-5", active && "text-[color:var(--color-signal)]")}
                   aria-hidden
                 />
-                {label}
+                {navLabel(id, d.dashboard.nav)}
               </Link>
             );
           })}

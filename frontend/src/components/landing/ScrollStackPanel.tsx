@@ -1,5 +1,6 @@
 import { ScrollToExplore } from "./ScrollToExplore";
 import { useRevealOnce } from "@/hooks/use-reveal-once";
+import { useLocale } from "@/contexts/LocaleContext";
 import type { UseCasePanel } from "@/lib/landing-assets";
 
 const CHIP_BG: Record<UseCasePanel["chipTone"], string> = {
@@ -33,6 +34,7 @@ export function ScrollStackPanel({
   panelCount: number;
   isLast?: boolean;
 }) {
+  const { d } = useLocale();
   const { ref: revealRef } = useRevealOnce<HTMLDivElement>({ threshold: 0.35 });
   const lines = splitHeadlineIntoLines(panel.headline);
 
@@ -85,7 +87,7 @@ export function ScrollStackPanel({
           <div className="scroll-stack-hairline scroll-stack-meta" aria-hidden="true" />
 
           <div className="scroll-stack-index-cluster scroll-stack-meta">
-            <div className="scroll-stack-eyebrow">Hecho para volver</div>
+            <div className="scroll-stack-eyebrow">{d.landing.panelEyebrow}</div>
             <div className="scroll-stack-index">{panel.index}</div>
             <div
               className="scroll-stack-chip inline-flex items-center gap-1.5"
@@ -127,7 +129,7 @@ export function ScrollStackPanel({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="scroll-stack-pdf-title">{panel.pdfCard.title}</div>
                 <div className="scroll-stack-pdf-link">
-                  Descargar <span aria-hidden="true">↓</span>
+                  {d.landing.download} <span aria-hidden="true">↓</span>
                 </div>
               </div>
               <div
