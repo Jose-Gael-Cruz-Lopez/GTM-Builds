@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import type { FileRouteTypes } from "@/routeTree.gen";
 import {
-  BarChart3,
   Building2,
   Gift,
   LayoutDashboard,
@@ -12,11 +11,9 @@ import {
   Settings,
   Sparkles,
   TrendingUp,
-  UserPlus,
   Users,
   Footprints,
 } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -111,17 +108,6 @@ function formatToday(locale: string): string {
   }).format(new Date());
 }
 
-function copyJoinUrl(businessId: string, d: Dictionary) {
-  const url =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/join/${businessId}`
-      : `/join/${businessId}`;
-  navigator.clipboard.writeText(url).then(
-    () => toast.success(d.dashboard.copyJoinLink),
-    () => toast.error(d.common.copyFailed),
-  );
-}
-
 function SidebarNav({
   businessId,
   activeNav,
@@ -171,16 +157,12 @@ function SidebarNav({
 }
 
 function SidebarBrand({
-  businessId,
   businessName,
   plan,
 }: {
-  businessId: string;
   businessName?: string | null;
   plan?: "free" | "pro" | null;
 }) {
-  const { d } = useLocale();
-
   return (
     <div className="border-b border-[color:var(--color-border)] px-4 py-5">
       <div className="flex items-center gap-3">
@@ -200,16 +182,6 @@ function SidebarBrand({
           </Badge>
         </div>
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="mt-4 w-full gap-2 border-[color:var(--color-border)] bg-[var(--color-cream)]/50 text-xs"
-        onClick={() => copyJoinUrl(businessId, d)}
-      >
-        <UserPlus className="h-3.5 w-3.5" aria-hidden />
-        {d.dashboard.nav.inviteClients}
-      </Button>
     </div>
   );
 }
@@ -229,7 +201,7 @@ export function DashboardShell({
   return (
     <div className="min-h-screen bg-[var(--color-bg-paper)] text-[color:var(--color-ink)]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[240px] flex-col border-r border-[color:var(--color-border)] bg-[var(--color-bg-paper)] lg:flex">
-        <SidebarBrand businessId={businessId} businessName={businessName} plan={plan} />
+        <SidebarBrand businessName={businessName} plan={plan} />
         <SidebarNav businessId={businessId} activeNav={activeNav} />
       </aside>
 
@@ -249,7 +221,7 @@ export function DashboardShell({
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[280px] p-0">
-                  <SidebarBrand businessId={businessId} businessName={businessName} plan={plan} />
+                  <SidebarBrand businessName={businessName} plan={plan} />
                   <SidebarNav
                     businessId={businessId}
                     activeNav={activeNav}
@@ -267,17 +239,6 @@ export function DashboardShell({
                 </p>
               </div>
             </div>
-
-            <Link
-              to="/campaigns/$businessId"
-              params={{ businessId }}
-              search={{ tab: "all", action: "generate" }}
-              className="btn-signal hidden items-center gap-2 text-sm sm:inline-flex"
-            >
-              <BarChart3 className="h-4 w-4" aria-hidden />
-              <span className="hidden md:inline">{d.dashboard.generateCampaign}</span>
-              <span className="md:hidden">{d.dashboard.generateCampaignShort}</span>
-            </Link>
           </div>
         </header>
 

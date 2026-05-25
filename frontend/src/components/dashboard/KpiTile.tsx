@@ -1,4 +1,6 @@
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowDown, ArrowUp, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "@/components/ui/status-dot";
 import { Sparkline } from "@/components/dashboard/Sparkline";
@@ -13,6 +15,7 @@ export interface KpiTileProps {
   healthLabel?: string;
   sparklineData?: number[];
   statusTone?: "good" | "warn" | "risk" | "health" | "neutral";
+  isLoading?: boolean;
 }
 
 export function KpiTile({
@@ -25,7 +28,22 @@ export function KpiTile({
   healthLabel = "Saludable",
   sparklineData,
   statusTone = "neutral",
+  isLoading = false,
 }: KpiTileProps) {
+  const prevValue = useRef<string | number | null>(null);
+  const [valuePulse, setValuePulse] = useState(false);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (prevValue.current !== null && prevValue.current !== value) {
+      setValuePulse(true);
+      const timer = window.setTimeout(() => setValuePulse(false), 500);
+      prevValue.current = value;
+      return () => window.clearTimeout(timer);
+    }
+    prevValue.current = value;
+  }, [value, isLoading]);
+
   const content = (
     <>
       <div className="flex items-start justify-between gap-2">
@@ -43,9 +61,24 @@ export function KpiTile({
 
       <div className="mt-3 flex items-end justify-between gap-3">
         <div>
-          <p className="font-display text-3xl font-bold tabular-nums text-[color:var(--color-ink)]">
-            {value}
-          </p>
+          {isLoading ? (
+            <div className="flex h-9 items-center">
+              <Loader2
+                className="h-6 w-6 animate-spin text-[color:var(--color-ink-soft)]"
+                aria-label="Cargando"
+              />
+            </div>
+          ) : (
+            <p
+              key={String(value)}
+              className={cn(
+                "font-display text-3xl font-bold tabular-nums text-[color:var(--color-ink)] transition-opacity duration-500",
+                valuePulse && "opacity-60",
+              )}
+            >
+              {value}
+            </p>
+          )}
           {delta !== undefined && delta !== null ? (
             <p
               className={cn(
@@ -76,9 +109,9 @@ export function KpiTile({
 
   if (href) {
     return (
-      <a href={href} className={className}>
+      <Link to={href} className={className}>
         {content}
-      </a>
+      </Link>
     );
   }
 

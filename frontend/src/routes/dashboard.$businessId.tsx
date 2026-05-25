@@ -1,6 +1,6 @@
 import { RouteError } from "@/components/RouteError";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { Building2, Bot, ChevronRight, TrendingUp, Users } from "lucide-react";
 
@@ -49,7 +49,9 @@ function DashboardPage() {
   const stats = useQuery({
     queryKey: ["business", businessId, "stats"],
     queryFn: () => businessesApi.getStatsSummary(businessId),
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
+    refetchOnWindowFocus: true,
+    placeholderData: keepPreviousData,
     retry: shouldRetry,
   });
 
@@ -189,43 +191,42 @@ function DashboardPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.isLoading ? (
-          <>
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
-          </>
+        <KpiTile
+          title="Visitas hoy"
+          value={stats.data?.visitsToday ?? "—"}
+          href={`/dashboard/${businessId}/visits`}
+          isLoading={stats.isLoading && stats.data === undefined}
+          delta={null}
+          statusTone="neutral"
+        />
+        <KpiTile
+          title="Clientes activos"
+          value={activeClients}
+          href={`/dashboard/${businessId}/clients?status=active`}
+          isLoading={stats.isLoading && stats.data === undefined}
+          healthChip={activePct >= 60}
+          healthLabel="Saludable"
+          statusTone="good"
+        />
+        {visits.isLoading ? (
+          <KpiTileSkeleton />
         ) : (
-          <>
-            <KpiTile
-              title="Visitas hoy"
-              value={stats.data?.visitsToday ?? "—"}
-              href={`/dashboard/${businessId}/visits`}
-              delta={null}
-              statusTone="neutral"
-            />
-            <KpiTile
-              title="Clientes activos"
-              value={activeClients}
-              href={`/dashboard/${businessId}/clients?status=active`}
-              healthChip={activePct >= 60}
-              healthLabel="Saludable"
-              statusTone="good"
-            />
-            <KpiTile
-              title="Recompensas (30d)"
-              value="—"
-              statusTone="health"
-              sparklineData={visits.data?.values.slice(-7)}
-            />
-            <KpiTile
-              title="Retención (60d)"
-              value={retention60 != null ? `${retention60}%` : "—"}
-              healthChip={retention60 != null && retention60 >= 50}
-              statusTone="good"
-            />
-          </>
+          <KpiTile
+            title="Recompensas (30d)"
+            value="—"
+            statusTone="health"
+            sparklineData={visits.data?.values.slice(-7)}
+          />
+        )}
+        {retention.isLoading ? (
+          <KpiTileSkeleton />
+        ) : (
+          <KpiTile
+            title="Retención (60d)"
+            value={retention60 != null ? `${retention60}%` : "—"}
+            healthChip={retention60 != null && retention60 >= 50}
+            statusTone="good"
+          />
         )}
       </div>
 
