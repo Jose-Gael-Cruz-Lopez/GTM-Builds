@@ -46,7 +46,7 @@ export function Hero() {
         </span>
 
         <h1
-          className="font-display"
+          className="font-display flex flex-col items-center"
           style={{
             fontFamily: "var(--font-display)",
             fontWeight: 500,
@@ -54,15 +54,14 @@ export function Hero() {
             lineHeight: 1.05,
             letterSpacing: "-0.025em",
             color: "var(--ink)",
-            maxWidth: "18ch",
-            textWrap: "balance",
             margin: 0,
+            gap: "0.15em",
           }}
         >
-          <span className="rise-mask block">
+          <span className="rise-mask" style={{ display: "block" }}>
             <span className="rise-line">{d.hero.heading1}</span>
           </span>
-          <span className="rise-mask block">
+          <span className="rise-mask" style={{ display: "block" }}>
             <span className="rise-line">{d.hero.heading2}</span>
           </span>
         </h1>
