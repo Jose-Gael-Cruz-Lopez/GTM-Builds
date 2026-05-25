@@ -120,30 +120,6 @@ export function ScrollStackPanel({
             </div>
           </div>
 
-          {panel.pdfCard && (
-            <a
-              href={panel.pdfCard.href}
-              download
-              className="scroll-stack-pdf scroll-stack-headline-layer soft-rise delay-2"
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="scroll-stack-pdf-title">{panel.pdfCard.title}</div>
-                <div className="scroll-stack-pdf-link">
-                  {d.landing.download} <span aria-hidden="true">↓</span>
-                </div>
-              </div>
-              <div
-                className="scroll-stack-pdf-icon"
-                style={{
-                  background: `color-mix(in oklab, ${CHIP_BG[panel.chipTone]} 32%, #ffffff 68%)`,
-                }}
-                aria-hidden="true"
-              >
-                <img src={panel.pdfCard.miniSvg} alt="" width={36} height={36} />
-              </div>
-            </a>
-          )}
-
           {!isLast && (
             <div className="scroll-stack-wayfinder scroll-stack-headline-layer">
               <ScrollToExplore tone="light" />

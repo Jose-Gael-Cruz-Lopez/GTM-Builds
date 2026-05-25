@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteError } from "@/components/RouteError";
 import { EditorialNav } from "@/components/landing/EditorialNav";
-import { CitrineBubble } from "@/components/landing/CitrineBubble";
 import { Hero } from "@/components/landing/Hero";
 import { ScrollStack } from "@/components/landing/ScrollStack";
 import { AboutBlock } from "@/components/landing/AboutBlock";
-import { RecentAddings } from "@/components/landing/RecentAddings";
+import { PricingSection } from "@/components/landing/PricingSection";
 import { EditorialFooter } from "@/components/landing/EditorialFooter";
 
 export const Route = createFileRoute("/")({
@@ -30,9 +29,8 @@ function LandingPage() {
       <Hero />
       <ScrollStack />
       <AboutBlock />
-      <RecentAddings />
+      <PricingSection />
       <EditorialFooter />
-      <CitrineBubble />
     </main>
   );
 }
