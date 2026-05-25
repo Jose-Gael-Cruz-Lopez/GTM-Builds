@@ -13,11 +13,11 @@ export const Route = createFileRoute("/")({
   errorComponent: RouteError,
   head: () => ({
     meta: [
-      { title: "NexoLeal · Hecho para volver. Una y otra vez." },
+      { title: "NexoLeal · Tarjetas de sellos y QR para negocios locales" },
       {
         name: "description",
         content:
-          "La plataforma de fidelidad y retención para cafés, salones y pequeños comercios en México. Sin apps. Sin tarjetas físicas. Solo conversaciones que vuelven.",
+          "Plataforma de fidelidad digital para México: tarjetas de sellos en el celular, QR en mostrador y panel para tu equipo. Sin app propia ni tarjetas físicas.",
       },
     ],
   }),

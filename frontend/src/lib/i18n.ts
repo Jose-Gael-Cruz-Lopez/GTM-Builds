@@ -804,10 +804,10 @@ const es: Dictionary = {
     customers: "Clientes",
   },
   hero: {
-    eyebrow: "NexoLeal · Fidelidad para tu negocio",
-    heading1: "Hecho para volver.",
-    heading2: "Una y otra vez.",
-    body: "La plataforma de fidelidad y retención para cafés, salones y pequeños comercios en México. Sin apps. Sin tarjetas físicas. Solo conversaciones que vuelven.",
+    eyebrow: "Plataforma de lealtad digital · México",
+    heading1: "Tarjetas de sellos y QR",
+    heading2: "para que vuelvan solos.",
+    body: "NexoLeal conecta tu negocio con clientes recurrentes: tarjeta digital en el celular, escaneo en mostrador y un panel para ver quién vuelve. Sin app propia. Sin plástico.",
     ctaBusiness: "Negocios",
     ctaConsumer: "Clientes",
   },
@@ -930,10 +930,11 @@ const es: Dictionary = {
     aboutAriaLabel: "Sobre NexoLeal",
     diaryRecent: "Diario reciente",
     aboutParagraph1:
-      "Construimos NexoLeal para los negocios que recuerdan el nombre de cada cliente.",
-    aboutParagraph2: "La fidelidad no se compra con descuentos: se gana con atención.",
+      "NexoLeal es software de fidelidad para negocios locales: tarjetas de sellos digitales, QR en mostrador y un panel para tu equipo.",
+    aboutParagraph2:
+      "Tus clientes guardan su tarjeta en el celular. Tu staff valida cada visita con un escáner. Tú ves quién vuelve y quién se está yendo.",
     aboutParagraph3:
-      "Cada flujo, cada mensaje y cada recompensa fue diseñado para que volver sea la opción más natural.",
+      "Sin app que descargar, sin tarjetas de cartón y sin hojas de cálculo. Solo un programa claro que hace que volver sea lo más fácil.",
     scrollStackAriaLabel: "Casos de uso de NexoLeal",
     panelEyebrow: "Hecho para volver",
     download: "Descargar",
@@ -1669,10 +1670,10 @@ const en: Dictionary = {
     customers: "Customers",
   },
   hero: {
-    eyebrow: "NexoLeal · Loyalty for your business",
-    heading1: "Built to bring them back.",
-    heading2: "Again and again.",
-    body: "The loyalty and retention platform for cafés, salons, and small businesses in Mexico. No apps. No physical cards. Just conversations that return.",
+    eyebrow: "Digital loyalty platform · Mexico",
+    heading1: "Stamp cards and QR codes",
+    heading2: "that bring customers back.",
+    body: "NexoLeal connects your business with repeat customers: a digital card on their phone, counter scanning for your team, and a dashboard to see who returns. No custom app. No plastic.",
     ctaBusiness: "Businesses",
     ctaConsumer: "Customers",
   },
@@ -1794,10 +1795,12 @@ const en: Dictionary = {
   landing: {
     aboutAriaLabel: "About NexoLeal",
     diaryRecent: "Recent journal",
-    aboutParagraph1: "We built NexoLeal for the businesses that remember every customer by name.",
-    aboutParagraph2: "Loyalty isn't bought with discounts — it's earned through attention.",
+    aboutParagraph1:
+      "NexoLeal is loyalty software for local businesses: digital stamp cards, counter QR codes, and a dashboard for your team.",
+    aboutParagraph2:
+      "Customers keep their card on their phone. Staff validates each visit with a scanner. You see who comes back and who is drifting away.",
     aboutParagraph3:
-      "Every flow, every message and every reward was designed to make returning the most natural choice.",
+      "No app to download, no cardboard punch cards, no spreadsheets. Just a clear program that makes returning the easy choice.",
     scrollStackAriaLabel: "NexoLeal use cases",
     panelEyebrow: "Built to bring them back",
     download: "Download",
