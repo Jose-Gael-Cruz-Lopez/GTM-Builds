@@ -29,7 +29,9 @@ import { Route as DashboardBusinessIdRouteImport } from './routes/dashboard.$bus
 import { Route as CampaignsBusinessIdRouteImport } from './routes/campaigns.$businessId'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as DashboardBusinessIdVisitsRouteImport } from './routes/dashboard.$businessId.visits'
+import { Route as DashboardBusinessIdSucursalesRouteImport } from './routes/dashboard.$businessId.sucursales'
 import { Route as DashboardBusinessIdRedemptionsRouteImport } from './routes/dashboard.$businessId.redemptions'
+import { Route as DashboardBusinessIdMarketingRouteImport } from './routes/dashboard.$businessId.marketing'
 import { Route as DashboardBusinessIdClientsRouteImport } from './routes/dashboard.$businessId.clients'
 
 const TermsRoute = TermsRouteImport.update({
@@ -133,10 +135,22 @@ const DashboardBusinessIdVisitsRoute =
     path: '/visits',
     getParentRoute: () => DashboardBusinessIdRoute,
   } as any)
+const DashboardBusinessIdSucursalesRoute =
+  DashboardBusinessIdSucursalesRouteImport.update({
+    id: '/sucursales',
+    path: '/sucursales',
+    getParentRoute: () => DashboardBusinessIdRoute,
+  } as any)
 const DashboardBusinessIdRedemptionsRoute =
   DashboardBusinessIdRedemptionsRouteImport.update({
     id: '/redemptions',
     path: '/redemptions',
+    getParentRoute: () => DashboardBusinessIdRoute,
+  } as any)
+const DashboardBusinessIdMarketingRoute =
+  DashboardBusinessIdMarketingRouteImport.update({
+    id: '/marketing',
+    path: '/marketing',
     getParentRoute: () => DashboardBusinessIdRoute,
   } as any)
 const DashboardBusinessIdClientsRoute =
@@ -167,7 +181,9 @@ export interface FileRoutesByFullPath {
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
   '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/marketing': typeof DashboardBusinessIdMarketingRoute
   '/dashboard/$businessId/redemptions': typeof DashboardBusinessIdRedemptionsRoute
+  '/dashboard/$businessId/sucursales': typeof DashboardBusinessIdSucursalesRoute
   '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRoutesByTo {
@@ -191,7 +207,9 @@ export interface FileRoutesByTo {
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet': typeof WalletIndexRoute
   '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/marketing': typeof DashboardBusinessIdMarketingRoute
   '/dashboard/$businessId/redemptions': typeof DashboardBusinessIdRedemptionsRoute
+  '/dashboard/$businessId/sucursales': typeof DashboardBusinessIdSucursalesRoute
   '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRoutesById {
@@ -216,7 +234,9 @@ export interface FileRoutesById {
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/': typeof WalletIndexRoute
   '/dashboard/$businessId/clients': typeof DashboardBusinessIdClientsRoute
+  '/dashboard/$businessId/marketing': typeof DashboardBusinessIdMarketingRoute
   '/dashboard/$businessId/redemptions': typeof DashboardBusinessIdRedemptionsRoute
+  '/dashboard/$businessId/sucursales': typeof DashboardBusinessIdSucursalesRoute
   '/dashboard/$businessId/visits': typeof DashboardBusinessIdVisitsRoute
 }
 export interface FileRouteTypes {
@@ -242,7 +262,9 @@ export interface FileRouteTypes {
     | '/wallet/profile'
     | '/wallet/'
     | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/marketing'
     | '/dashboard/$businessId/redemptions'
+    | '/dashboard/$businessId/sucursales'
     | '/dashboard/$businessId/visits'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -266,7 +288,9 @@ export interface FileRouteTypes {
     | '/wallet/profile'
     | '/wallet'
     | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/marketing'
     | '/dashboard/$businessId/redemptions'
+    | '/dashboard/$businessId/sucursales'
     | '/dashboard/$businessId/visits'
   id:
     | '__root__'
@@ -290,7 +314,9 @@ export interface FileRouteTypes {
     | '/wallet/profile'
     | '/wallet/'
     | '/dashboard/$businessId/clients'
+    | '/dashboard/$businessId/marketing'
     | '/dashboard/$businessId/redemptions'
+    | '/dashboard/$businessId/sucursales'
     | '/dashboard/$businessId/visits'
   fileRoutesById: FileRoutesById
 }
@@ -458,11 +484,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBusinessIdVisitsRouteImport
       parentRoute: typeof DashboardBusinessIdRoute
     }
+    '/dashboard/$businessId/sucursales': {
+      id: '/dashboard/$businessId/sucursales'
+      path: '/sucursales'
+      fullPath: '/dashboard/$businessId/sucursales'
+      preLoaderRoute: typeof DashboardBusinessIdSucursalesRouteImport
+      parentRoute: typeof DashboardBusinessIdRoute
+    }
     '/dashboard/$businessId/redemptions': {
       id: '/dashboard/$businessId/redemptions'
       path: '/redemptions'
       fullPath: '/dashboard/$businessId/redemptions'
       preLoaderRoute: typeof DashboardBusinessIdRedemptionsRouteImport
+      parentRoute: typeof DashboardBusinessIdRoute
+    }
+    '/dashboard/$businessId/marketing': {
+      id: '/dashboard/$businessId/marketing'
+      path: '/marketing'
+      fullPath: '/dashboard/$businessId/marketing'
+      preLoaderRoute: typeof DashboardBusinessIdMarketingRouteImport
       parentRoute: typeof DashboardBusinessIdRoute
     }
     '/dashboard/$businessId/clients': {
@@ -477,13 +517,17 @@ declare module '@tanstack/react-router' {
 
 interface DashboardBusinessIdRouteChildren {
   DashboardBusinessIdClientsRoute: typeof DashboardBusinessIdClientsRoute
+  DashboardBusinessIdMarketingRoute: typeof DashboardBusinessIdMarketingRoute
   DashboardBusinessIdRedemptionsRoute: typeof DashboardBusinessIdRedemptionsRoute
+  DashboardBusinessIdSucursalesRoute: typeof DashboardBusinessIdSucursalesRoute
   DashboardBusinessIdVisitsRoute: typeof DashboardBusinessIdVisitsRoute
 }
 
 const DashboardBusinessIdRouteChildren: DashboardBusinessIdRouteChildren = {
   DashboardBusinessIdClientsRoute: DashboardBusinessIdClientsRoute,
+  DashboardBusinessIdMarketingRoute: DashboardBusinessIdMarketingRoute,
   DashboardBusinessIdRedemptionsRoute: DashboardBusinessIdRedemptionsRoute,
+  DashboardBusinessIdSucursalesRoute: DashboardBusinessIdSucursalesRoute,
   DashboardBusinessIdVisitsRoute: DashboardBusinessIdVisitsRoute,
 }
 
