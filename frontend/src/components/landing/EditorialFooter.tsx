@@ -10,8 +10,7 @@ export function EditorialFooter() {
   const PRIMARY_LINKS = [
     { label: d.nav.product, href: "#producto" },
     { label: d.nav.cases, href: "#casos" },
-    { label: d.nav.pricing, href: "#producto" },
-    { label: d.nav.blog, href: "#diario" },
+    { label: d.nav.pricing, href: "#precios" },
   ];
 
   const SECONDARY_LINKS = [
@@ -40,7 +39,7 @@ export function EditorialFooter() {
   ];
 
   return (
-    <footer id="diario" className="editorial-footer">
+    <footer id="contacto" className="editorial-footer">
       <div className="editorial-footer__inner">
         <div className="editorial-footer__contact-grid">
           {CONTACT_BLOCKS.map((block) => (
