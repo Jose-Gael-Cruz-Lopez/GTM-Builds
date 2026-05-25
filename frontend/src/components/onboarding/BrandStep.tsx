@@ -90,14 +90,6 @@ export function BrandStep({
           </p>
 
           <div className="mt-6 space-y-6">
-            <div className="space-y-2">
-              <Label>Logo</Label>
-              <LogoUploader
-                businessId={businessId}
-                value={brand.logoUrl}
-                onChange={(logoUrl) => update({ logoUrl })}
-              />
-            </div>
 
             <ColorPicker
               value={brand.primaryColor}

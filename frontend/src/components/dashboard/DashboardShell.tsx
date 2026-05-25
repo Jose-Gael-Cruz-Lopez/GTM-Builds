@@ -15,6 +15,7 @@ import {
   UserPlus,
   Users,
   Footprints,
+  Scan,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -84,18 +85,11 @@ const NAV_ITEMS: {
     to: "/dashboard/$businessId/redemptions",
   },
   {
-    id: "campanas",
-    label: "Campañas",
-    icon: Megaphone,
-    to: "/campaigns/$businessId",
+    id: "escaner",
+    label: "Escanear QR",
+    icon: Scan,
+    to: "/scan" as any,
     mobileTab: true,
-  },
-  {
-    id: "marketing",
-    label: "Marketing",
-    icon: TrendingUp,
-    to: "/dashboard/$businessId/marketing",
-    mobileTab: false,
   },
   {
     id: "config",
@@ -141,8 +135,8 @@ function SidebarNav({
         return (
           <Link
             key={id}
-            to={to}
-            params={{ businessId }}
+            to={to as any}
+            params={to.includes("$businessId") ? { businessId } : undefined}
             onClick={onNavigate}
             className={cn(
               "flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--duration)] ease-[var(--ease-out-expo)]",

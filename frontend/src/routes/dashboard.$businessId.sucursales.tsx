@@ -39,9 +39,9 @@ function SucursalesPage() {
         </p>
       </div>
 
-      <IsoScene
-        title="Próximamente"
-        description="Aquí podrás dar de alta, editar y desactivar las sucursales de tu negocio. Esta sección está en desarrollo."
+     <IsoScene
+        title={`Sucursales de ${businessName || "tu local"}`}
+        description={`Actualmente estás en el plan ${business?.plan?.toUpperCase() || "FREE"}. Aquí podrás dar de alta, editar y desactivar las sucursales de tu negocio.`}
         action={
           <a href={`/dashboard/${businessId}`} className="btn-signal text-sm">
             Volver al panel

@@ -113,6 +113,7 @@ function ClientsPage() {
   }, [list.data, search.q, search.sort]);
 
   const selected = filtered.find((c) => c.clientId === selectedId);
+  const selectedIndex = filtered.findIndex((c) => c.clientId === selectedId);
 
   const copyJoin = () => {
     const url = `${window.location.origin}/join/${businessId}`;
@@ -252,7 +253,7 @@ function ClientsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((client) => (
+                    {filtered.map((client, index) => (
                       <TableRow
                         key={client.clientId}
                         className="cursor-pointer hover:bg-[var(--color-cream)]/50"
@@ -261,9 +262,9 @@ function ClientsPage() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--color-cream)] text-xs font-semibold">
-                              {client.fullName.slice(0, 2).toUpperCase()}
+                              C{index + 1}
                             </span>
-                            <span className="font-medium">{client.fullName}</span>
+                            <span className="font-medium">Cliente {index + 1}</span>
                           </div>
                         </TableCell>
                         <TableCell className="tabular-nums">{client.stampCount}</TableCell>
@@ -340,7 +341,7 @@ function ClientsPage() {
           {selected ? (
             <>
               <SheetHeader>
-                <SheetTitle className="font-display">{selected.fullName}</SheetTitle>
+                <SheetTitle className="font-display">Cliente {selectedIndex + 1}</SheetTitle>
               </SheetHeader>
               <dl className="mt-6 space-y-4 text-sm">
                 <div>

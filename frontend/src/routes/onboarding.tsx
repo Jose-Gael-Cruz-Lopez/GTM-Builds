@@ -95,7 +95,7 @@ function OnboardingPage() {
       }),
     onSuccess: () => {
       toast.success("Recompensa configurada");
-      setStep("finish");
+      navigate({ to: "/dashboard/$businessId", params: { businessId: businessId! } });
     },
     onError: (e) => {
       const message =
@@ -187,18 +187,6 @@ function OnboardingPage() {
               onBack={() => setStep("brand")}
               onSubmit={() => updateConfig.mutate()}
               isPending={updateConfig.isPending}
-            />
-          )}
-
-          {step === "finish" && (
-            <FinishStep
-              businessId={businessId}
-              businessName={businessName}
-              tagline={brandTagline}
-              joinUrl={joinUrl}
-              staffKey={staffKeyQuery.data}
-              staffKeyLoading={staffKeyQuery.isLoading}
-              staffKeyError={staffKeyQuery.isError}
             />
           )}
         </div>
