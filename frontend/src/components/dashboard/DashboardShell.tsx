@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import type { FileRouteTypes } from "@/routeTree.gen";
 import {
-  BarChart3,
   Building2,
   Gift,
   LayoutDashboard,
@@ -12,11 +11,10 @@ import {
   Settings,
   Sparkles,
   TrendingUp,
-  UserPlus,
   Users,
   Footprints,
+  Scan,
 } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -31,6 +29,7 @@ export type DashboardNavId =
   | "clientes"
   | "visitas"
   | "recompensas"
+  | "escaner"
   | "campanas"
   | "marketing"
   | "config";
@@ -49,6 +48,7 @@ const NAV_ITEM_DEFS: {
   icon: typeof LayoutDashboard;
   to: FileRouteTypes["to"];
   mobileTab?: boolean;
+  label?: string;
 }[] = [
   {
     id: "resumen",
@@ -80,6 +80,12 @@ const NAV_ITEM_DEFS: {
     to: "/dashboard/$businessId/redemptions",
   },
   {
+    id: "escaner",
+    icon: Scan,
+    to: "/scan",
+    mobileTab: true,
+  },
+  {
     id: "campanas",
     icon: Megaphone,
     to: "/campaigns/$businessId",
@@ -95,12 +101,16 @@ const NAV_ITEM_DEFS: {
     id: "config",
     icon: Settings,
     to: "/settings/$businessId",
-    mobileTab: true,
+    mobileTab: false,
   },
 ];
 
-function navLabel(id: DashboardNavId, nav: Dictionary["dashboard"]["nav"]): string {
-  return nav[id];
+function navLabel(
+  id: DashboardNavId,
+  nav: Dictionary["dashboard"]["nav"],
+  fallback?: string,
+): string {
+  return fallback ?? nav[id as keyof Dictionary["dashboard"]["nav"]] ?? id;
 }
 
 function formatToday(locale: string): string {
@@ -109,17 +119,6 @@ function formatToday(locale: string): string {
     day: "numeric",
     month: "long",
   }).format(new Date());
-}
-
-function copyJoinUrl(businessId: string, d: Dictionary) {
-  const url =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/join/${businessId}`
-      : `/join/${businessId}`;
-  navigator.clipboard.writeText(url).then(
-    () => toast.success(d.dashboard.copyJoinLink),
-    () => toast.error(d.common.copyFailed),
-  );
 }
 
 function SidebarNav({
@@ -135,13 +134,16 @@ function SidebarNav({
 
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
-      {NAV_ITEM_DEFS.map(({ id, icon: Icon, to }) => {
+      {NAV_ITEM_DEFS.map(({ id, icon: Icon, to, label }) => {
         const active = activeNav === id;
+        const linkProps =
+          typeof to === "string" && to.includes("$businessId")
+            ? { to, params: { businessId } as { businessId: string } }
+            : { to };
         return (
           <Link
             key={id}
-            to={to}
-            params={{ businessId }}
+            {...linkProps}
             onClick={onNavigate}
             className={cn(
               "flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--duration)] ease-[var(--ease-out-expo)]",
@@ -152,7 +154,7 @@ function SidebarNav({
             aria-current={active ? "page" : undefined}
           >
             <Icon className="h-4 w-4 shrink-0" aria-hidden />
-            {navLabel(id, d.dashboard.nav)}
+            {navLabel(id, d.dashboard.nav, label)}
           </Link>
         );
       })}
@@ -171,16 +173,12 @@ function SidebarNav({
 }
 
 function SidebarBrand({
-  businessId,
   businessName,
   plan,
 }: {
-  businessId: string;
   businessName?: string | null;
   plan?: "free" | "pro" | null;
 }) {
-  const { d } = useLocale();
-
   return (
     <div className="border-b border-[color:var(--color-border)] px-4 py-5">
       <div className="flex items-center gap-3">
@@ -200,16 +198,6 @@ function SidebarBrand({
           </Badge>
         </div>
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="mt-4 w-full gap-2 border-[color:var(--color-border)] bg-[var(--color-cream)]/50 text-xs"
-        onClick={() => copyJoinUrl(businessId, d)}
-      >
-        <UserPlus className="h-3.5 w-3.5" aria-hidden />
-        {d.dashboard.nav.inviteClients}
-      </Button>
     </div>
   );
 }
@@ -229,7 +217,7 @@ export function DashboardShell({
   return (
     <div className="min-h-screen bg-[var(--color-bg-paper)] text-[color:var(--color-ink)]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[240px] flex-col border-r border-[color:var(--color-border)] bg-[var(--color-bg-paper)] lg:flex">
-        <SidebarBrand businessId={businessId} businessName={businessName} plan={plan} />
+        <SidebarBrand businessName={businessName} plan={plan} />
         <SidebarNav businessId={businessId} activeNav={activeNav} />
       </aside>
 
@@ -249,7 +237,7 @@ export function DashboardShell({
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[280px] p-0">
-                  <SidebarBrand businessId={businessId} businessName={businessName} plan={plan} />
+                  <SidebarBrand businessName={businessName} plan={plan} />
                   <SidebarNav
                     businessId={businessId}
                     activeNav={activeNav}
@@ -267,17 +255,6 @@ export function DashboardShell({
                 </p>
               </div>
             </div>
-
-            <Link
-              to="/campaigns/$businessId"
-              params={{ businessId }}
-              search={{ tab: "all", action: "generate" }}
-              className="btn-signal hidden items-center gap-2 text-sm sm:inline-flex"
-            >
-              <BarChart3 className="h-4 w-4" aria-hidden />
-              <span className="hidden md:inline">{d.dashboard.generateCampaign}</span>
-              <span className="md:hidden">{d.dashboard.generateCampaignShort}</span>
-            </Link>
           </div>
         </header>
 
@@ -289,13 +266,16 @@ export function DashboardShell({
         aria-label={d.dashboard.openMenu}
       >
         <div className="grid grid-cols-5">
-          {mobileTabs.map(({ id, icon: Icon, to }) => {
+          {mobileTabs.map(({ id, icon: Icon, to, label }) => {
             const active = activeNav === id;
+            const linkProps =
+              typeof to === "string" && to.includes("$businessId")
+                ? { to, params: { businessId } as { businessId: string } }
+                : { to };
             return (
               <Link
                 key={id}
-                to={to}
-                params={{ businessId }}
+                {...linkProps}
                 className={cn(
                   "flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors",
                   active ? "text-[color:var(--color-ink)]" : "text-[color:var(--color-ink-soft)]",
@@ -306,7 +286,7 @@ export function DashboardShell({
                   className={cn("h-5 w-5", active && "text-[color:var(--color-signal)]")}
                   aria-hidden
                 />
-                {navLabel(id, d.dashboard.nav)}
+                {navLabel(id, d.dashboard.nav, label)}
               </Link>
             );
           })}

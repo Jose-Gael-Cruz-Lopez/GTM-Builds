@@ -124,8 +124,8 @@ function OnboardingPage() {
       }
     },
     onSuccess: () => {
-      toast.success(d.onboarding.programActive);
-      goToDashboard();
+      toast.success("Recompensa configurada");
+      navigate({ to: "/dashboard/$businessId", params: { businessId: businessId! } });
     },
     onError: (e) => {
       const message = e instanceof ApiError ? e.message : d.onboarding.rewardError;
