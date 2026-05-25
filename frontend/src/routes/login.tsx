@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthSplit } from "@/components/auth/AuthSplit";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -22,10 +23,7 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
   errorComponent: RouteError,
   head: () =>
-    routeMeta(
-      "Iniciar sesión · NexoLeal",
-      "Accede a tu panel de lealtad o monedero digital de NexoLeal.",
-    ),
+    routeMeta("Iniciar sesión · NexoLeal", "Accede a tu panel de lealtad con Google o email."),
 });
 
 const loginSchema = z.object({
@@ -36,6 +34,7 @@ const loginSchema = z.object({
 function LoginPage() {
   const navigate = useNavigate();
   const { redirect, reset } = Route.useSearch();
+  const [showEmailForm, setShowEmailForm] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -65,7 +64,6 @@ function LoginPage() {
       return;
     }
 
-    // Role-aware redirect: query the businesses table directly to sidestep RLS bug.
     const ownedRes = await supabase
       .from("businesses")
       .select("id")
@@ -88,74 +86,91 @@ function LoginPage() {
   return (
     <AuthSplit
       headline="Bienvenido de vuelta."
-      subtitle="Tus clientes te esperan. Inicia sesión para ver cómo van."
+      subtitle="Entra con Google en un clic y ve cómo van tus clientes."
     >
       <h2 className="display-md">Iniciar sesión</h2>
       <p className="mt-2 text-sm text-[color:var(--color-ink-soft)]">
-        ¿Eres nuevo?{" "}
-        <Link to="/signup" className="font-medium text-[color:var(--color-ink)] underline">
-          Crea tu cuenta gratis
-        </Link>
+        ¿Primera vez? Google crea tu cuenta al instante — sin contraseña.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? "email-error" : undefined}
-          />
-          {errors.email && (
-            <p id="email-error" className="mt-1 text-xs text-[color:var(--color-status-risk)]">
-              {errors.email}
-            </p>
-          )}
-        </div>
-        <div>
-          <Label htmlFor="password">Contraseña</Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? "password-error" : undefined}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-[color:var(--color-ink-soft)] hover:text-[color:var(--color-ink)]"
-              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
+      <div className="mt-8 space-y-4">
+        <GoogleSignInButton intent="business" label="Continuar con Google" />
+
+        <div className="relative py-2">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-[color:var(--color-border)]" />
           </div>
-          {errors.password && (
-            <p id="password-error" className="mt-1 text-xs text-[color:var(--color-status-risk)]">
-              {errors.password}
-            </p>
-          )}
-          <div className="mt-2 text-right">
-            <Link
-              to="/forgot-password"
-              className="text-xs text-[color:var(--color-ink-soft)] underline"
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
+          <p className="relative mx-auto w-fit bg-[var(--color-bg-paper)] px-3 text-xs text-[color:var(--color-ink-soft)]">
+            o
+          </p>
         </div>
 
-        <Button type="submit" disabled={submitting} className="w-full btn-signal">
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
-        </Button>
-      </form>
+        {!showEmailForm ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => setShowEmailForm(true)}
+          >
+            Usar email y contraseña
+          </Button>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                aria-invalid={!!errors.email}
+              />
+              {errors.email && (
+                <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">{errors.email}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="password">Contraseña</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  aria-invalid={!!errors.password}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-[color:var(--color-ink-soft)] hover:text-[color:var(--color-ink)]"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
+                  {errors.password}
+                </p>
+              )}
+              <div className="mt-2 text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-[color:var(--color-ink-soft)] underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+            </div>
+
+            <Button type="submit" disabled={submitting} className="w-full btn-signal">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
+            </Button>
+          </form>
+        )}
+      </div>
     </AuthSplit>
   );
 }

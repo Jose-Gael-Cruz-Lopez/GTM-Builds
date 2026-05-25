@@ -1,5 +1,5 @@
 import { RouteError } from "@/components/RouteError";
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { Loader2, Mail } from "lucide-react";
@@ -11,14 +11,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
 import { onboardingSearch } from "@/lib/auth";
 import { AuthSplit } from "@/components/auth/AuthSplit";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { BUSINESS_CATEGORY_OPTIONS } from "@/lib/business-categories";
 
 const searchSchema = z.object({
   plan: z.enum(["free", "pro"]).optional(),
+  step: z.enum(["business"]).optional(),
 });
 
 export const Route = createFileRoute("/signup")({
   validateSearch: (s) => searchSchema.parse(s),
+  beforeLoad: async ({ search }) => {
+    if (search.step === "business" && typeof window !== "undefined") {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        throw redirect({ to: "/login" });
+      }
+    }
+  },
   component: SignupPage,
   errorComponent: RouteError,
   head: () => ({ meta: [{ title: "Crear cuenta · NexoLeal" }] }),
@@ -43,8 +55,9 @@ const step2Schema = z.object({
 
 function SignupPage() {
   const navigate = useNavigate();
-  const { plan: initialPlan } = Route.useSearch();
-  const [step, setStep] = useState<1 | 2 | "await">(1);
+  const { plan: initialPlan, step: stepParam } = Route.useSearch();
+  const [step, setStep] = useState<1 | 2 | "await">(stepParam === "business" ? 2 : 1);
+  const [showEmailForm, setShowEmailForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     email: "",
@@ -69,6 +82,24 @@ function SignupPage() {
     setStep(2);
   };
 
+  const createBusinessAndContinue = async () => {
+    const created = await businessesApi.create({
+      name: form.businessName,
+      category: form.category as never,
+      plan: form.plan,
+    });
+    localStorage.setItem("nexoleal:current-business-id", created.business.id);
+    toast.success("Negocio creado");
+    navigate({
+      to: "/onboarding",
+      search: onboardingSearch({
+        businessId: created.business.id,
+        businessName: form.businessName,
+        category: form.category,
+      }),
+    });
+  };
+
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -81,6 +112,15 @@ function SignupPage() {
     }
     setSubmitting(true);
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session && stepParam === "business") {
+        await createBusinessAndContinue();
+        return;
+      }
+
       const { data: signUpData, error: signErr } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
@@ -92,7 +132,6 @@ function SignupPage() {
         throw new Error("No pudimos crear tu cuenta. Inténtalo de nuevo en unos minutos.");
       }
 
-      // If email confirmation is required, session is null.
       if (!signUpData.session) {
         localStorage.setItem(
           "nexoleal:pending-business",
@@ -102,21 +141,7 @@ function SignupPage() {
         return;
       }
 
-      const created = await businessesApi.create({
-        name: form.businessName,
-        category: form.category as never,
-        plan: form.plan,
-      });
-      localStorage.setItem("nexoleal:current-business-id", created.business.id);
-      toast.success("Cuenta creada");
-      navigate({
-        to: "/onboarding",
-        search: onboardingSearch({
-          businessId: created.business.id,
-          businessName: form.businessName,
-          category: form.category,
-        }),
-      });
+      await createBusinessAndContinue();
     } catch (err) {
       console.error(err);
       const message = (err as Error).message ?? "";
@@ -149,81 +174,114 @@ function SignupPage() {
     );
   }
 
+  const businessStepOnly = stepParam === "business";
+
   return (
     <AuthSplit
       headline={step === 1 ? "Crea tu cuenta." : "Cuéntanos de tu negocio."}
       subtitle={
         step === 1
-          ? "Tu programa de lealtad estará listo en 3 minutos."
+          ? "Entra con Google y configura tu programa en minutos."
           : "Esto aparecerá en la cartera digital de tus clientes."
       }
     >
-      <div className="mb-6 flex gap-2">
-        <span
-          className={`h-1 flex-1 rounded-full ${step !== 1 ? "bg-[var(--color-ink)]" : "bg-[var(--color-signal)]"}`}
-        />
-        <span
-          className={`h-1 flex-1 rounded-full ${step === 2 ? "bg-[var(--color-signal)]" : "bg-[var(--color-border)]"}`}
-        />
-      </div>
+      {!businessStepOnly && (
+        <div className="mb-6 flex gap-2">
+          <span
+            className={`h-1 flex-1 rounded-full ${step !== 1 ? "bg-[var(--color-ink)]" : "bg-[var(--color-signal)]"}`}
+          />
+          <span
+            className={`h-1 flex-1 rounded-full ${step === 2 ? "bg-[var(--color-signal)]" : "bg-[var(--color-border)]"}`}
+          />
+        </div>
+      )}
 
       {step === 1 ? (
-        <form onSubmit={goStep2} className="space-y-4">
+        <div className="space-y-4">
           <h2 className="display-md">Paso 1 · Cuenta</h2>
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              aria-invalid={!!errors.email}
-            />
-            {errors.email && (
-              <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">{errors.email}</p>
-            )}
+          <GoogleSignInButton intent="business" label="Continuar con Google" />
+
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-[color:var(--color-border)]" />
+            </div>
+            <p className="relative mx-auto w-fit bg-[var(--color-bg-paper)] px-3 text-xs text-[color:var(--color-ink-soft)]">
+              o
+            </p>
           </div>
-          <div>
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              aria-invalid={!!errors.password}
-            />
-            {errors.password && (
-              <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
-                {errors.password}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="confirm">Confirmar contraseña</Label>
-            <Input
-              id="confirm"
-              type="password"
-              autoComplete="new-password"
-              value={form.confirm}
-              onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-              aria-invalid={!!errors.confirm}
-            />
-            {errors.confirm && (
-              <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">{errors.confirm}</p>
-            )}
-          </div>
-          <Button type="submit" className="w-full btn-signal">
-            Continuar
-          </Button>
+
+          {!showEmailForm ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowEmailForm(true)}
+            >
+              Usar email y contraseña
+            </Button>
+          ) : (
+            <form onSubmit={goStep2} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  aria-invalid={!!errors.email}
+                />
+                {errors.email && (
+                  <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  aria-invalid={!!errors.password}
+                />
+                {errors.password && (
+                  <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="confirm">Confirmar contraseña</Label>
+                <Input
+                  id="confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  value={form.confirm}
+                  onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+                  aria-invalid={!!errors.confirm}
+                />
+                {errors.confirm && (
+                  <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
+                    {errors.confirm}
+                  </p>
+                )}
+              </div>
+              <Button type="submit" className="w-full btn-signal">
+                Continuar
+              </Button>
+            </form>
+          )}
+
           <p className="text-center text-xs text-[color:var(--color-ink-soft)]">
             ¿Ya tienes cuenta?{" "}
             <Link to="/login" className="underline">
               Inicia sesión
             </Link>
           </p>
-        </form>
+        </div>
       ) : (
         <form onSubmit={handleFinalSubmit} className="space-y-4">
           <h2 className="display-md">Paso 2 · Tu negocio</h2>
@@ -276,10 +334,16 @@ function SignupPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>
-              Atrás
-            </Button>
-            <Button type="submit" disabled={submitting} className="btn-signal flex-1">
+            {!businessStepOnly && (
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>
+                Atrás
+              </Button>
+            )}
+            <Button
+              type="submit"
+              disabled={submitting}
+              className={`btn-signal ${businessStepOnly ? "w-full" : "flex-1"}`}
+            >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear negocio"}
             </Button>
           </div>

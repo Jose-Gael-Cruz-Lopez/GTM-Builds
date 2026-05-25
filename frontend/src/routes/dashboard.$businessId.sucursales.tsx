@@ -9,9 +9,7 @@ import { IsoScene } from "@/components/ui/iso-scene";
 
 export const Route = createFileRoute("/dashboard/$businessId/sucursales")({
   beforeLoad: async ({ params, location }) => {
-    await requireSession(
-      location.pathname || `/dashboard/${params.businessId}/sucursales`,
-    );
+    await requireSession(location.pathname || `/dashboard/${params.businessId}/sucursales`);
   },
   component: SucursalesPage,
   errorComponent: RouteError,
@@ -24,9 +22,7 @@ function SucursalesPage() {
   const { user } = useSession();
 
   const ownerFirstName =
-    user?.user_metadata?.full_name?.split(/\s+/)[0] ??
-    user?.email?.split("@")[0] ??
-    "equipo";
+    user?.user_metadata?.full_name?.split(/\s+/)[0] ?? user?.email?.split("@")[0] ?? "equipo";
 
   return (
     <DashboardShell

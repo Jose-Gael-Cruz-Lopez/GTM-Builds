@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, Clock, CreditCard } from "lucide-react";
+import { ShieldCheck, Clock, CreditCard } from "lucide-react";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 export function FinalCTA() {
   return (
@@ -31,17 +30,11 @@ export function FinalCTA() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <Button
-              size="lg"
-              variant="secondary"
-              asChild
+            <GoogleSignInButton
+              intent="business"
+              label="Crear cuenta con Google"
               className="h-14 bg-background px-8 text-base font-semibold text-foreground hover:bg-background/90"
-            >
-              <Link to="/signup">
-                Crear cuenta de mi negocio
-                <ArrowRight className="ml-1 h-5 w-5" />
-              </Link>
-            </Button>
+            />
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-primary-foreground/80">

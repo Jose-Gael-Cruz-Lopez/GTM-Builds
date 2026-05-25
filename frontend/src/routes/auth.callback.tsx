@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
-import { onboardingSearch } from "@/lib/auth";
+import { clearAuthIntent, onboardingSearch, readAuthIntent } from "@/lib/auth";
 
 export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/auth/callback")({
 
 function AuthCallback() {
   const navigate = useNavigate();
-  const [msg, setMsg] = useState("Confirmando tu cuenta…");
+  const [msg, setMsg] = useState("Iniciando sesión…");
 
   useEffect(() => {
     let cancelled = false;
@@ -26,10 +26,14 @@ function AuthCallback() {
       if (cancelled) return;
 
       if (!data.session) {
-        toast.error("No pudimos confirmar tu cuenta. Inicia sesión manualmente.");
+        clearAuthIntent();
+        toast.error("No pudimos iniciar sesión. Inténtalo de nuevo.");
         navigate({ to: "/login" });
         return;
       }
+
+      const intent = readAuthIntent();
+      clearAuthIntent();
 
       // Resume pending business creation if any.
       const pending = localStorage.getItem("nexoleal:pending-business");
@@ -74,6 +78,16 @@ function AuthCallback() {
         .eq("is_active", true)
         .limit(1)
         .maybeSingle();
+
+      if (intent === "business") {
+        if (owned.data?.id) {
+          navigate({ to: "/dashboard/$businessId", params: { businessId: owned.data.id } });
+        } else {
+          navigate({ to: "/signup", search: { step: "business" } });
+        }
+        return;
+      }
+
       if (owned.data?.id) {
         navigate({ to: "/dashboard/$businessId", params: { businessId: owned.data.id } });
       } else {
