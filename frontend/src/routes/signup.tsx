@@ -1,6 +1,6 @@
 import { RouteError } from "@/components/RouteError";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 import { Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import { businessesApi } from "@/lib/api/businesses";
 import { onboardingSearch } from "@/lib/auth";
 import { AuthSplit } from "@/components/auth/AuthSplit";
 import { BUSINESS_CATEGORY_OPTIONS } from "@/lib/business-categories";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const searchSchema = z.object({
   plan: z.enum(["free", "pro"]).optional(),
@@ -24,26 +25,11 @@ export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Crear cuenta · NexoLeal" }] }),
 });
 
-const step1Schema = z
-  .object({
-    email: z.string().trim().email("Email inválido"),
-    password: z.string().min(8, "Mínimo 8 caracteres"),
-    confirm: z.string(),
-  })
-  .refine((d) => d.password === d.confirm, {
-    path: ["confirm"],
-    message: "Las contraseñas no coinciden",
-  });
-
-const step2Schema = z.object({
-  businessName: z.string().trim().min(2, "Demasiado corto"),
-  category: z.string().min(1, "Elige una categoría"),
-  plan: z.enum(["free", "pro"]),
-});
-
 function SignupPage() {
   const navigate = useNavigate();
   const { plan: initialPlan } = Route.useSearch();
+  const { d } = useLocale();
+
   const [step, setStep] = useState<1 | 2 | "await">(1);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -55,6 +41,31 @@ function SignupPage() {
     plan: initialPlan ?? "free",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const step1Schema = useMemo(
+    () =>
+      z
+        .object({
+          email: z.string().trim().email(d.signup.emailInvalid),
+          password: z.string().min(8, d.signup.passwordMin),
+          confirm: z.string(),
+        })
+        .refine((data) => data.password === data.confirm, {
+          path: ["confirm"],
+          message: d.signup.confirmMismatch,
+        }),
+    [d],
+  );
+
+  const step2Schema = useMemo(
+    () =>
+      z.object({
+        businessName: z.string().trim().min(2, d.signup.businessNameShort),
+        category: z.string().min(1, d.signup.categoryRequired),
+        plan: z.enum(["free", "pro"]),
+      }),
+    [d],
+  );
 
   const goStep2 = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,10 +100,9 @@ function SignupPage() {
       if (signErr) throw signErr;
 
       if (!signUpData.user) {
-        throw new Error("No pudimos crear tu cuenta. Inténtalo de nuevo en unos minutos.");
+        throw new Error(d.signup.errorCreate);
       }
 
-      // If email confirmation is required, session is null.
       if (!signUpData.session) {
         localStorage.setItem(
           "nexoleal:pending-business",
@@ -108,7 +118,7 @@ function SignupPage() {
         plan: form.plan,
       });
       localStorage.setItem("nexoleal:current-business-id", created.business.id);
-      toast.success("Cuenta creada");
+      toast.success(d.signup.accountCreated);
       navigate({
         to: "/onboarding",
         search: onboardingSearch({
@@ -121,9 +131,9 @@ function SignupPage() {
       console.error(err);
       const message = (err as Error).message ?? "";
       const description = message.toLowerCase().includes("rate limit")
-        ? "No podemos enviar el correo de confirmación ahora mismo (límite del proveedor de correo). Espera unos minutos e inténtalo otra vez."
+        ? d.signup.errorRateLimit
         : message;
-      toast.error("No pudimos crear tu cuenta", { description });
+      toast.error(d.signup.errorCreate, { description });
     } finally {
       setSubmitting(false);
     }
@@ -131,18 +141,14 @@ function SignupPage() {
 
   if (step === "await") {
     return (
-      <AuthSplit
-        headline="Revisa tu correo."
-        subtitle="Confirma tu cuenta para terminar la creación de tu negocio."
-      >
+      <AuthSplit headline={d.signup.awaitHeadline} subtitle={d.signup.awaitSubtitle}>
         <div className="surface-paper p-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-cream)]">
             <Mail className="h-6 w-6 text-[color:var(--color-ink)]" />
           </div>
-          <h2 className="mt-6 font-display text-2xl">Te enviamos un enlace</h2>
+          <h2 className="mt-6 font-display text-2xl">{d.signup.awaitTitle}</h2>
           <p className="mt-2 text-sm text-[color:var(--color-ink-soft)]">
-            Abre el correo en <strong>{form.email}</strong> y haz clic en el botón de confirmación.
-            Cuando regreses, tu negocio se creará automáticamente.
+            {d.signup.awaitBodyPre} <strong>{form.email}</strong> {d.signup.awaitBodyPost}
           </p>
         </div>
       </AuthSplit>
@@ -151,12 +157,8 @@ function SignupPage() {
 
   return (
     <AuthSplit
-      headline={step === 1 ? "Crea tu cuenta." : "Cuéntanos de tu negocio."}
-      subtitle={
-        step === 1
-          ? "Tu programa de lealtad estará listo en 3 minutos."
-          : "Esto aparecerá en la cartera digital de tus clientes."
-      }
+      headline={step === 1 ? d.signup.headline1 : d.signup.headline2}
+      subtitle={step === 1 ? d.signup.subtitle1 : d.signup.subtitle2}
     >
       <div className="mb-6 flex gap-2">
         <span
@@ -169,7 +171,7 @@ function SignupPage() {
 
       {step === 1 ? (
         <form onSubmit={goStep2} className="space-y-4">
-          <h2 className="display-md">Paso 1 · Cuenta</h2>
+          <h2 className="display-md">{d.signup.step1Title}</h2>
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -185,7 +187,7 @@ function SignupPage() {
             )}
           </div>
           <div>
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">{d.login.passwordLabel}</Label>
             <Input
               id="password"
               type="password"
@@ -201,7 +203,7 @@ function SignupPage() {
             )}
           </div>
           <div>
-            <Label htmlFor="confirm">Confirmar contraseña</Label>
+            <Label htmlFor="confirm">{d.signup.confirmLabel}</Label>
             <Input
               id="confirm"
               type="password"
@@ -215,25 +217,25 @@ function SignupPage() {
             )}
           </div>
           <Button type="submit" className="w-full btn-signal">
-            Continuar
+            {d.signup.continueBtn}
           </Button>
           <p className="text-center text-xs text-[color:var(--color-ink-soft)]">
-            ¿Ya tienes cuenta?{" "}
+            {d.signup.alreadyHaveAccount}{" "}
             <Link to="/login" className="underline">
-              Inicia sesión
+              {d.signup.goToLogin}
             </Link>
           </p>
         </form>
       ) : (
         <form onSubmit={handleFinalSubmit} className="space-y-4">
-          <h2 className="display-md">Paso 2 · Tu negocio</h2>
+          <h2 className="display-md">{d.signup.step2Title}</h2>
           <div>
-            <Label htmlFor="businessName">Nombre del negocio</Label>
+            <Label htmlFor="businessName">{d.signup.businessNameLabel}</Label>
             <Input
               id="businessName"
               value={form.businessName}
               onChange={(e) => setForm({ ...form, businessName: e.target.value })}
-              placeholder="La Barbería Sur"
+              placeholder={d.signup.businessNamePlaceholder}
             />
             {errors.businessName && (
               <p className="mt-1 text-xs text-[color:var(--color-status-risk)]">
@@ -242,7 +244,7 @@ function SignupPage() {
             )}
           </div>
           <div>
-            <Label htmlFor="category">Categoría</Label>
+            <Label htmlFor="category">{d.signup.categoryLabel}</Label>
             <select
               id="category"
               value={form.category}
@@ -257,7 +259,7 @@ function SignupPage() {
             </select>
           </div>
           <div>
-            <Label>Plan</Label>
+            <Label>{d.signup.planLabel}</Label>
             <div className="mt-1 grid grid-cols-2 gap-2">
               {(["free", "pro"] as const).map((p) => (
                 <button
@@ -268,7 +270,7 @@ function SignupPage() {
                 >
                   <p className="font-display text-lg capitalize">{p}</p>
                   <p className="text-xs text-[color:var(--color-ink-soft)]">
-                    {p === "free" ? "Hasta 100 clientes" : "Ilimitado + IA"}
+                    {p === "free" ? d.signup.planFreeDesc : d.signup.planProDesc}
                   </p>
                 </button>
               ))}
@@ -277,10 +279,10 @@ function SignupPage() {
 
           <div className="flex gap-2">
             <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>
-              Atrás
+              {d.signup.backBtn}
             </Button>
             <Button type="submit" disabled={submitting} className="btn-signal flex-1">
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear negocio"}
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : d.signup.createBtn}
             </Button>
           </div>
         </form>

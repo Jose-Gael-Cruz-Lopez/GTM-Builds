@@ -1,4 +1,5 @@
 import { useRevealOnce } from "@/hooks/use-reveal-once";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type Showcase = {
   chipLabel: string;
@@ -11,39 +12,41 @@ type Showcase = {
   href: string;
 };
 
-const SHOWCASES: Showcase[] = [
-  {
-    chipLabel: "Cafetería",
-    chipTone: "coral",
-    name: "Tarjeta de Sellos · Plaza",
-    visual: "/landing/cloud/loyalty-card.svg",
-    visualAlt: "Tarjeta de sellos NexoLeal",
-    swatches: ["#f5e8d8", "#1a1a18", "#f5c518", "#e7f26a"],
-    extra: 4,
-    href: "/wallet/demo",
-  },
-  {
-    chipLabel: "Retail",
-    chipTone: "sage",
-    name: "QR de Mostrador · Palmer",
-    visual: "/landing/cloud/qr-code.svg",
-    visualAlt: "QR de mostrador NexoLeal",
-    swatches: ["#f0ede6", "#1a1a18", "#c9d9b8", "#e2b79a"],
-    extra: 3,
-    href: "/join/demo",
-  },
-];
-
 const CHIP_BG = {
   coral: "var(--chip-coral)",
   sage: "var(--chip-sage)",
 };
 
 export function RecentAddings() {
+  const { d } = useLocale();
+
+  const SHOWCASES: Showcase[] = [
+    {
+      chipLabel: d.landing.showcases.cafeteria.chipLabel,
+      chipTone: "coral",
+      name: d.landing.showcases.cafeteria.name,
+      visual: "/landing/cloud/loyalty-card.svg",
+      visualAlt: "Tarjeta de sellos NexoLeal",
+      swatches: ["#f5e8d8", "#1a1a18", "#f5c518", "#e7f26a"],
+      extra: 4,
+      href: "/wallet/demo",
+    },
+    {
+      chipLabel: d.landing.showcases.retail.chipLabel,
+      chipTone: "sage",
+      name: d.landing.showcases.retail.name,
+      visual: "/landing/cloud/qr-code.svg",
+      visualAlt: "QR de mostrador NexoLeal",
+      swatches: ["#f0ede6", "#1a1a18", "#c9d9b8", "#e2b79a"],
+      extra: 3,
+      href: "/join/demo",
+    },
+  ];
+
   return (
     <section
       id="precios"
-      aria-label="Lo nuevo en NexoLeal"
+      aria-label={d.landing.recentAddingsAriaLabel}
       style={{
         background: "var(--paper)",
         padding: "clamp(2rem, 5vw, 4rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 8vw, 7rem)",
@@ -60,7 +63,7 @@ export function RecentAddings() {
             marginBottom: "2rem",
           }}
         >
-          Lo nuevo en NexoLeal <span aria-hidden="true">↓</span>
+          {d.landing.recentAddingsAriaLabel} <span aria-hidden="true">↓</span>
         </div>
 
         <div
@@ -71,7 +74,7 @@ export function RecentAddings() {
           }}
         >
           {SHOWCASES.map((s) => (
-            <ShowcaseTile key={s.name} {...s} />
+            <ShowcaseTile key={s.name} {...s} colorsLabel={d.landing.colors} exploreLabel={d.landing.explore} />
           ))}
         </div>
       </div>
@@ -79,7 +82,7 @@ export function RecentAddings() {
   );
 }
 
-function ShowcaseTile(props: Showcase) {
+function ShowcaseTile(props: Showcase & { colorsLabel: string; exploreLabel: string }) {
   const { ref } = useRevealOnce<HTMLDivElement>({ threshold: 0.2 });
   return (
     <div ref={ref}>
@@ -173,7 +176,7 @@ function ShowcaseTile(props: Showcase) {
               marginBottom: "0.5rem",
             }}
           >
-            Colores
+            {props.colorsLabel}
           </div>
           <div className="flex items-center gap-2">
             {props.swatches.map((c) => (
@@ -224,7 +227,7 @@ function ShowcaseTile(props: Showcase) {
             "--tw-ring-color": "var(--ink)",
           }}
         >
-          Explorar <span aria-hidden="true">→</span>
+          {props.exploreLabel} <span aria-hidden="true">→</span>
         </a>
       </div>
     </div>

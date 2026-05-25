@@ -15,6 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export const Route = createFileRoute("/user/register")({
   component: UserRegisterPage,
@@ -22,22 +23,26 @@ export const Route = createFileRoute("/user/register")({
   head: () => ({ meta: [{ title: "Únete · NexoLeal" }] }),
 });
 
-const schema = z.object({
-  phone: z
-    .string()
-    .trim()
-    .regex(/^\d{10}$/, "Ingresa 10 dígitos sin espacios ni guiones"),
+// Static shape for type inference; messages are injected at runtime via the hook below.
+const _baseSchema = z.object({
+  phone: z.string().trim().regex(/^\d{10}$/),
   referralCode: z.string().trim().optional(),
 });
-
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<typeof _baseSchema>;
 
 function UserRegisterPage() {
   const navigate = useNavigate();
   const router = useRouter();
+  const { d } = useLocale();
 
+  // Rebuild schema when locale changes so validation messages are always in the active language.
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(
+      z.object({
+        phone: z.string().trim().regex(/^\d{10}$/, d.userRegister.phoneInvalid),
+        referralCode: z.string().trim().optional(),
+      }),
+    ),
     defaultValues: { phone: "", referralCode: "" },
   });
 
@@ -51,10 +56,10 @@ function UserRegisterPage() {
           registeredAt: Date.now(),
         }),
       );
-      toast.success("¡Listo! Ya puedes usar tu código.");
+      toast.success(d.userRegister.successMsg);
       navigate({ to: "/user/dashboard" });
     } catch {
-      toast.error("No pudimos registrarte. Intenta de nuevo.");
+      toast.error(d.userRegister.errorMsg);
     }
   };
 
@@ -67,14 +72,12 @@ function UserRegisterPage() {
           className="mb-6 flex items-center gap-1 text-xs text-[color:var(--color-cream)]/40 hover:text-[color:var(--color-cream)]/80 transition-colors"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Regresar
+          {d.userRegister.back}
         </button>
 
-        <p className="eyebrow text-[color:var(--color-signal)]">Cliente NexoLeal</p>
-        <h1 className="display-md mt-1 text-[color:var(--color-cream)]">Únete al programa</h1>
-        <p className="mt-2 text-sm text-[color:var(--color-cream)]/60">
-          Solo necesitamos tu número para identificarte en cada visita.
-        </p>
+        <p className="eyebrow text-[color:var(--color-signal)]">{d.userRegister.eyebrow}</p>
+        <h1 className="display-md mt-1 text-[color:var(--color-cream)]">{d.userRegister.title}</h1>
+        <p className="mt-2 text-sm text-[color:var(--color-cream)]/60">{d.userRegister.subtitle}</p>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-5">
@@ -84,12 +87,12 @@ function UserRegisterPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[color:var(--color-cream)]/80">
-                    Número de celular
+                    {d.userRegister.phoneLabel}
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
-                      placeholder="10 dígitos, ej. 5512345678"
+                      placeholder={d.userRegister.phonePlaceholder}
                       inputMode="numeric"
                       autoComplete="tel-national"
                       maxLength={10}
@@ -108,12 +111,14 @@ function UserRegisterPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[color:var(--color-cream)]/80">
-                    Código de invitación{" "}
-                    <span className="text-[color:var(--color-cream)]/40">(opcional)</span>
+                    {d.userRegister.referralLabel}{" "}
+                    <span className="text-[color:var(--color-cream)]/40">
+                      {d.userRegister.referralOptional}
+                    </span>
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="ej. REF-SOFI-1234"
+                      placeholder={d.userRegister.referralPlaceholder}
                       className="bg-[var(--color-bg-elevated)] text-[color:var(--color-cream)] placeholder:text-[color:var(--color-cream)]/30"
                       {...field}
                     />
@@ -131,16 +136,16 @@ function UserRegisterPage() {
               {form.formState.isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "Obtener mi código"
+                d.userRegister.submit
               )}
             </Button>
           </form>
         </Form>
 
         <p className="mt-6 text-center text-xs text-[color:var(--color-cream)]/40">
-          ¿Eres dueño de un negocio?{" "}
+          {d.userRegister.ownerCta}{" "}
           <Link to="/signup" className="text-[color:var(--color-signal)] underline">
-            Crea tu programa de lealtad
+            {d.userRegister.ownerLink}
           </Link>
         </p>
       </div>

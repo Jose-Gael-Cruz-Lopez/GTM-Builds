@@ -2,9 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { FloatingCloud } from "./FloatingCloud";
 import { ScrollToExplore } from "./ScrollToExplore";
 import { useRevealOnce } from "@/hooks/use-reveal-once";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export function Hero() {
   const { ref } = useRevealOnce<HTMLDivElement>({ threshold: 0.1 });
+  const { d } = useLocale();
 
   return (
     <section
@@ -40,7 +42,7 @@ export function Hero() {
             marginBottom: "2.25rem",
           }}
         >
-          NexoLeal · Fidelidad para tu negocio
+          {d.hero.eyebrow}
         </span>
 
         <h1
@@ -58,10 +60,10 @@ export function Hero() {
           }}
         >
           <span className="rise-mask block">
-            <span className="rise-line">Hecho para volver.</span>
+            <span className="rise-line">{d.hero.heading1}</span>
           </span>
           <span className="rise-mask block">
-            <span className="rise-line">Una y otra vez.</span>
+            <span className="rise-line">{d.hero.heading2}</span>
           </span>
         </h1>
 
@@ -76,8 +78,7 @@ export function Hero() {
             margin: "1.75rem auto 0",
           }}
         >
-          La plataforma de fidelidad y retención para cafés, salones y pequeños comercios en México.
-          Sin apps. Sin tarjetas físicas. Solo conversaciones que vuelven.
+          {d.hero.body}
         </p>
 
         <div
@@ -104,7 +105,7 @@ export function Hero() {
               "--tw-ring-color": "var(--ink)",
             }}
           >
-            Negocios
+            {d.hero.ctaBusiness}
             <span aria-hidden="true">→</span>
           </Link>
           <Link
@@ -128,7 +129,7 @@ export function Hero() {
               "--tw-ring-color": "var(--ink)",
             }}
           >
-            Clientes
+            {d.hero.ctaConsumer}
             <span aria-hidden="true">→</span>
           </Link>
         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import { useCasePanels } from "@/lib/landing-assets";
+import { getUseCasePanels } from "@/lib/landing-assets";
 import { ScrollStackPanel } from "./ScrollStackPanel";
+import { useLocale } from "@/contexts/LocaleContext";
 
 function easeOutQuart(t: number): number {
   return 1 - (1 - t) ** 4;
@@ -12,6 +13,8 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
 }
 
 export function ScrollStack() {
+  const { d } = useLocale();
+  const useCasePanels = getUseCasePanels(d);
   const wrapperRef = useRef<HTMLElement | null>(null);
   const dotsRef = useRef<HTMLDivElement | null>(null);
 
@@ -140,12 +143,12 @@ export function ScrollStack() {
       window.removeEventListener("resize", onScroll);
       if (raf) window.cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [useCasePanels]);
 
   return (
     <section
       ref={wrapperRef}
-      aria-label="Casos de uso de NexoLeal"
+      aria-label={d.landing.scrollStackAriaLabel}
       id="casos"
       className="scroll-stack"
       style={{ height: `${useCasePanels.length * 100}svh` }}

@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2, Clock, Loader2, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RewardParticles } from "./RewardParticles";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export type ScanStatus =
   | { kind: "idle" }
@@ -23,7 +24,8 @@ interface ScanStatusPanelProps {
 }
 
 export function ScanStatusPanel({ status, className }: ScanStatusPanelProps) {
-  const liveMessage = statusToLiveMessage(status);
+  const { d } = useLocale();
+  const liveMessage = statusToLiveMessage(status, d.scan);
 
   return (
     <section
@@ -41,22 +43,22 @@ export function ScanStatusPanel({ status, className }: ScanStatusPanelProps) {
 }
 
 function StatusContent({ status }: { status: ScanStatus }) {
+  const { d } = useLocale();
+
   switch (status.kind) {
     case "idle":
       return (
-        <StatusRow chip={<Chip tone="neutral">Listo</Chip>}>
-          <p className="text-sm text-[color:var(--color-cream)]/90">
-            Listo para escanear · Acerca el QR del cliente.
-          </p>
+        <StatusRow chip={<Chip tone="neutral">{d.scan.idle}</Chip>}>
+          <p className="text-sm text-[color:var(--color-cream)]/90">{d.scan.idleDetail}</p>
         </StatusRow>
       );
 
     case "validating":
       return (
-        <StatusRow chip={<Chip tone="signal">Validando...</Chip>}>
+        <StatusRow chip={<Chip tone="signal">{d.scan.validating}</Chip>}>
           <div className="flex items-center gap-3">
             <FourDotLoader />
-            <p className="text-sm text-[color:var(--color-cream)]/80">Validando código...</p>
+            <p className="text-sm text-[color:var(--color-cream)]/80">{d.scan.validatingDetail}</p>
           </div>
         </StatusRow>
       );
@@ -66,12 +68,12 @@ function StatusContent({ status }: { status: ScanStatus }) {
         <StatusRow
           chip={
             <Chip tone="good" icon={<CheckCircle2 className="h-3.5 w-3.5" aria-hidden />}>
-              Sello agregado a {status.clientFirstName}
+              {d.scan.stampAdded.replace("{name}", status.clientFirstName)}
             </Chip>
           }
         >
           <p className="text-sm text-[color:var(--color-cream)]/75">
-            {status.stampsRemaining} sellos para la recompensa.
+            {d.scan.stampsForReward.replace("{n}", String(status.stampsRemaining))}
           </p>
         </StatusRow>
       );
@@ -83,7 +85,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
           <StatusRow
             chip={
               <Chip tone="celebrate" icon={<CheckCircle2 className="h-3.5 w-3.5" aria-hidden />}>
-                ¡Recompensa lista! Entrega: {status.rewardDescription}
+                {d.scan.rewardReady.replace("{description}", status.rewardDescription)}
               </Chip>
             }
           />
@@ -95,7 +97,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
         <StatusRow
           chip={
             <Chip tone="warn" icon={<Clock className="h-3.5 w-3.5" aria-hidden />}>
-              Código expirado. Pide al cliente generar uno nuevo.
+              {d.scan.codeExpired}
             </Chip>
           }
         />
@@ -106,7 +108,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
         <StatusRow
           chip={
             <Chip tone="risk" icon={<AlertCircle className="h-3.5 w-3.5" aria-hidden />}>
-              Este código ya fue usado.
+              {d.scan.codeUsed}
             </Chip>
           }
         />
@@ -117,7 +119,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
         <StatusRow
           chip={
             <Chip tone="risk" icon={<AlertCircle className="h-3.5 w-3.5" aria-hidden />}>
-              {status.message ?? "Llave de staff inválida. Actualízala en configuración."}
+              {status.message ?? d.scan.invalidKey}
             </Chip>
           }
         />
@@ -128,7 +130,7 @@ function StatusContent({ status }: { status: ScanStatus }) {
         <StatusRow
           chip={
             <Chip tone="risk" icon={<AlertCircle className="h-3.5 w-3.5" aria-hidden />}>
-              Permiso de cámara denegado
+              {d.scan.cameraDenied}
             </Chip>
           }
         />
@@ -139,14 +141,12 @@ function StatusContent({ status }: { status: ScanStatus }) {
         <StatusRow
           chip={
             <Chip tone="warn" icon={<WifiOff className="h-3.5 w-3.5" aria-hidden />}>
-              Sin conexión — visita en cola
+              {d.scan.offlineQueued}
               {status.count ? ` (${status.count})` : ""}
             </Chip>
           }
         >
-          <p className="text-sm text-[color:var(--color-cream)]/75">
-            Se registrará automáticamente al reconectar.
-          </p>
+          <p className="text-sm text-[color:var(--color-cream)]/75">{d.scan.offlineDetail}</p>
         </StatusRow>
       );
   }
@@ -211,25 +211,40 @@ function FourDotLoader() {
   );
 }
 
-function statusToLiveMessage(status: ScanStatus): string {
+type ScanDict = {
+  liveIdle: string;
+  liveValidating: string;
+  liveStamp: string;
+  liveReward: string;
+  liveExpired: string;
+  liveUsed: string;
+  liveInvalidKey: string;
+  liveCameraDenied: string;
+  liveOffline: string;
+  invalidKey: string;
+};
+
+function statusToLiveMessage(status: ScanStatus, scan: ScanDict): string {
   switch (status.kind) {
     case "idle":
-      return "Listo para escanear. Acerca el QR del cliente.";
+      return scan.liveIdle;
     case "validating":
-      return "Validando código.";
+      return scan.liveValidating;
     case "success-stamp":
-      return `Sello agregado a ${status.clientFirstName}. ${status.stampsRemaining} sellos para la recompensa.`;
+      return scan.liveStamp
+        .replace("{name}", status.clientFirstName)
+        .replace("{n}", String(status.stampsRemaining));
     case "success-reward":
-      return `Recompensa lista. Entrega: ${status.rewardDescription}.`;
+      return scan.liveReward.replace("{description}", status.rewardDescription);
     case "error-expired":
-      return "Código expirado. Pide al cliente generar uno nuevo.";
+      return scan.liveExpired;
     case "error-used":
-      return "Este código ya fue usado.";
+      return scan.liveUsed;
     case "error-invalid-key":
-      return status.message ?? "Llave de staff inválida.";
+      return status.message ?? scan.liveInvalidKey;
     case "error-camera":
-      return "Permiso de cámara denegado.";
+      return scan.liveCameraDenied;
     case "offline-queued":
-      return "Sin conexión. Visita en cola.";
+      return scan.liveOffline;
   }
 }

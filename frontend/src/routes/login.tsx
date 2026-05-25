@@ -1,7 +1,7 @@
 import { RouteError } from "@/components/RouteError";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { routeMeta } from "@/lib/route-meta";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthSplit } from "@/components/auth/AuthSplit";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -28,24 +29,30 @@ export const Route = createFileRoute("/login")({
     ),
 });
 
-const loginSchema = z.object({
-  email: z.string().trim().email("Email inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
-});
-
 function LoginPage() {
   const navigate = useNavigate();
   const { redirect, reset } = Route.useSearch();
+  const { d } = useLocale();
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const loginSchema = useMemo(
+    () =>
+      z.object({
+        email: z.string().trim().email(d.login.emailInvalid),
+        password: z.string().min(6, d.login.passwordMin),
+      }),
+    [d],
+  );
+
   useEffect(() => {
     if (reset === "ok") {
-      toast.success("Contraseña actualizada. Inicia sesión.");
+      toast.success(d.login.resetSuccess);
     }
-  }, [reset]);
+  }, [reset, d]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,11 +68,10 @@ function LoginPage() {
     const { error, data } = await supabase.auth.signInWithPassword(parsed.data);
     setSubmitting(false);
     if (error) {
-      toast.error("No pudimos iniciar sesión", { description: error.message });
+      toast.error(d.login.errorTitle, { description: error.message });
       return;
     }
 
-    // Role-aware redirect: query the businesses table directly to sidestep RLS bug.
     const ownedRes = await supabase
       .from("businesses")
       .select("id")
@@ -86,15 +92,12 @@ function LoginPage() {
   };
 
   return (
-    <AuthSplit
-      headline="Bienvenido de vuelta."
-      subtitle="Tus clientes te esperan. Inicia sesión para ver cómo van."
-    >
-      <h2 className="display-md">Iniciar sesión</h2>
+    <AuthSplit headline={d.login.headline} subtitle={d.login.subtitle}>
+      <h2 className="display-md">{d.login.title}</h2>
       <p className="mt-2 text-sm text-[color:var(--color-ink-soft)]">
-        ¿Eres nuevo?{" "}
+        {d.login.newHere}{" "}
         <Link to="/signup" className="font-medium text-[color:var(--color-ink)] underline">
-          Crea tu cuenta gratis
+          {d.login.createAccount}
         </Link>
       </p>
 
@@ -117,7 +120,7 @@ function LoginPage() {
           )}
         </div>
         <div>
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password">{d.login.passwordLabel}</Label>
           <div className="relative">
             <Input
               id="password"
@@ -132,7 +135,7 @@ function LoginPage() {
               type="button"
               onClick={() => setShowPassword((s) => !s)}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-[color:var(--color-ink-soft)] hover:text-[color:var(--color-ink)]"
-              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-label={showPassword ? d.login.hidePassword : d.login.showPassword}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -147,13 +150,13 @@ function LoginPage() {
               to="/forgot-password"
               className="text-xs text-[color:var(--color-ink-soft)] underline"
             >
-              ¿Olvidaste tu contraseña?
+              {d.login.forgotPassword}
             </Link>
           </div>
         </div>
 
         <Button type="submit" disabled={submitting} className="w-full btn-signal">
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : d.login.submit}
         </Button>
       </form>
     </AuthSplit>

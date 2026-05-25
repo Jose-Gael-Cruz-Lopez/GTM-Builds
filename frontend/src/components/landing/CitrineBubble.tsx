@@ -10,14 +10,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export function CitrineBubble() {
+  const { d } = useLocale();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Te respondemos en menos de 24 horas");
+    toast.success(d.landing.citrine.successMsg);
     setMessage("");
     setOpen(false);
   };
@@ -27,7 +29,7 @@ export function CitrineBubble() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Abrir chat de soporte"
+        aria-label={d.landing.citrine.ariaOpen}
         className="citrine-pulse fixed bottom-6 left-6 z-50 inline-flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         style={{
           width: "56px",
@@ -57,24 +59,22 @@ export function CitrineBubble() {
                 letterSpacing: "-0.02em",
               }}
             >
-              Hablemos
+              {d.landing.citrine.title}
             </DialogTitle>
-            <DialogDescription>
-              Cuéntanos en qué te ayudamos. Te respondemos en menos de 24 horas.
-            </DialogDescription>
+            <DialogDescription>{d.landing.citrine.description}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Cuéntanos en qué te ayudamos…"
+              placeholder={d.landing.citrine.placeholder}
               rows={5}
               required
-              aria-label="Tu mensaje"
+              aria-label={d.landing.citrine.ariaLabel}
             />
             <DialogFooter>
               <Button type="submit" disabled={!message.trim()}>
-                Enviar
+                {d.landing.citrine.submit}
               </Button>
             </DialogFooter>
           </form>
