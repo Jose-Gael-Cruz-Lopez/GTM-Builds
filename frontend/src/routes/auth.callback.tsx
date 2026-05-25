@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
+import { onboardingSearch } from "@/lib/auth";
 
 export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
@@ -48,7 +49,14 @@ function AuthCallback() {
           localStorage.setItem("nexoleal:current-business-id", created.business.id);
           localStorage.removeItem("nexoleal:pending-business");
           toast.success("Cuenta confirmada");
-          navigate({ to: "/onboarding" });
+          navigate({
+            to: "/onboarding",
+            search: onboardingSearch({
+              businessId: created.business.id,
+              businessName: parsed.name,
+              category: parsed.category,
+            }),
+          });
           return;
         } catch (err) {
           console.error(err);

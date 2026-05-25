@@ -7,7 +7,6 @@ import { ScrollStack } from "@/components/landing/ScrollStack";
 import { AboutBlock } from "@/components/landing/AboutBlock";
 import { RecentAddings } from "@/components/landing/RecentAddings";
 import { EditorialFooter } from "@/components/landing/EditorialFooter";
-import { ConsumerJoin } from "@/components/landing/ConsumerJoin";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -30,7 +29,6 @@ function LandingPage() {
       <EditorialNav />
       <Hero />
       <ScrollStack />
-      <ConsumerJoin />
       <AboutBlock />
       <RecentAddings />
       <EditorialFooter />
