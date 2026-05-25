@@ -223,7 +223,7 @@ import type { Dictionary } from "@/lib/i18n";
 
 export type UseCasePanel = {
   index: string;
-  vertical: "cafeteria" | "retail" | "salon" | "restaurante" | "servicios";
+  vertical: "cafeteria" | "retail" | "restaurante";
   chipLabel: string;
   chipTone: "coral" | "sage" | "clay" | "mist" | "stone";
   iconSvg: string;
@@ -262,18 +262,6 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
     },
     {
       index: "03",
-      vertical: "salon",
-      chipLabel: d.landing.panels.salon.chipLabel,
-      chipTone: "clay",
-      iconSvg: "/landing/cloud/heart-check.svg",
-      headline: d.landing.panels.salon.headline,
-      ctaLabel: d.landing.panels.salon.ctaLabel,
-      ctaHref: "/signup",
-      bgImage: "/landing/panels/salon.jpg",
-      bgAlt: "Estilista atendiendo a un cliente frente al espejo",
-    },
-    {
-      index: "04",
       vertical: "restaurante",
       chipLabel: d.landing.panels.restaurante.chipLabel,
       chipTone: "mist",
@@ -283,18 +271,6 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       ctaHref: "/signup",
       bgImage: "/landing/panels/restaurante.jpg",
       bgAlt: "Mesa familiar bajo luz cálida en un restaurante",
-    },
-    {
-      index: "05",
-      vertical: "servicios",
-      chipLabel: d.landing.panels.servicios.chipLabel,
-      chipTone: "stone",
-      iconSvg: "/landing/cloud/dashboard-tile.svg",
-      headline: d.landing.panels.servicios.headline,
-      ctaLabel: d.landing.panels.servicios.ctaLabel,
-      ctaHref: "/signup",
-      bgImage: "/landing/panels/servicios.jpg",
-      bgAlt: "Escritorio con laptop, planta y taza de cerámica",
     },
   ];
 }
