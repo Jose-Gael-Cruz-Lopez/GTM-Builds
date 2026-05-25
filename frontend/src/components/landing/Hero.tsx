@@ -24,7 +24,7 @@ export function Hero() {
 
       <div
         ref={ref}
-        className="relative z-10 mx-auto flex flex-col items-center text-center"
+        className="relative z-10 mx-auto flex flex-col items-center justify-center text-center"
         style={{
           minHeight: "100svh",
           padding: "8rem 1.5rem 6rem",
@@ -131,31 +131,6 @@ export function Hero() {
             {d.hero.ctaConsumer}
             <span aria-hidden="true">→</span>
           </Link>
-        </div>
-
-        <div
-          className="soft-rise delay-3 flex flex-1 items-center justify-center"
-          style={{
-            width: "100%",
-            minHeight: "5rem",
-            marginTop: "1.5rem",
-            paddingBottom: "3rem",
-          }}
-        >
-          <img
-            src="/landing/cloud/dashboard-tile.svg"
-            alt={d.hero.retentionCardAlt}
-            width={132}
-            height={84}
-            loading="eager"
-            decoding="async"
-            style={{
-              display: "block",
-              width: "min(132px, 34vw)",
-              height: "auto",
-              filter: "drop-shadow(0 12px 28px rgba(26, 26, 24, 0.12))",
-            }}
-          />
         </div>
       </div>
 
