@@ -301,9 +301,16 @@ export type Dictionary = {
     demoTitle: string;
     demoDescription: string;
     stampsMissing: string;
+    refresh: string;
+    presentCodeCountdown: string;
+    statsSummary: string;
   };
   join: {
     programLabel: string;
+    yourReward: string;
+    defaultBusinessName: string;
+    defaultReward: string;
+    defaultClientName: string;
     joinTitle: string;
     accumulateStamps: string;
     tryDemo: string;
@@ -331,6 +338,18 @@ export type Dictionary = {
     };
   };
   dashboard: {
+    nav: {
+      resumen: string;
+      sucursales: string;
+      clientes: string;
+      visitas: string;
+      recompensas: string;
+      campanas: string;
+      marketing: string;
+      config: string;
+      signOut: string;
+      inviteClients: string;
+    };
     hello: string;
     generateCampaign: string;
     generateCampaignShort: string;
@@ -668,6 +687,8 @@ export type Dictionary = {
     saveAndContinue: string;
     rewardSaved: string;
     rewardError: string;
+    programActive: string;
+    brandSavedLocalHint: string;
     finishTitle: string;
     finishDescription: string;
     shareTitle: string;
@@ -948,31 +969,31 @@ const es: Dictionary = {
       cafeteria: {
         chipLabel: "Cafetería",
         headline: "Programas de fidelidad que devuelven al cliente, taza tras taza",
-        ctaLabel: "Ver demo cafetería",
+        ctaLabel: "Empezar gratis",
         pdfTitle: "Guía Cafetería",
       },
       retail: {
         chipLabel: "Retail",
         headline: "Convierte la primera compra en la primera de muchas",
-        ctaLabel: "Ver demo retail",
+        ctaLabel: "Empezar gratis",
         pdfTitle: "Guía Retail",
       },
       salon: {
         chipLabel: "Salón",
         headline: "Recordatorios y recompensas que llenan tu agenda",
-        ctaLabel: "Ver demo salón",
+        ctaLabel: "Empezar gratis",
         pdfTitle: "Guía Salón",
       },
       restaurante: {
         chipLabel: "Restaurante",
         headline: "De comensal a cliente recurrente, sin descuentos que duelan",
-        ctaLabel: "Ver demo restaurante",
+        ctaLabel: "Empezar gratis",
         pdfTitle: "Guía Restaurante",
       },
       servicios: {
         chipLabel: "Servicios",
         headline: "Profesionales que recuerdan a cada cliente, sin spreadsheets",
-        ctaLabel: "Ver demo servicios",
+        ctaLabel: "Empezar gratis",
         pdfTitle: "Guía Servicios",
       },
     },
@@ -1098,9 +1119,17 @@ const es: Dictionary = {
     demoDescription:
       "En tu cuenta real, este QR se renueva cada 90 segundos y solo se puede escanear una vez.",
     stampsMissing: "Te faltan {n} sellos",
+    refresh: "Refrescar",
+    presentCodeCountdown:
+      "Presenta este código en caja. {n}s restantes — se renueva automáticamente.",
+    statsSummary: "Total de visitas: {visits} · Recompensas: {rewards}",
   },
   join: {
     programLabel: "Programa de lealtad",
+    yourReward: "Tu recompensa",
+    defaultBusinessName: "Tu negocio favorito",
+    defaultReward: "Una recompensa especial",
+    defaultClientName: "Cliente",
     joinTitle: "Únete al programa de lealtad de {name}.",
     accumulateStamps: "Acumula {n} sellos y gana",
     tryDemo: "Probar la demo",
@@ -1128,6 +1157,18 @@ const es: Dictionary = {
     },
   },
   dashboard: {
+    nav: {
+      resumen: "Resumen",
+      sucursales: "Sucursales",
+      clientes: "Clientes",
+      visitas: "Visitas",
+      recompensas: "Recompensas",
+      campanas: "Campañas",
+      marketing: "Marketing",
+      config: "Configuración",
+      signOut: "Cerrar sesión",
+      inviteClients: "Invitar clientes",
+    },
     hello: "Hola,",
     generateCampaign: "Generar campaña con IA",
     generateCampaignShort: "Campaña IA",
@@ -1468,15 +1509,15 @@ const es: Dictionary = {
     welcomeEyebrow: "¡Bienvenido!",
     welcomeTitle: "Configuremos tu negocio",
     welcomeTitleNamed: "Hola, {name}",
-    welcomeBody: "Vamos a dejar listo tu programa de lealtad en 3 pasos rápidos.",
+    welcomeBody: "Vamos a dejar listo tu programa de lealtad en 2 pasos rápidos.",
     welcomeBodyNamed:
-      "Vamos a dejar listo tu programa de lealtad para tu {type} en 3 pasos rápidos.",
+      "Vamos a dejar listo tu programa de lealtad para tu {type} en 2 pasos rápidos.",
     stepBrand: "Marca",
     stepReward: "Recompensa",
     stepShare: "Compartir",
     progressLabel: "Progreso del onboarding",
     brandTitle: "Personaliza tu marca",
-    brandDescription: "Sube tu logo y elige los colores que verán tus clientes al escanear el QR.",
+    brandDescription: "Elige los colores que verán tus clientes al escanear el QR.",
     logoLabel: "Logo",
     taglineLabel: "Eslogan (opcional)",
     taglinePlaceholder: "Ej. Tu café favorito, más cerca",
@@ -1496,6 +1537,8 @@ const es: Dictionary = {
     saveAndContinue: "Guardar y continuar",
     rewardSaved: "Recompensa configurada",
     rewardError: "No pudimos guardar tu recompensa. Intenta de nuevo.",
+    programActive: "¡Listo! Tu programa de lealtad está activo.",
+    brandSavedLocalHint: "Revisa tu conexión e intenta sincronizar desde Configuración.",
     finishTitle: "¡Tu negocio está listo!",
     finishDescription:
       "Comparte, imprime y configura tu equipo para empezar a sumar clientes frecuentes.",
@@ -1782,31 +1825,31 @@ const en: Dictionary = {
       cafeteria: {
         chipLabel: "Coffee shop",
         headline: "Loyalty programs that bring customers back, cup after cup",
-        ctaLabel: "Try coffee shop demo",
+        ctaLabel: "Start free",
         pdfTitle: "Coffee Shop Guide",
       },
       retail: {
         chipLabel: "Retail",
         headline: "Turn the first purchase into the first of many",
-        ctaLabel: "Try retail demo",
+        ctaLabel: "Start free",
         pdfTitle: "Retail Guide",
       },
       salon: {
         chipLabel: "Salon",
         headline: "Reminders and rewards that fill your appointment book",
-        ctaLabel: "Try salon demo",
+        ctaLabel: "Start free",
         pdfTitle: "Salon Guide",
       },
       restaurante: {
         chipLabel: "Restaurant",
         headline: "From first-timer to regular, without painful discounts",
-        ctaLabel: "Try restaurant demo",
+        ctaLabel: "Start free",
         pdfTitle: "Restaurant Guide",
       },
       servicios: {
         chipLabel: "Services",
         headline: "Professionals who remember every client, without spreadsheets",
-        ctaLabel: "Try services demo",
+        ctaLabel: "Start free",
         pdfTitle: "Services Guide",
       },
     },
@@ -1931,9 +1974,17 @@ const en: Dictionary = {
     demoDescription:
       "In your real account, this QR renews every 90 seconds and can only be scanned once.",
     stampsMissing: "{n} stamps remaining",
+    refresh: "Refresh",
+    presentCodeCountdown:
+      "Present this code at the register. {n}s remaining — renews automatically.",
+    statsSummary: "Total visits: {visits} · Rewards: {rewards}",
   },
   join: {
     programLabel: "Loyalty program",
+    yourReward: "Your reward",
+    defaultBusinessName: "Your favorite business",
+    defaultReward: "A special reward",
+    defaultClientName: "Customer",
     joinTitle: "Join the loyalty program at {name}.",
     accumulateStamps: "Collect {n} stamps and earn",
     tryDemo: "Try the demo",
@@ -1961,6 +2012,18 @@ const en: Dictionary = {
     },
   },
   dashboard: {
+    nav: {
+      resumen: "Overview",
+      sucursales: "Locations",
+      clientes: "Clients",
+      visitas: "Visits",
+      recompensas: "Rewards",
+      campanas: "Campaigns",
+      marketing: "Marketing",
+      config: "Settings",
+      signOut: "Sign out",
+      inviteClients: "Invite clients",
+    },
     hello: "Hello,",
     generateCampaign: "Generate AI campaign",
     generateCampaignShort: "AI Campaign",
@@ -2299,15 +2362,14 @@ const en: Dictionary = {
     welcomeEyebrow: "Welcome!",
     welcomeTitle: "Let's set up your business",
     welcomeTitleNamed: "Hello, {name}",
-    welcomeBody: "Let's get your loyalty program ready in 3 quick steps.",
-    welcomeBodyNamed: "Let's get your loyalty program ready for your {type} in 3 quick steps.",
+    welcomeBody: "Let's get your loyalty program ready in 2 quick steps.",
+    welcomeBodyNamed: "Let's get your loyalty program ready for your {type} in 2 quick steps.",
     stepBrand: "Brand",
     stepReward: "Reward",
     stepShare: "Share",
     progressLabel: "Onboarding progress",
     brandTitle: "Customize your brand",
-    brandDescription:
-      "Upload your logo and choose the colors your customers will see when scanning the QR.",
+    brandDescription: "Choose the colors your customers will see when scanning the QR.",
     logoLabel: "Logo",
     taglineLabel: "Tagline (optional)",
     taglinePlaceholder: "E.g. Your neighborhood favorite, closer than ever",
@@ -2327,6 +2389,8 @@ const en: Dictionary = {
     saveAndContinue: "Save and continue",
     rewardSaved: "Reward configured",
     rewardError: "Could not save your reward. Please try again.",
+    programActive: "Done! Your loyalty program is active.",
+    brandSavedLocalHint: "Check your connection and try syncing from Settings.",
     finishTitle: "Your business is ready!",
     finishDescription:
       "Share, print and set up your team to start accumulating frequent customers.",

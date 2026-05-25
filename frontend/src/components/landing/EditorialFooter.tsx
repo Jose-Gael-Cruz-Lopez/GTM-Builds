@@ -8,8 +8,7 @@ export function EditorialFooter() {
       heading: d.landing.footerGroups.product.heading,
       links: [
         { label: d.landing.footerGroups.product.features, href: "#producto" },
-        { label: d.landing.footerGroups.product.pricing, href: "#precios" },
-        { label: d.landing.footerGroups.product.demo, href: "/wallet/demo" },
+        { label: d.landing.footerGroups.product.pricing, href: "#producto" },
         { label: d.landing.footerGroups.product.changes, href: "#diario" },
       ],
     },

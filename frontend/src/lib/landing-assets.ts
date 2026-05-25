@@ -249,7 +249,7 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       iconSvg: "/landing/cloud/stamp-cluster.svg",
       headline: d.landing.panels.cafeteria.headline,
       ctaLabel: d.landing.panels.cafeteria.ctaLabel,
-      ctaHref: "/wallet/demo",
+      ctaHref: "/signup",
       bgImage: "/landing/panels/cafeteria.jpg",
       bgAlt: "Barista preparando café en una cafetería de barrio",
       pdfCard: {
@@ -266,7 +266,7 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       iconSvg: "/landing/cloud/ticket.svg",
       headline: d.landing.panels.retail.headline,
       ctaLabel: d.landing.panels.retail.ctaLabel,
-      ctaHref: "/wallet/demo",
+      ctaHref: "/signup",
       bgImage: "/landing/panels/retail.jpg",
       bgAlt: "Interior de una boutique con un cliente recibiendo una bolsa de papel",
       pdfCard: {
@@ -283,7 +283,7 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       iconSvg: "/landing/cloud/heart-check.svg",
       headline: d.landing.panels.salon.headline,
       ctaLabel: d.landing.panels.salon.ctaLabel,
-      ctaHref: "/wallet/demo",
+      ctaHref: "/signup",
       bgImage: "/landing/panels/salon.jpg",
       bgAlt: "Estilista atendiendo a un cliente frente al espejo",
       pdfCard: {
@@ -300,7 +300,7 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       iconSvg: "/landing/cloud/confetti-burst.svg",
       headline: d.landing.panels.restaurante.headline,
       ctaLabel: d.landing.panels.restaurante.ctaLabel,
-      ctaHref: "/wallet/demo",
+      ctaHref: "/signup",
       bgImage: "/landing/panels/restaurante.jpg",
       bgAlt: "Mesa familiar bajo luz cálida en un restaurante",
       pdfCard: {
@@ -317,7 +317,7 @@ export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
       iconSvg: "/landing/cloud/dashboard-tile.svg",
       headline: d.landing.panels.servicios.headline,
       ctaLabel: d.landing.panels.servicios.ctaLabel,
-      ctaHref: "/wallet/demo",
+      ctaHref: "/signup",
       bgImage: "/landing/panels/servicios.jpg",
       bgAlt: "Escritorio con laptop, planta y taza de cerámica",
       pdfCard: {

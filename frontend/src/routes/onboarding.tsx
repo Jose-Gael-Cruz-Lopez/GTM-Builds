@@ -1,18 +1,18 @@
 import { RouteError } from "@/components/RouteError";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Sparkles } from "lucide-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { BrandStep } from "@/components/onboarding/BrandStep";
-import { FinishStep } from "@/components/onboarding/FinishStep";
 import { RewardStep } from "@/components/onboarding/RewardStep";
 import { StepIndicator, type OnboardingStep } from "@/components/onboarding/StepIndicator";
+import { useLocale } from "@/contexts/LocaleContext";
 import { businessesApi, type CreateStaffKeyResponse } from "@/lib/api/businesses";
 import { ApiError } from "@/lib/api-client";
-import { STAFF_KEY_STORAGE, loadBrandSettings } from "@/lib/onboarding-brand";
+import { STAFF_KEY_STORAGE } from "@/lib/onboarding-brand";
 import { setStaffKey } from "@/lib/staff-key-storage";
 
 const searchSchema = z.object({
@@ -28,6 +28,12 @@ export const Route = createFileRoute("/onboarding")({
     if (!search.businessId) {
       throw redirect({ to: "/signup" });
     }
+    if (search.step === "finish") {
+      throw redirect({
+        to: "/dashboard/$businessId",
+        params: { businessId: search.businessId },
+      });
+    }
   },
   component: OnboardingPage,
   errorComponent: RouteError,
@@ -37,7 +43,7 @@ export const Route = createFileRoute("/onboarding")({
       {
         name: "description",
         content:
-          "Configura tu programa de lealtad en 3 pasos: personaliza tu marca, crea tu primera recompensa y genera tu QR.",
+          "Configura tu programa de lealtad en 2 pasos: personaliza tu marca y crea tu primera recompensa.",
       },
     ],
   }),
@@ -62,7 +68,25 @@ function readCachedStaffKey(businessId: string): CreateStaffKeyResponse | null {
   }
 }
 
+async function ensureStaffKey(businessId: string) {
+  const cached = readCachedStaffKey(businessId);
+  if (cached?.headerValue) {
+    await setStaffKey(cached.headerValue);
+    return;
+  }
+  const created = await businessesApi.createStaffKey(businessId, {
+    label: "Dispositivo principal",
+  });
+  try {
+    sessionStorage.setItem(STAFF_KEY_STORAGE(businessId), JSON.stringify(created));
+  } catch {
+    // ignore
+  }
+  await setStaffKey(created.headerValue);
+}
+
 function OnboardingPage() {
+  const { d } = useLocale();
   const { businessId, business, type, step: stepParam } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const step: OnboardingStep = stepParam ?? "brand";
@@ -70,17 +94,17 @@ function OnboardingPage() {
   const businessName = business ?? "Tu negocio";
   const businessCategory = type?.toLowerCase() ?? "negocio";
 
-  const brandQuery = useQuery({
-    queryKey: ["business", businessId, "brand"],
-    queryFn: () => loadBrandSettings(businessId!),
-    enabled: !!businessId,
-    staleTime: 60_000,
-  });
-  const brandTagline = brandQuery.data?.tagline ?? "";
-
   const setStep = (next: OnboardingStep) => {
     navigate({
       search: (prev) => ({ ...prev, step: next }),
+    });
+  };
+
+  const goToDashboard = () => {
+    localStorage.setItem("nexoleal:current-business-id", businessId!);
+    navigate({
+      to: "/dashboard/$businessId",
+      params: { businessId: businessId! },
     });
   };
 
@@ -88,52 +112,26 @@ function OnboardingPage() {
   const [rewardDescription, setRewardDescription] = useState("Servicio gratis");
 
   const updateConfig = useMutation({
-    mutationFn: () =>
-      businessesApi.updateLoyaltyConfig(businessId!, {
+    mutationFn: async () => {
+      await businessesApi.updateLoyaltyConfig(businessId!, {
         stampsRequired,
         rewardDescription,
-      }),
+      });
+      try {
+        await ensureStaffKey(businessId!);
+      } catch {
+        // Staff key can be created later from settings or scan setup.
+      }
+    },
     onSuccess: () => {
-      toast.success("Recompensa configurada");
-      setStep("finish");
+      toast.success(d.onboarding.programActive);
+      goToDashboard();
     },
     onError: (e) => {
-      const message =
-        e instanceof ApiError ? e.message : "No pudimos guardar tu recompensa. Intenta de nuevo.";
+      const message = e instanceof ApiError ? e.message : d.onboarding.rewardError;
       toast.error(message);
     },
   });
-
-  const staffKeyQuery = useQuery({
-    queryKey: ["business", businessId, "first-staff-key"],
-    queryFn: async () => {
-      const cached = readCachedStaffKey(businessId!);
-      if (cached) return cached;
-      const created = await businessesApi.createStaffKey(businessId!, {
-        label: "Dispositivo principal",
-      });
-      try {
-        sessionStorage.setItem(STAFF_KEY_STORAGE(businessId!), JSON.stringify(created));
-      } catch {
-        // ignore
-      }
-      return created;
-    },
-    enabled: step === "finish" && !!businessId,
-    staleTime: Infinity,
-    retry: false,
-  });
-
-  useEffect(() => {
-    const header = staffKeyQuery.data?.headerValue;
-    if (!header) return;
-    void setStaffKey(header);
-  }, [staffKeyQuery.data]);
-
-  const joinUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/join/${businessId ?? ""}`
-      : `/join/${businessId ?? ""}`;
 
   if (!businessId) return null;
 
@@ -147,20 +145,24 @@ function OnboardingPage() {
             </span>
             <span className="font-display text-lg font-semibold">NexoLeal</span>
           </Link>
-          <span className="text-sm text-[color:var(--color-ink-soft)]">Onboarding</span>
+          <span className="text-sm text-[color:var(--color-ink-soft)]">
+            {d.onboarding.onboardingLabel}
+          </span>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-16">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="eyebrow mb-3">¡Bienvenido!</div>
+          <div className="eyebrow mb-3">{d.onboarding.welcomeEyebrow}</div>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-[color:var(--color-ink)] sm:text-4xl">
-            {business ? `Hola, ${business} 👋` : "Configuremos tu negocio"}
+            {business
+              ? d.onboarding.welcomeTitleNamed.replace("{name}", business)
+              : d.onboarding.welcomeTitle}
           </h1>
           <p className="mt-3 text-lg text-[color:var(--color-ink-soft)]">
             {type
-              ? `Vamos a dejar listo tu programa de lealtad para tu ${type.toLowerCase()} en 3 pasos rápidos.`
-              : "Vamos a dejar listo tu programa de lealtad en 3 pasos rápidos."}
+              ? d.onboarding.welcomeBodyNamed.replace("{type}", type.toLowerCase())
+              : d.onboarding.welcomeBody}
           </p>
         </div>
 
@@ -187,18 +189,6 @@ function OnboardingPage() {
               onBack={() => setStep("brand")}
               onSubmit={() => updateConfig.mutate()}
               isPending={updateConfig.isPending}
-            />
-          )}
-
-          {step === "finish" && (
-            <FinishStep
-              businessId={businessId}
-              businessName={businessName}
-              tagline={brandTagline}
-              joinUrl={joinUrl}
-              staffKey={staffKeyQuery.data}
-              staffKeyLoading={staffKeyQuery.isLoading}
-              staffKeyError={staffKeyQuery.isError}
             />
           )}
         </div>

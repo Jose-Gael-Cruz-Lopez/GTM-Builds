@@ -1,8 +1,8 @@
 import { RouteError } from "@/components/RouteError";
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { Sparkles, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { clientsApi } from "@/lib/api/clients";
@@ -22,8 +22,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useSession } from "@/hooks/use-session";
+import { useLocale } from "@/contexts/LocaleContext";
+import type { Dictionary } from "@/lib/i18n";
 
 export const Route = createFileRoute("/join/$businessId")({
+  beforeLoad: ({ params }) => {
+    if (params.businessId === "demo") {
+      throw redirect({ to: "/signup" });
+    }
+  },
   component: JoinPage,
   errorComponent: RouteError,
   head: ({ params }) => ({
@@ -35,31 +42,21 @@ export const Route = createFileRoute("/join/$businessId")({
   }),
 });
 
-const DEMO = {
-  businessId: "demo",
-  businessName: "La Barbería Demo",
-  category: "barbershop" as const,
-  stampsRequired: 8,
-  rewardDescription: "Tu próximo corte gratis",
-};
-
 function JoinPage() {
+  const { d } = useLocale();
   const { businessId } = Route.useParams();
   const navigate = useNavigate();
   const { user } = useSession();
-  const isDemo = businessId === "demo";
   const [showAuth, setShowAuth] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
 
   const config = useQuery({
     queryKey: ["business", businessId, "public-config"],
-    enabled: !isDemo,
     retry: false,
     queryFn: async () => {
       try {
         const res = await businessesApi.getLoyaltyConfig(businessId);
-        // Fetch business name too (best-effort; falls back gracefully)
-        let businessName = "Tu negocio favorito";
+        let businessName = d.join.defaultBusinessName;
         let category: "barbershop" | "salon" | "vet" | "cafe" | "gym" | "other" = "other";
         try {
           const biz = await businessesApi.get(businessId);
@@ -73,27 +70,26 @@ function JoinPage() {
           businessName,
           category,
           stampsRequired: res.loyaltyConfig.stamps_required ?? 8,
-          rewardDescription: res.loyaltyConfig.reward_description ?? "Una recompensa especial",
+          rewardDescription: res.loyaltyConfig.reward_description ?? d.join.defaultReward,
         };
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) throw err;
-        // Graceful fallback if the public-config endpoint is auth-gated
         return {
           businessId,
-          businessName: "Tu negocio favorito",
+          businessName: d.join.defaultBusinessName,
           category: "other" as const,
           stampsRequired: 8,
-          rewardDescription: "Una recompensa especial",
+          rewardDescription: d.join.defaultReward,
         };
       }
     },
   });
 
-  const data = isDemo ? DEMO : config.data;
+  const data = config.data;
 
   const existingCard = useQuery({
     queryKey: ["client", "me", "loyalty", businessId],
-    enabled: !!user && !isDemo,
+    enabled: !!user,
     retry: false,
     queryFn: () => clientsApi.getLoyalty(businessId),
   });
@@ -102,18 +98,19 @@ function JoinPage() {
     mutationFn: () =>
       clientsApi.register({
         businessId,
-        fullName: user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? "Cliente",
+        fullName:
+          user?.user_metadata?.full_name ?? user?.email?.split("@")[0] ?? d.join.defaultClientName,
       }),
     onSuccess: () => {
       setCelebrating(true);
       setTimeout(() => navigate({ to: "/wallet/$businessId", params: { businessId } }), 900);
     },
     onError: (err) => {
-      toast.error("No pudimos unirte", { description: (err as Error).message });
+      toast.error(d.join.joinError, { description: (err as Error).message });
     },
   });
 
-  if (config.isLoading && !isDemo) {
+  if (config.isLoading) {
     return (
       <AppShell variant="dark">
         <div className="flex min-h-[60vh] items-center justify-center">
@@ -123,16 +120,16 @@ function JoinPage() {
     );
   }
 
-  if ((config.isError && !isDemo) || !data) {
+  if (config.isError || !data) {
     return (
       <AppShell variant="light">
         <div className="mx-auto max-w-md px-4 py-16">
           <IsoScene
-            title="Negocio no encontrado"
-            description="El enlace ya no es válido o el programa de lealtad fue desactivado."
+            title={d.join.notFound}
+            description={d.join.notFoundDescription}
             action={
               <Link to="/" className="btn-signal text-sm">
-                Volver al inicio
+                {d.join.notFoundBack}
               </Link>
             }
           >
@@ -143,17 +140,16 @@ function JoinPage() {
     );
   }
 
-  const alreadyMember = !isDemo && !!existingCard.data?.loyalty;
+  const alreadyMember = !!existingCard.data?.loyalty;
 
   return (
     <AppShell variant="dark">
       <CelebrateConfetti active={celebrating} />
       <div className="mx-auto max-w-md px-4 py-8">
         <span className="eyebrow inline-block text-[color:var(--color-cream)]/60">
-          Programa de lealtad
+          {d.join.programLabel}
         </span>
 
-        {/* Loyalty card preview */}
         <article className="surface-card relative mt-4 overflow-hidden p-6 text-[color:var(--color-ink)]">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-ink)] text-[color:var(--color-signal)]">
@@ -162,7 +158,7 @@ function JoinPage() {
             <div>
               <p className="font-display text-2xl leading-tight">{data.businessName}</p>
               <p className="text-xs text-[color:var(--color-ink-soft)]">
-                {categoryLabel(data.category)}
+                {categoryLabel(data.category, d)}
               </p>
             </div>
           </div>
@@ -174,34 +170,27 @@ function JoinPage() {
           </div>
 
           <div className="mt-6 border-t border-[color:var(--color-border)] pt-4">
-            <p className="text-xs text-[color:var(--color-ink-soft)]">Tu recompensa</p>
+            <p className="text-xs text-[color:var(--color-ink-soft)]">{d.join.yourReward}</p>
             <p className="font-display text-lg">{data.rewardDescription}</p>
           </div>
         </article>
 
         <h1 className="display-md mt-8 text-[color:var(--color-cream)]">
-          Únete al programa de lealtad de {data.businessName}.
+          {d.join.joinTitle.replace("{name}", data.businessName)}
         </h1>
         <p className="mt-2 text-sm text-[color:var(--color-cream)]/70">
-          Acumula {data.stampsRequired} sellos y gana <strong>{data.rewardDescription}</strong>.
+          {d.join.accumulateStamps.replace("{n}", String(data.stampsRequired))}{" "}
+          <strong>{data.rewardDescription}</strong>.
         </p>
 
         <div className="mt-8">
-          {isDemo ? (
-            <Link
-              to="/wallet/$businessId"
-              params={{ businessId: "demo" }}
-              className="btn-celebrate inline-flex w-full items-center justify-center gap-2 text-sm"
-            >
-              Probar la demo <ArrowRight className="h-4 w-4" />
-            </Link>
-          ) : alreadyMember ? (
+          {alreadyMember ? (
             <Link
               to="/wallet/$businessId"
               params={{ businessId }}
               className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--color-status-good)] px-6 py-3 text-sm font-semibold text-white"
             >
-              <CheckCircle2 className="h-4 w-4" /> Ya eres miembro · Abrir mi cartera
+              <CheckCircle2 className="h-4 w-4" /> {d.join.alreadyMember}
             </Link>
           ) : user ? (
             <Button
@@ -209,19 +198,19 @@ function JoinPage() {
               onClick={() => join.mutate()}
               className="btn-celebrate w-full"
             >
-              {join.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Unirme ahora"}
+              {join.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : d.join.joinNow}
             </Button>
           ) : (
             <Button onClick={() => setShowAuth(true)} className="btn-celebrate w-full">
-              Unirme ahora
+              {d.join.joinNow}
             </Button>
           )}
         </div>
 
         <p className="mt-6 text-center text-xs text-[color:var(--color-cream)]/50">
-          ¿Eres dueño de este negocio?{" "}
+          {d.join.ownerQuestion}{" "}
           <Link to="/login" className="underline">
-            Inicia sesión
+            {d.join.login}
           </Link>
         </p>
       </div>
@@ -239,16 +228,9 @@ function JoinPage() {
   );
 }
 
-function categoryLabel(c: string): string {
-  const map: Record<string, string> = {
-    barbershop: "Barbería",
-    salon: "Salón",
-    vet: "Veterinaria",
-    cafe: "Cafetería",
-    gym: "Gimnasio",
-    other: "Negocio",
-  };
-  return map[c] ?? "Negocio";
+function categoryLabel(c: string, d: Dictionary): string {
+  const map = d.join.categories as Record<string, string>;
+  return map[c] ?? map.other;
 }
 
 function JoinAuthDialog({
@@ -262,6 +244,7 @@ function JoinAuthDialog({
   businessId: string;
   onAuthed: () => void;
 }) {
+  const { d } = useLocale();
   const [mode, setMode] = useState<"signup" | "login">("signup");
   const [form, setForm] = useState({ fullName: "", email: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -282,7 +265,7 @@ function JoinAuthDialog({
         if (error) throw error;
         if (!data.session) {
           localStorage.setItem("nexoleal:pending-join", businessId);
-          toast.success("Revisa tu correo para confirmar tu cuenta");
+          toast.success(d.join.checkEmail);
           onClose();
           return;
         }
@@ -295,7 +278,7 @@ function JoinAuthDialog({
       }
       onAuthed();
     } catch (err) {
-      toast.error("Algo salió mal", { description: (err as Error).message });
+      toast.error(d.routeError.title, { description: (err as Error).message });
     } finally {
       setSubmitting(false);
     }
@@ -306,11 +289,9 @@ function JoinAuthDialog({
       <DialogContent className="bg-[var(--color-bg-paper)] text-[color:var(--color-ink)] sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">
-            {mode === "signup" ? "Crea tu cuenta" : "Inicia sesión"}
+            {mode === "signup" ? d.join.createAccount : d.join.login}
           </DialogTitle>
-          <DialogDescription>
-            Tu cartera digital te seguirá a cualquier negocio que use NexoLeal.
-          </DialogDescription>
+          <DialogDescription>{d.join.walletFollows}</DialogDescription>
         </DialogHeader>
         <div className="flex gap-2 rounded-full bg-[var(--color-cream)] p-1 text-xs">
           {(["signup", "login"] as const).map((m) => (
@@ -320,24 +301,24 @@ function JoinAuthDialog({
               onClick={() => setMode(m)}
               className={`flex-1 rounded-full px-3 py-1.5 font-medium ${mode === m ? "bg-[var(--color-ink)] text-[var(--color-cream)]" : ""}`}
             >
-              {m === "signup" ? "Crear cuenta" : "Ya tengo cuenta"}
+              {m === "signup" ? d.join.createAccountBtn : d.join.haveAccount}
             </button>
           ))}
         </div>
         <form onSubmit={submit} className="space-y-3">
           {mode === "signup" && (
             <div>
-              <Label htmlFor="name">Nombre</Label>
+              <Label htmlFor="name">{d.join.nameLabel}</Label>
               <Input
                 id="name"
                 value={form.fullName}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                placeholder="Tu nombre"
+                placeholder={d.wallet.yourName}
               />
             </div>
           )}
           <div>
-            <Label htmlFor="join-email">Email</Label>
+            <Label htmlFor="join-email">{d.wallet.email}</Label>
             <Input
               id="join-email"
               type="email"
@@ -347,7 +328,7 @@ function JoinAuthDialog({
             />
           </div>
           <div>
-            <Label htmlFor="join-pwd">Contraseña</Label>
+            <Label htmlFor="join-pwd">{d.login.passwordLabel}</Label>
             <Input
               id="join-pwd"
               type="password"
@@ -357,7 +338,7 @@ function JoinAuthDialog({
             />
           </div>
           <Button type="submit" disabled={submitting} className="btn-celebrate w-full">
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continuar"}
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : d.wallet.continue}
           </Button>
         </form>
       </DialogContent>
