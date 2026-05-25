@@ -4,7 +4,7 @@ import { EditorialNav } from "@/components/landing/EditorialNav";
 import { Hero } from "@/components/landing/Hero";
 import { ScrollStack } from "@/components/landing/ScrollStack";
 import { AboutBlock } from "@/components/landing/AboutBlock";
-import { PricingSection } from "@/components/landing/PricingSection";
+import { RecentAddings } from "@/components/landing/RecentAddings";
 import { EditorialFooter } from "@/components/landing/EditorialFooter";
 
 export const Route = createFileRoute("/")({
@@ -29,7 +29,7 @@ function LandingPage() {
       <Hero />
       <ScrollStack />
       <AboutBlock />
-      <PricingSection />
+      <RecentAddings />
       <EditorialFooter />
     </main>
   );

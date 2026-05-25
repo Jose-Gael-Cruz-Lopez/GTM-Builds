@@ -10,7 +10,7 @@ export function EditorialFooter() {
   const PRIMARY_LINKS = [
     { label: d.nav.product, href: "#producto" },
     { label: d.nav.cases, href: "#casos" },
-    { label: d.nav.pricing, href: "#precios" },
+    { label: d.nav.pricing, href: "#formatos" },
   ];
 
   const SECONDARY_LINKS = [
