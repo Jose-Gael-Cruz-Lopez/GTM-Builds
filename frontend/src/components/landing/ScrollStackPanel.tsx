@@ -105,7 +105,10 @@ export function ScrollStackPanel({
               ))}
             </h2>
 
-            <div className="soft-rise delay-1 inline-flex items-center" style={{ marginTop: "2rem" }}>
+            <div
+              className="soft-rise delay-1 inline-flex items-center"
+              style={{ marginTop: "2rem" }}
+            >
               <a href={panel.ctaHref} className="scroll-stack-cta" aria-label={panel.ctaLabel}>
                 <span className="scroll-stack-cta-icon" aria-hidden="true">
                   <img src={panel.iconSvg} alt="" width={26} height={26} />
