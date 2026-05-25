@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-
-const NAV_LINKS = [
-  { label: "Producto", href: "#producto" },
-  { label: "Casos", href: "#casos" },
-  { label: "Precios", href: "#precios" },
-  { label: "Diario", href: "#diario" },
-];
+import { useLocale } from "@/contexts/LocaleContext";
+import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 
 export function EditorialNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { d } = useLocale();
+
+  const navLinks = [
+    { label: d.nav.product, href: "#producto" },
+    { label: d.nav.cases, href: "#casos" },
+    { label: d.nav.pricing, href: "#precios" },
+    { label: d.nav.blog, href: "#diario" },
+  ];
 
   useEffect(() => {
     let raf = 0;
@@ -69,21 +72,9 @@ export function EditorialNav() {
                 background: "var(--hair)",
               }}
             />
-            <button
-              type="button"
-              className="hidden sm:inline-flex items-center gap-1"
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "0.75rem",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "var(--ink-soft)",
-                padding: "0.25rem 0.5rem",
-              }}
-              aria-label="Idioma"
-            >
-              ES <span aria-hidden="true">▾</span>
-            </button>
+            <span className="hidden sm:inline-flex">
+              <LocaleSwitcher variant="ghost" />
+            </span>
           </div>
 
           {/* Center cluster: link pill (desktop only) */}
@@ -102,7 +93,7 @@ export function EditorialNav() {
               transition: "background 220ms, box-shadow 220ms",
             }}
           >
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
@@ -134,26 +125,9 @@ export function EditorialNav() {
 
           {/* Right cluster: lang dropdown (desktop) + mobile menu trigger */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="hidden md:inline-flex items-center gap-1"
-              style={{
-                background: "rgba(255, 255, 255, 0.92)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                border: "1px solid var(--hair)",
-                borderRadius: "9999px",
-                padding: "0.5rem 0.875rem",
-                fontFamily: "var(--font-sans)",
-                fontSize: "0.75rem",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "var(--ink)",
-              }}
-              aria-label="Cambiar idioma"
-            >
-              EN <span aria-hidden="true">▾</span>
-            </button>
+            <span className="hidden md:inline-flex">
+              <LocaleSwitcher variant="pill" />
+            </span>
             <button
               type="button"
               className="md:hidden inline-flex items-center justify-center"
@@ -204,7 +178,7 @@ export function EditorialNav() {
         >
           <div className="flex flex-col h-full" style={{ padding: "5.5rem 1.5rem 2rem" }}>
             <nav className="flex flex-col gap-4" aria-label="Móvil">
-              {NAV_LINKS.map((link, i) => (
+              {navLinks.map((link, i) => (
                 <a
                   key={link.href}
                   href={link.href}

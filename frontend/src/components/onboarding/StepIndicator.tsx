@@ -1,12 +1,12 @@
-import { Sparkles, QrCode, Megaphone, CheckCircle2 } from "lucide-react";
+import { Sparkles, QrCode, CheckCircle2 } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
 import { cn } from "@/lib/utils";
 
-type Step = "brand" | "reward" | "finish";
+type Step = "brand" | "reward";
 
-const STEPS: Array<{ key: Step; icon: typeof Sparkles; label: string }> = [
-  { key: "brand", icon: Sparkles, label: "Marca" },
-  { key: "reward", icon: QrCode, label: "Recompensa" },
-  { key: "finish", icon: Megaphone, label: "Compartir" },
+const STEP_META: Array<{ key: Step; icon: typeof Sparkles }> = [
+  { key: "brand", icon: Sparkles },
+  { key: "reward", icon: QrCode },
 ];
 
 interface StepIndicatorProps {
@@ -14,12 +14,17 @@ interface StepIndicatorProps {
 }
 
 export function StepIndicator({ current }: StepIndicatorProps) {
-  const currentIdx = STEPS.findIndex((s) => s.key === current);
+  const { d } = useLocale();
+  const stepLabels: Record<Step, string> = {
+    brand: d.onboarding.stepBrand,
+    reward: d.onboarding.stepReward,
+  };
+  const currentIdx = STEP_META.findIndex((s) => s.key === current);
 
   return (
-    <nav aria-label="Progreso del onboarding" className="mt-10">
+    <nav aria-label={d.onboarding.progressLabel} className="mt-10">
       <ol className="flex items-start justify-center">
-        {STEPS.map((step, i) => {
+        {STEP_META.map((step, i) => {
           const Icon = step.icon;
           const isDone = i < currentIdx;
           const isActive = i === currentIdx;
@@ -69,7 +74,7 @@ export function StepIndicator({ current }: StepIndicatorProps) {
                       : "text-[color:var(--color-ink-soft)]",
                   )}
                 >
-                  {step.label}
+                  {stepLabels[step.key]}
                 </span>
               </div>
             </li>
@@ -86,5 +91,5 @@ export function StepIndicator({ current }: StepIndicatorProps) {
   );
 }
 
-export { STEPS as ONBOARDING_STEPS };
+export { STEP_META as ONBOARDING_STEPS };
 export type { Step as OnboardingStep };

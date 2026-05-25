@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { useRevealOnce } from "@/hooks/use-reveal-once";
+import { useLocale } from "@/contexts/LocaleContext";
+import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 
 interface SignupFlowShellProps {
   stepKey: string;
@@ -25,6 +27,7 @@ export function SignupFlowShell({
   onBack,
   showBack,
 }: SignupFlowShellProps) {
+  const { d } = useLocale();
   const { ref, revealed } = useRevealOnce<HTMLElement>({ threshold: 0.08 });
   const progress = (stepNumber / totalSteps) * 100;
 
@@ -39,9 +42,12 @@ export function SignupFlowShell({
           <Sparkles className="h-4 w-4 text-[var(--signal-citrine)]" aria-hidden />
           NexoLeal
         </Link>
-        <span className="auth-flow-counter">
-          {String(stepNumber).padStart(2, "0")} / {String(totalSteps).padStart(2, "0")}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="auth-flow-counter">
+            {String(stepNumber).padStart(2, "0")} / {String(totalSteps).padStart(2, "0")}
+          </span>
+          <LocaleSwitcher variant="pill" />
+        </div>
       </header>
 
       <main ref={ref} data-revealed={revealed} className="auth-flow-main">
@@ -60,14 +66,14 @@ export function SignupFlowShell({
         <div key={stepKey} className="auth-flow-panel soft-rise delay-2">
           {showBack && onBack ? (
             <button type="button" onClick={onBack} className="auth-flow-back">
-              ← Atrás
+              ← {d.common.back}
             </button>
           ) : null}
           {children}
         </div>
       </main>
 
-      <footer className="auth-flow-footer">© NexoLeal · Hecho en México</footer>
+      <footer className="auth-flow-footer">{d.authSplit.footer}</footer>
     </div>
   );
 }
