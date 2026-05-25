@@ -121,6 +121,7 @@ export type Dictionary = {
   };
   userRegister: {
     back: string;
+    accessStep: string;
     eyebrow: string;
     title: string;
     subtitle: string;
@@ -248,6 +249,9 @@ export type Dictionary = {
     cameraActivate: string;
   };
   userDashboard: {
+    accessStep: string;
+    headline: string;
+    subtitle: string;
     hello: string;
     showQr: string;
     renewsIn: string;
@@ -264,6 +268,11 @@ export type Dictionary = {
     discount1: string;
     discount2: string;
     discount3: string;
+    discountBusiness1: string;
+    discountBusiness2: string;
+    expires1: string;
+    expires2: string;
+    expires3: string;
   };
   wallet: {
     title: string;
@@ -916,6 +925,7 @@ const es: Dictionary = {
   },
   userRegister: {
     back: "Regresar",
+    accessStep: "Cliente NexoLeal",
     eyebrow: "Cliente NexoLeal",
     title: "Únete al programa",
     subtitle: "Solo necesitamos tu número para identificarte en cada visita.",
@@ -1095,6 +1105,9 @@ const es: Dictionary = {
     cameraActivate: "Activar cámara",
   },
   userDashboard: {
+    accessStep: "Tu código personal",
+    headline: "Listo para tu próxima visita",
+    subtitle: "Muestra tu QR en caja. Se renueva solo cada 90 segundos.",
     hello: "Hola,",
     showQr: "Muéstrale este QR al negocio",
     renewsIn: "Se renueva en {n}s",
@@ -1111,6 +1124,11 @@ const es: Dictionary = {
     discount1: "10% en tu próxima compra",
     discount2: "Café gratis al acumular 5 visitas",
     discount3: "2x1 en bebidas los martes",
+    discountBusiness1: "La Barbería Sur",
+    discountBusiness2: "Café Contigo",
+    expires1: "31 may",
+    expires2: "15 jun",
+    expires3: "Vence en 3 días",
   },
   wallet: {
     title: "Mi cartera",
@@ -1803,6 +1821,7 @@ const en: Dictionary = {
   },
   userRegister: {
     back: "Go back",
+    accessStep: "NexoLeal Customer",
     eyebrow: "NexoLeal Customer",
     title: "Join the program",
     subtitle: "We just need your number to identify you on each visit.",
@@ -1981,6 +2000,9 @@ const en: Dictionary = {
     cameraActivate: "Activate camera",
   },
   userDashboard: {
+    accessStep: "Your personal code",
+    headline: "Ready for your next visit",
+    subtitle: "Show your QR at checkout. It renews automatically every 90 seconds.",
     hello: "Hello,",
     showQr: "Show this QR to the business",
     renewsIn: "Renews in {n}s",
@@ -1997,6 +2019,11 @@ const en: Dictionary = {
     discount1: "10% off your next purchase",
     discount2: "Free coffee after 5 visits",
     discount3: "2-for-1 drinks on Tuesdays",
+    discountBusiness1: "La Barbería Sur",
+    discountBusiness2: "Café Contigo",
+    expires1: "May 31",
+    expires2: "Jun 15",
+    expires3: "Expires in 3 days",
   },
   wallet: {
     title: "My wallet",
