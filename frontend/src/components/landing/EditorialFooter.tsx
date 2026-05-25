@@ -1,33 +1,37 @@
-const LINK_GROUPS = [
-  {
-    heading: "Producto",
-    links: [
-      { label: "Características", href: "#producto" },
-      { label: "Precios", href: "#precios" },
-      { label: "Demo", href: "/wallet/demo" },
-      { label: "Cambios", href: "#diario" },
-    ],
-  },
-  {
-    heading: "Empresa",
-    links: [
-      { label: "Sobre", href: "#producto" },
-      { label: "Diario", href: "#diario" },
-      { label: "Contacto", href: "mailto:hola@nexoleal.com" },
-      { label: "Trabaja con nosotros", href: "mailto:hola@nexoleal.com" },
-    ],
-  },
-  {
-    heading: "Legal",
-    links: [
-      { label: "Términos", href: "/terms" },
-      { label: "Privacidad", href: "/privacy" },
-      { label: "Cookies", href: "/privacy" },
-    ],
-  },
-];
+import { useLocale } from "@/contexts/LocaleContext";
 
 export function EditorialFooter() {
+  const { d } = useLocale();
+
+  const LINK_GROUPS = [
+    {
+      heading: d.landing.footerGroups.product.heading,
+      links: [
+        { label: d.landing.footerGroups.product.features, href: "#producto" },
+        { label: d.landing.footerGroups.product.pricing, href: "#precios" },
+        { label: d.landing.footerGroups.product.demo, href: "/wallet/demo" },
+        { label: d.landing.footerGroups.product.changes, href: "#diario" },
+      ],
+    },
+    {
+      heading: d.landing.footerGroups.company.heading,
+      links: [
+        { label: d.landing.footerGroups.company.about, href: "#producto" },
+        { label: d.landing.footerGroups.company.diary, href: "#diario" },
+        { label: d.landing.footerGroups.company.contact, href: "mailto:hola@nexoleal.com" },
+        { label: d.landing.footerGroups.company.work, href: "mailto:hola@nexoleal.com" },
+      ],
+    },
+    {
+      heading: d.landing.footerGroups.legal.heading,
+      links: [
+        { label: d.landing.footerGroups.legal.terms, href: "/terms" },
+        { label: d.landing.footerGroups.legal.privacy, href: "/privacy" },
+        { label: d.landing.footerGroups.legal.cookies, href: "/privacy" },
+      ],
+    },
+  ];
+
   return (
     <footer
       id="diario"
@@ -62,7 +66,7 @@ export function EditorialFooter() {
                 color: "var(--ink-soft)",
               }}
             >
-              Hecho en México · 2026
+              {d.landing.footerMadeIn}
             </div>
           </div>
 
@@ -118,7 +122,7 @@ export function EditorialFooter() {
             color: "var(--ink-soft)",
           }}
         >
-          <div>© 2026 NexoLeal. Todos los derechos reservados.</div>
+          <div>{d.landing.footerRights}</div>
           <div className="flex items-center gap-3">
             <SocialGlyph href="https://instagram.com" label="Instagram">
               <rect

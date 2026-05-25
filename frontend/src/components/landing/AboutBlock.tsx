@@ -1,29 +1,31 @@
 import { useRevealOnce } from "@/hooks/use-reveal-once";
-
-const DIARY = [
-  {
-    title: "Cómo un café de barrio recuperó el 40% de sus clientes con fidelidad en WhatsApp",
-    date: "15 de mayo, 2026",
-    img: "/landing/diary/d1.jpg",
-    alt: "Café de barrio con clientes habituales",
-    href: "#diario",
-  },
-  {
-    title: "Cuatro errores comunes al lanzar un programa de puntos (y cómo evitarlos)",
-    date: "2 de mayo, 2026",
-    img: "/landing/diary/d2.jpg",
-    alt: "Mostrador de negocio con tarjeta de fidelidad",
-    href: "#diario",
-  },
-];
+import { useLocale } from "@/contexts/LocaleContext";
 
 export function AboutBlock() {
   const { ref } = useRevealOnce<HTMLDivElement>({ threshold: 0.25 });
+  const { d } = useLocale();
+
+  const DIARY = [
+    {
+      title: d.landing.diaryRecent,
+      date: "15 de mayo, 2026",
+      img: "/landing/diary/d1.jpg",
+      alt: "Café de barrio con clientes habituales",
+      href: "#diario",
+    },
+    {
+      title: d.landing.diaryRecent,
+      date: "2 de mayo, 2026",
+      img: "/landing/diary/d2.jpg",
+      alt: "Mostrador de negocio con tarjeta de fidelidad",
+      href: "#diario",
+    },
+  ];
 
   return (
     <section
       id="producto"
-      aria-label="Sobre NexoLeal"
+      aria-label={d.landing.aboutAriaLabel}
       style={{
         background: "var(--paper)",
         padding: "clamp(4rem, 10vw, 9rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 8vw, 7rem)",
@@ -101,20 +103,13 @@ export function AboutBlock() {
                 }}
               >
                 <span className="rise-mask inline">
-                  <span className="rise-line">
-                    Construimos NexoLeal para los negocios que recuerdan el nombre de cada cliente.
-                  </span>
+                  <span className="rise-line">{d.landing.aboutParagraph1}</span>
                 </span>{" "}
                 <span className="rise-mask inline">
-                  <span className="rise-line">
-                    La fidelidad no se compra con descuentos: se gana con atención.
-                  </span>
+                  <span className="rise-line">{d.landing.aboutParagraph2}</span>
                 </span>{" "}
                 <span className="rise-mask inline">
-                  <span className="rise-line">
-                    Cada flujo, cada mensaje y cada recompensa fue diseñado para que volver sea la
-                    opción más natural.
-                  </span>
+                  <span className="rise-line">{d.landing.aboutParagraph3}</span>
                 </span>
               </p>
               <div style={{ clear: "both" }} />
@@ -140,10 +135,10 @@ export function AboutBlock() {
                   marginBottom: "0.5rem",
                 }}
               >
-                Diario reciente <span aria-hidden="true">↓</span>
+                {d.landing.diaryRecent} <span aria-hidden="true">↓</span>
               </div>
-              {DIARY.map((d) => (
-                <DiaryCard key={d.title} {...d} />
+              {DIARY.map((entry) => (
+                <DiaryCard key={entry.img} {...entry} />
               ))}
             </div>
           </div>

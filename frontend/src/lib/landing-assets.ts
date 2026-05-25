@@ -219,6 +219,8 @@ export const cloudItems: CloudItem[] = [
 // Use case panels (scroll stack)
 // ============================================================
 
+import type { Dictionary } from "@/lib/i18n";
+
 export type UseCasePanel = {
   index: string;
   vertical: "cafeteria" | "retail" | "salon" | "restaurante" | "servicios";
@@ -237,90 +239,92 @@ export type UseCasePanel = {
   };
 };
 
-export const useCasePanels: UseCasePanel[] = [
-  {
-    index: "01",
-    vertical: "cafeteria",
-    chipLabel: "Cafetería",
-    chipTone: "coral",
-    iconSvg: "/landing/cloud/stamp-cluster.svg",
-    headline: "Programas de fidelidad que devuelven al cliente, taza tras taza",
-    ctaLabel: "Ver demo cafetería",
-    ctaHref: "/wallet/demo",
-    bgImage: "/landing/panels/cafeteria.jpg",
-    bgAlt: "Barista preparando café en una cafetería de barrio",
-    pdfCard: {
-      title: "Guía Cafetería",
-      href: "/landing/pdf/guia-cafeteria.pdf",
-      miniSvg: "/landing/cloud/stamp-cluster.svg",
+export function getUseCasePanels(d: Dictionary): UseCasePanel[] {
+  return [
+    {
+      index: "01",
+      vertical: "cafeteria",
+      chipLabel: d.landing.panels.cafeteria.chipLabel,
+      chipTone: "coral",
+      iconSvg: "/landing/cloud/stamp-cluster.svg",
+      headline: d.landing.panels.cafeteria.headline,
+      ctaLabel: d.landing.panels.cafeteria.ctaLabel,
+      ctaHref: "/wallet/demo",
+      bgImage: "/landing/panels/cafeteria.jpg",
+      bgAlt: "Barista preparando café en una cafetería de barrio",
+      pdfCard: {
+        title: d.landing.panels.cafeteria.pdfTitle,
+        href: "/landing/pdf/guia-cafeteria.pdf",
+        miniSvg: "/landing/cloud/stamp-cluster.svg",
+      },
     },
-  },
-  {
-    index: "02",
-    vertical: "retail",
-    chipLabel: "Retail",
-    chipTone: "sage",
-    iconSvg: "/landing/cloud/ticket.svg",
-    headline: "Convierte la primera compra en la primera de muchas",
-    ctaLabel: "Ver demo retail",
-    ctaHref: "/wallet/demo",
-    bgImage: "/landing/panels/retail.jpg",
-    bgAlt: "Interior de una boutique con un cliente recibiendo una bolsa de papel",
-    pdfCard: {
-      title: "Guía Retail",
-      href: "/landing/pdf/guia-retail.pdf",
-      miniSvg: "/landing/cloud/ticket.svg",
+    {
+      index: "02",
+      vertical: "retail",
+      chipLabel: d.landing.panels.retail.chipLabel,
+      chipTone: "sage",
+      iconSvg: "/landing/cloud/ticket.svg",
+      headline: d.landing.panels.retail.headline,
+      ctaLabel: d.landing.panels.retail.ctaLabel,
+      ctaHref: "/wallet/demo",
+      bgImage: "/landing/panels/retail.jpg",
+      bgAlt: "Interior de una boutique con un cliente recibiendo una bolsa de papel",
+      pdfCard: {
+        title: d.landing.panels.retail.pdfTitle,
+        href: "/landing/pdf/guia-retail.pdf",
+        miniSvg: "/landing/cloud/ticket.svg",
+      },
     },
-  },
-  {
-    index: "03",
-    vertical: "salon",
-    chipLabel: "Salón",
-    chipTone: "clay",
-    iconSvg: "/landing/cloud/heart-check.svg",
-    headline: "Recordatorios y recompensas que llenan tu agenda",
-    ctaLabel: "Ver demo salón",
-    ctaHref: "/wallet/demo",
-    bgImage: "/landing/panels/salon.jpg",
-    bgAlt: "Estilista atendiendo a un cliente frente al espejo",
-    pdfCard: {
-      title: "Guía Salón",
-      href: "/landing/pdf/guia-salon.pdf",
-      miniSvg: "/landing/cloud/heart-check.svg",
+    {
+      index: "03",
+      vertical: "salon",
+      chipLabel: d.landing.panels.salon.chipLabel,
+      chipTone: "clay",
+      iconSvg: "/landing/cloud/heart-check.svg",
+      headline: d.landing.panels.salon.headline,
+      ctaLabel: d.landing.panels.salon.ctaLabel,
+      ctaHref: "/wallet/demo",
+      bgImage: "/landing/panels/salon.jpg",
+      bgAlt: "Estilista atendiendo a un cliente frente al espejo",
+      pdfCard: {
+        title: d.landing.panels.salon.pdfTitle,
+        href: "/landing/pdf/guia-salon.pdf",
+        miniSvg: "/landing/cloud/heart-check.svg",
+      },
     },
-  },
-  {
-    index: "04",
-    vertical: "restaurante",
-    chipLabel: "Restaurante",
-    chipTone: "mist",
-    iconSvg: "/landing/cloud/confetti-burst.svg",
-    headline: "De comensal a cliente recurrente, sin descuentos que duelan",
-    ctaLabel: "Ver demo restaurante",
-    ctaHref: "/wallet/demo",
-    bgImage: "/landing/panels/restaurante.jpg",
-    bgAlt: "Mesa familiar bajo luz cálida en un restaurante",
-    pdfCard: {
-      title: "Guía Restaurante",
-      href: "/landing/pdf/guia-restaurante.pdf",
-      miniSvg: "/landing/cloud/confetti-burst.svg",
+    {
+      index: "04",
+      vertical: "restaurante",
+      chipLabel: d.landing.panels.restaurante.chipLabel,
+      chipTone: "mist",
+      iconSvg: "/landing/cloud/confetti-burst.svg",
+      headline: d.landing.panels.restaurante.headline,
+      ctaLabel: d.landing.panels.restaurante.ctaLabel,
+      ctaHref: "/wallet/demo",
+      bgImage: "/landing/panels/restaurante.jpg",
+      bgAlt: "Mesa familiar bajo luz cálida en un restaurante",
+      pdfCard: {
+        title: d.landing.panels.restaurante.pdfTitle,
+        href: "/landing/pdf/guia-restaurante.pdf",
+        miniSvg: "/landing/cloud/confetti-burst.svg",
+      },
     },
-  },
-  {
-    index: "05",
-    vertical: "servicios",
-    chipLabel: "Servicios",
-    chipTone: "stone",
-    iconSvg: "/landing/cloud/dashboard-tile.svg",
-    headline: "Profesionales que recuerdan a cada cliente, sin spreadsheets",
-    ctaLabel: "Ver demo servicios",
-    ctaHref: "/wallet/demo",
-    bgImage: "/landing/panels/servicios.jpg",
-    bgAlt: "Escritorio con laptop, planta y taza de cerámica",
-    pdfCard: {
-      title: "Guía Servicios",
-      href: "/landing/pdf/guia-servicios.pdf",
-      miniSvg: "/landing/cloud/dashboard-tile.svg",
+    {
+      index: "05",
+      vertical: "servicios",
+      chipLabel: d.landing.panels.servicios.chipLabel,
+      chipTone: "stone",
+      iconSvg: "/landing/cloud/dashboard-tile.svg",
+      headline: d.landing.panels.servicios.headline,
+      ctaLabel: d.landing.panels.servicios.ctaLabel,
+      ctaHref: "/wallet/demo",
+      bgImage: "/landing/panels/servicios.jpg",
+      bgAlt: "Escritorio con laptop, planta y taza de cerámica",
+      pdfCard: {
+        title: d.landing.panels.servicios.pdfTitle,
+        href: "/landing/pdf/guia-servicios.pdf",
+        miniSvg: "/landing/cloud/dashboard-tile.svg",
+      },
     },
-  },
-];
+  ];
+}

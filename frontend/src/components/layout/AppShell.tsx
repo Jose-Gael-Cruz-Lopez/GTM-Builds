@@ -5,6 +5,7 @@ import { signOut } from "@/lib/auth";
 import { useSession } from "@/hooks/use-session";
 import { useOwnedBusiness } from "@/hooks/use-owned-business";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -24,6 +25,8 @@ export function AppShell({
   showNav = true,
   className,
 }: AppShellProps) {
+  const { d } = useLocale();
+
   useEffect(() => {
     document.documentElement.dataset.theme = variant === "dark" ? "dark" : "light";
     return () => {
@@ -69,30 +72,30 @@ export function AppShell({
                       params={{ businessId }}
                       className="text-sm font-medium hover:opacity-80"
                     >
-                      Mi panel
+                      {d.appShell.myPanel}
                     </Link>
                   ) : (
                     <Link to="/wallet" className="text-sm font-medium hover:opacity-80">
-                      Mi cartera
+                      {d.appShell.myWallet}
                     </Link>
                   )}
                   <button
                     type="button"
                     onClick={() => signOut().then(() => (window.location.href = "/"))}
                     className="inline-flex items-center gap-1 rounded-full border border-current/10 px-3 py-1.5 text-xs font-medium hover:bg-current/5"
-                    aria-label="Cerrar sesión"
+                    aria-label={d.appShell.signOutLabel}
                   >
                     <LogOut className="h-3.5 w-3.5" />
-                    Salir
+                    {d.appShell.signOut}
                   </button>
                 </>
               ) : (
                 <>
                   <Link to="/login" className="text-sm font-medium hover:opacity-80">
-                    Iniciar sesión
+                    {d.appShell.signIn}
                   </Link>
                   <Link to="/signup" className="btn-signal text-sm">
-                    Crear cuenta
+                    {d.appShell.createAccount}
                   </Link>
                 </>
               )}
@@ -115,13 +118,14 @@ export const AppShellDark = (p: Omit<AppShellProps, "variant">) => (
 
 /** UserMenu helper (used inside surfaces that already have their own headers). */
 export function UserMenu() {
+  const { d } = useLocale();
   return (
     <button
       type="button"
       onClick={() => signOut().then(() => (window.location.href = "/"))}
       className="inline-flex items-center gap-2 rounded-full border border-current/10 px-3 py-1.5 text-xs hover:bg-current/5"
     >
-      <User className="h-3.5 w-3.5" /> Mi cuenta
+      <User className="h-3.5 w-3.5" /> {d.appShell.myAccount}
     </button>
   );
 }

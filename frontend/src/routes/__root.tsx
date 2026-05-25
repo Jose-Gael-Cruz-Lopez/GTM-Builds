@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { RouteError } from "@/components/RouteError";
 import { NotFoundGlyph, IsoScene } from "@/components/ui/iso-scene";
+import { LocaleProvider } from "@/contexts/LocaleContext";
 
 function NotFoundComponent() {
   return (
@@ -109,8 +110,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster richColors position="top-center" />
+      <LocaleProvider>
+        <Outlet />
+        <Toaster richColors position="top-center" />
+      </LocaleProvider>
     </QueryClientProvider>
   );
 }
