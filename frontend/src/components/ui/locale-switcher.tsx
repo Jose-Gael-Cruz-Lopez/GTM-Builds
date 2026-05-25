@@ -14,10 +14,15 @@ interface LocaleSwitcherProps {
   /** `pill` wraps in the frosted-glass pill used in the desktop nav;
    *  `ghost` renders just the label + chevron (for mobile or compact slots). */
   variant?: "pill" | "ghost";
+  tone?: "light" | "dark";
 }
 
-export function LocaleSwitcher({ variant = "pill" }: LocaleSwitcherProps) {
+export function LocaleSwitcher({ variant = "pill", tone = "dark" }: LocaleSwitcherProps) {
   const { locale, setLocale, d } = useLocale();
+  const ink = tone === "light" ? "rgba(255, 255, 255, 0.96)" : "var(--ink)";
+  const pillBg = tone === "light" ? "rgba(0, 0, 0, 0.34)" : "rgba(255, 255, 255, 0.92)";
+  const pillBorder =
+    tone === "light" ? "1px solid rgba(255, 255, 255, 0.18)" : "1px solid var(--hair)";
 
   return (
     <DropdownMenu>
@@ -33,13 +38,13 @@ export function LocaleSwitcher({ variant = "pill" }: LocaleSwitcherProps) {
             fontSize: "0.75rem",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
-            color: "var(--ink)",
+            color: ink,
             cursor: "pointer",
             ...(variant === "pill" && {
-              background: "rgba(255,255,255,0.92)",
+              background: pillBg,
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid var(--hair)",
+              border: pillBorder,
               borderRadius: "9999px",
               padding: "0.5rem 0.875rem",
             }),

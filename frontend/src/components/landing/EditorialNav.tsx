@@ -5,8 +5,10 @@ import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 
 export function EditorialNav() {
   const [scrolled, setScrolled] = useState(false);
+  const [overDarkStack, setOverDarkStack] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { d } = useLocale();
+  const navTone = overDarkStack ? "light" : "dark";
 
   const navLinks = [
     { label: d.nav.product, href: "#producto" },
@@ -32,6 +34,21 @@ export function EditorialNav() {
   }, []);
 
   useEffect(() => {
+    const stack = document.getElementById("casos");
+    if (!stack) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setOverDarkStack(entry.isIntersecting && entry.intersectionRatio > 0.12);
+      },
+      { threshold: [0, 0.12, 0.35, 0.6] },
+    );
+
+    observer.observe(stack);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -45,9 +62,12 @@ export function EditorialNav() {
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50" style={{ padding: "1.25rem 1.5rem" }}>
-        <nav className="flex items-center justify-between" aria-label="Principal">
+        <nav
+          className="grid items-center grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr]"
+          aria-label="Principal"
+        >
           {/* Left cluster: wordmark + lang chip */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 justify-self-start">
             <Link
               to="/"
               className="flex items-baseline gap-0.5 font-display"
@@ -55,8 +75,19 @@ export function EditorialNav() {
                 fontFamily: "var(--font-display)",
                 fontWeight: 500,
                 fontSize: "1.5rem",
-                color: "var(--ink)",
+                color: navTone === "light" ? "rgba(255, 255, 255, 0.96)" : "var(--ink)",
                 letterSpacing: "-0.02em",
+                background:
+                  navTone === "light" ? "rgba(0, 0, 0, 0.34)" : "rgba(255, 255, 255, 0.92)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border:
+                  navTone === "light"
+                    ? "1px solid rgba(255, 255, 255, 0.18)"
+                    : "1px solid var(--hair)",
+                borderRadius: "9999px",
+                padding: "0.4rem 0.85rem",
+                transition: "color 220ms, background 220ms, border-color 220ms",
               }}
             >
               NexoLeal
@@ -68,17 +99,17 @@ export function EditorialNav() {
               style={{
                 width: "1px",
                 height: "20px",
-                background: "var(--hair)",
+                background: navTone === "light" ? "rgba(255,255,255,0.28)" : "var(--hair)",
               }}
             />
             <span className="hidden sm:inline-flex">
-              <LocaleSwitcher variant="ghost" />
+              <LocaleSwitcher variant="ghost" tone={navTone} />
             </span>
           </div>
 
           {/* Center cluster: link pill (desktop only) */}
           <div
-            className="hidden md:flex items-center"
+            className="hidden md:flex items-center justify-self-center"
             style={{
               background: scrolled ? "rgba(255, 255, 255, 1)" : "rgba(255, 255, 255, 0.92)",
               backdropFilter: "blur(12px)",
@@ -123,9 +154,9 @@ export function EditorialNav() {
           </div>
 
           {/* Right cluster: lang dropdown (desktop) + mobile menu trigger */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-self-end">
             <span className="hidden md:inline-flex">
-              <LocaleSwitcher variant="pill" />
+              <LocaleSwitcher variant="pill" tone={navTone} />
             </span>
             <button
               type="button"
@@ -134,9 +165,13 @@ export function EditorialNav() {
                 width: "44px",
                 height: "44px",
                 borderRadius: "9999px",
-                background: "rgba(255, 255, 255, 0.92)",
-                border: "1px solid var(--hair)",
-                color: "var(--ink)",
+                background:
+                  navTone === "light" ? "rgba(0, 0, 0, 0.34)" : "rgba(255, 255, 255, 0.92)",
+                border:
+                  navTone === "light"
+                    ? "1px solid rgba(255, 255, 255, 0.18)"
+                    : "1px solid var(--hair)",
+                color: navTone === "light" ? "rgba(255, 255, 255, 0.96)" : "var(--ink)",
               }}
               aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
               aria-expanded={mobileOpen}
