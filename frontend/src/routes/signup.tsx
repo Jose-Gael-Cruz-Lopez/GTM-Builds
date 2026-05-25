@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
+import { onboardingSearch } from "@/lib/auth";
 import { AuthSplit } from "@/components/auth/AuthSplit";
 import { BUSINESS_CATEGORY_OPTIONS } from "@/lib/business-categories";
 
@@ -87,6 +88,10 @@ function SignupPage() {
       });
       if (signErr) throw signErr;
 
+      if (!signUpData.user) {
+        throw new Error("No pudimos crear tu cuenta. Inténtalo de nuevo en unos minutos.");
+      }
+
       // If email confirmation is required, session is null.
       if (!signUpData.session) {
         localStorage.setItem(
@@ -104,10 +109,21 @@ function SignupPage() {
       });
       localStorage.setItem("nexoleal:current-business-id", created.business.id);
       toast.success("Cuenta creada");
-      navigate({ to: "/onboarding" });
+      navigate({
+        to: "/onboarding",
+        search: onboardingSearch({
+          businessId: created.business.id,
+          businessName: form.businessName,
+          category: form.category,
+        }),
+      });
     } catch (err) {
       console.error(err);
-      toast.error("No pudimos crear tu cuenta", { description: (err as Error).message });
+      const message = (err as Error).message ?? "";
+      const description = message.toLowerCase().includes("rate limit")
+        ? "No podemos enviar el correo de confirmación ahora mismo (límite del proveedor de correo). Espera unos minutos e inténtalo otra vez."
+        : message;
+      toast.error("No pudimos crear tu cuenta", { description });
     } finally {
       setSubmitting(false);
     }

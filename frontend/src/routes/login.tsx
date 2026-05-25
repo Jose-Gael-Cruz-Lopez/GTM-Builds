@@ -1,7 +1,7 @@
 import { RouteError } from "@/components/RouteError";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { routeMeta } from "@/lib/route-meta";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -41,10 +41,11 @@ function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  if (reset === "ok") {
-    // Show success toast once on mount; ignore further renders.
-    setTimeout(() => toast.success("Contraseña actualizada. Inicia sesión."), 0);
-  }
+  useEffect(() => {
+    if (reset === "ok") {
+      toast.success("Contraseña actualizada. Inicia sesión.");
+    }
+  }, [reset]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

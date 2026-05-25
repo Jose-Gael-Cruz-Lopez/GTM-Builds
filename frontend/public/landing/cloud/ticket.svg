@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 110" width="70" height="110">
+<defs>
+  <clipPath id="receipt-label-clip">
+    <rect x="10" y="58" width="50" height="18" rx="1"/>
+  </clipPath>
+</defs>
 <path d="M7 7h60v100h-60z" fill="#1a1a18" opacity="0.08"/>
 <path d="M5 5h60v100h-60z" fill="#f9f6ef" stroke="#1a1a18" stroke-width="1.4"/>
 <g stroke="#1a1a18" stroke-width="1" stroke-linecap="round" opacity="0.7">
@@ -7,7 +12,7 @@
 <line x1="12" y1="40" x2="58" y2="40"/>
 <line x1="12" y1="50" x2="40" y2="50"/>
 </g>
-<text x="35" y="74" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="600" font-size="14" letter-spacing="1.5" fill="#1a1a18">RECIBO</text>
+<text x="35" y="72" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="600" font-size="10" letter-spacing="0.35" fill="#1a1a18" clip-path="url(#receipt-label-clip)" textLength="46" lengthAdjust="spacingAndGlyphs">RECIBO</text>
 <g stroke="#1a1a18" stroke-dasharray="2 2" opacity="0.6">
 <line x1="5" y1="86" x2="65" y2="86"/>
 </g>

@@ -10,8 +10,11 @@ export function Hero() {
     <section
       className="relative overflow-hidden"
       style={{
+        height: "100dvh",
         minHeight: "100svh",
         background: "var(--paper)",
+        position: "relative",
+        zIndex: 2,
       }}
       aria-label="Inicio"
     >
@@ -46,7 +49,7 @@ export function Hero() {
             fontFamily: "var(--font-display)",
             fontWeight: 500,
             fontSize: "var(--display-xl)",
-            lineHeight: 0.95,
+            lineHeight: 1.05,
             letterSpacing: "-0.025em",
             color: "var(--ink)",
             maxWidth: "18ch",
@@ -101,11 +104,11 @@ export function Hero() {
               "--tw-ring-color": "var(--ink)",
             }}
           >
-            Comenzar gratis
+            Negocios
             <span aria-hidden="true">→</span>
           </Link>
-          <a
-            href="/wallet/demo"
+          <Link
+            to="/user/dashboard"
             className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             style={{
               display: "inline-flex",
@@ -125,8 +128,9 @@ export function Hero() {
               "--tw-ring-color": "var(--ink)",
             }}
           >
-            Ver demo en 30 s
-          </a>
+            Clientes
+            <span aria-hidden="true">→</span>
+          </Link>
         </div>
       </div>
 
