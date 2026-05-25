@@ -6,6 +6,7 @@ import { useSession } from "@/hooks/use-session";
 import { useOwnedBusiness } from "@/hooks/use-owned-business";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/contexts/LocaleContext";
+import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -64,6 +65,7 @@ export function AppShell({
             </Link>
 
             <div className="flex items-center gap-3">
+              <LocaleSwitcher variant="pill" />
               {isAuthed ? (
                 <>
                   {businessId ? (

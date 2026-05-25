@@ -52,6 +52,8 @@ export type Dictionary = {
     resetSuccess: string;
     emailInvalid: string;
     passwordMin: string;
+    accessStep: string;
+    submitArrow: string;
   };
   signup: {
     headline1: string;
@@ -85,6 +87,12 @@ export type Dictionary = {
     errorCreate: string;
     errorRateLimit: string;
     accountCreated: string;
+    googleContinue: string;
+    useEmailPassword: string;
+    businessStepLabel: string;
+    confirmStepLabel: string;
+    businessCreated: string;
+    createBtnArrow: string;
   };
   forgotPassword: {
     headline: string;
@@ -749,6 +757,7 @@ export type Dictionary = {
     copyLink: string;
     linkCopied: string;
     copyFailed: string;
+    orDivider: string;
   };
 };
 
@@ -802,11 +811,13 @@ const es: Dictionary = {
     resetSuccess: "Contraseña actualizada. Inicia sesión.",
     emailInvalid: "Email inválido",
     passwordMin: "Mínimo 6 caracteres",
+    accessStep: "Acceso",
+    submitArrow: "Entrar →",
   },
   signup: {
-    headline1: "Crea tu cuenta.",
+    headline1: "Empecemos.",
     headline2: "Cuéntanos de tu negocio.",
-    subtitle1: "Tu programa de lealtad estará listo en 3 minutos.",
+    subtitle1: "Entra con Google en un clic. Sin contraseñas, sin fricción.",
     subtitle2: "Esto aparecerá en la cartera digital de tus clientes.",
     step1Title: "Paso 1 · Cuenta",
     step2Title: "Paso 2 · Tu negocio",
@@ -837,6 +848,12 @@ const es: Dictionary = {
     errorRateLimit:
       "No podemos enviar el correo de confirmación ahora mismo (límite del proveedor). Espera unos minutos e inténtalo otra vez.",
     accountCreated: "Cuenta creada",
+    googleContinue: "Continuar con Google",
+    useEmailPassword: "Usar email y contraseña",
+    businessStepLabel: "Tu negocio",
+    confirmStepLabel: "Confirma tu cuenta",
+    businessCreated: "Negocio creado",
+    createBtnArrow: "Crear negocio →",
   },
   forgotPassword: {
     headline: "¿Olvidaste tu contraseña?",
@@ -1575,6 +1592,7 @@ const es: Dictionary = {
     copyLink: "Copiar enlace",
     linkCopied: "Enlace copiado",
     copyFailed: "No pudimos copiar",
+    orDivider: "o",
   },
 };
 
@@ -1615,7 +1633,7 @@ const en: Dictionary = {
   },
   login: {
     headline: "Welcome back.",
-    subtitle: "Your customers are waiting. Sign in to see how they're doing.",
+    subtitle: "Sign in with Google in one click and see how your customers are doing.",
     title: "Log in",
     newHere: "New here?",
     createAccount: "Create a free account",
@@ -1628,11 +1646,13 @@ const en: Dictionary = {
     resetSuccess: "Password updated. Please sign in.",
     emailInvalid: "Invalid email",
     passwordMin: "At least 6 characters",
+    accessStep: "Sign in",
+    submitArrow: "Sign in →",
   },
   signup: {
-    headline1: "Create your account.",
+    headline1: "Let's begin.",
     headline2: "Tell us about your business.",
-    subtitle1: "Your loyalty program will be ready in 3 minutes.",
+    subtitle1: "Sign in with Google in one click. No passwords, no friction.",
     subtitle2: "This will appear in your customers' digital wallet.",
     step1Title: "Step 1 · Account",
     step2Title: "Step 2 · Your business",
@@ -1663,6 +1683,12 @@ const en: Dictionary = {
     errorRateLimit:
       "We can't send the confirmation email right now (provider rate limit). Wait a few minutes and try again.",
     accountCreated: "Account created",
+    googleContinue: "Continue with Google",
+    useEmailPassword: "Use email and password",
+    businessStepLabel: "Your business",
+    confirmStepLabel: "Confirm your account",
+    businessCreated: "Business created",
+    createBtnArrow: "Create business →",
   },
   forgotPassword: {
     headline: "Forgot your password?",
@@ -2396,6 +2422,7 @@ const en: Dictionary = {
     copyLink: "Copy link",
     linkCopied: "Link copied",
     copyFailed: "Could not copy",
+    orDivider: "or",
   },
 };
 
