@@ -145,26 +145,8 @@ export type Dictionary = {
       subtitle: string;
       steps: { title: string; desc: string }[];
     };
-    pricing: {
-      ariaLabel: string;
-      eyebrow: string;
-      title: string;
-      cta: string;
-      free: {
-        name: string;
-        price: string;
-        desc: string;
-        features: string[];
-        highlighted: boolean;
-      };
-      pro: {
-        name: string;
-        price: string;
-        desc: string;
-        features: string[];
-        highlighted: boolean;
-      };
-    };
+    recentAddingsAriaLabel: string;
+    colors: string;
     scrollStackAriaLabel: string;
     panelEyebrow: string;
     footerMadeIn: string;
@@ -189,6 +171,10 @@ export type Dictionary = {
       legal: { heading: string; terms: string; privacy: string; cookies: string };
     };
     scrollToExplore: string;
+    showcases: {
+      cafeteria: { chipLabel: string; name: string };
+      retail: { chipLabel: string; name: string };
+    };
     panels: {
       cafeteria: { chipLabel: string; headline: string; ctaLabel: string };
       retail: { chipLabel: string; headline: string; ctaLabel: string };
@@ -812,7 +798,7 @@ const es: Dictionary = {
   nav: {
     product: "Producto",
     cases: "Casos",
-    pricing: "Precios",
+    pricing: "Formatos",
     blog: "Diario",
     businesses: "Negocios",
     customers: "Clientes",
@@ -963,36 +949,8 @@ const es: Dictionary = {
         },
       ],
     },
-    pricing: {
-      ariaLabel: "Precios de NexoLeal",
-      eyebrow: "Precios",
-      title: "Empieza gratis, crece cuando quieras",
-      cta: "Crear cuenta gratis",
-      free: {
-        name: "Gratis",
-        price: "$0",
-        desc: "Para negocios que están empezando su programa de lealtad.",
-        features: [
-          "Hasta 100 clientes",
-          "Tarjeta digital con sellos",
-          "QR de mostrador",
-          "Panel de visitas y recompensas",
-        ],
-        highlighted: false,
-      },
-      pro: {
-        name: "Pro",
-        price: "Próximamente",
-        desc: "Para negocios que quieren escalar retención con inteligencia artificial.",
-        features: [
-          "Clientes ilimitados",
-          "Campañas con IA",
-          "Segmentación avanzada",
-          "Soporte prioritario",
-        ],
-        highlighted: true,
-      },
-    },
+    recentAddingsAriaLabel: "Dos formas de fidelizar",
+    colors: "Colores",
     scrollStackAriaLabel: "Casos de uso de NexoLeal",
     panelEyebrow: "Hecho para volver",
     footerMadeIn: "Hecho en México · 2026",
@@ -1023,6 +981,10 @@ const es: Dictionary = {
       legal: { heading: "Legal", terms: "Términos", privacy: "Privacidad", cookies: "Cookies" },
     },
     scrollToExplore: "Desplaza para explorar",
+    showcases: {
+      cafeteria: { chipLabel: "Cafetería", name: "Tarjeta de Sellos · Plaza" },
+      retail: { chipLabel: "Retail", name: "QR de Mostrador · Palmer" },
+    },
     panels: {
       cafeteria: {
         chipLabel: "Cafetería",
@@ -1708,7 +1670,7 @@ const en: Dictionary = {
   nav: {
     product: "Product",
     cases: "Cases",
-    pricing: "Pricing",
+    pricing: "Formats",
     blog: "Journal",
     businesses: "Businesses",
     customers: "Customers",
@@ -1859,36 +1821,8 @@ const en: Dictionary = {
         },
       ],
     },
-    pricing: {
-      ariaLabel: "NexoLeal pricing",
-      eyebrow: "Pricing",
-      title: "Start free, grow when you're ready",
-      cta: "Create free account",
-      free: {
-        name: "Free",
-        price: "$0",
-        desc: "For businesses starting their loyalty program.",
-        features: [
-          "Up to 100 customers",
-          "Digital stamp card",
-          "Counter QR code",
-          "Visits and rewards dashboard",
-        ],
-        highlighted: false,
-      },
-      pro: {
-        name: "Pro",
-        price: "Coming soon",
-        desc: "For businesses ready to scale retention with artificial intelligence.",
-        features: [
-          "Unlimited customers",
-          "AI-powered campaigns",
-          "Advanced segmentation",
-          "Priority support",
-        ],
-        highlighted: true,
-      },
-    },
+    recentAddingsAriaLabel: "Two ways to build loyalty",
+    colors: "Colors",
     scrollStackAriaLabel: "NexoLeal use cases",
     panelEyebrow: "Built to bring them back",
     footerMadeIn: "Made in Mexico · 2026",
@@ -1919,6 +1853,10 @@ const en: Dictionary = {
       legal: { heading: "Legal", terms: "Terms", privacy: "Privacy", cookies: "Cookies" },
     },
     scrollToExplore: "Scroll to explore",
+    showcases: {
+      cafeteria: { chipLabel: "Coffee shop", name: "Stamp Card · Plaza" },
+      retail: { chipLabel: "Retail", name: "Counter QR · Palmer" },
+    },
     panels: {
       cafeteria: {
         chipLabel: "Coffee shop",
