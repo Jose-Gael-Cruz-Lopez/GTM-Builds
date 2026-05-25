@@ -13,7 +13,6 @@ import { SignupFlowShell } from "@/components/auth/SignupFlowShell";
 import { BUSINESS_CATEGORY_OPTIONS } from "@/lib/business-categories";
 
 const searchSchema = z.object({
-  plan: z.enum(["free", "pro"]).optional(),
   step: z.enum(["business"]).optional(),
 });
 
@@ -48,12 +47,11 @@ const step1Schema = z
 const step2Schema = z.object({
   businessName: z.string().trim().min(2, "Demasiado corto"),
   category: z.string().min(1, "Elige una categoría"),
-  plan: z.enum(["free", "pro"]),
 });
 
 function SignupPage() {
   const navigate = useNavigate();
-  const { plan: initialPlan, step: stepParam } = Route.useSearch();
+  const { step: stepParam } = Route.useSearch();
   const [step, setStep] = useState<1 | 2 | "await">(stepParam === "business" ? 2 : 1);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -63,7 +61,6 @@ function SignupPage() {
     confirm: "",
     businessName: "",
     category: "cafe",
-    plan: initialPlan ?? "free",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -88,7 +85,7 @@ function SignupPage() {
     const created = await businessesApi.create({
       name: form.businessName,
       category: form.category as never,
-      plan: form.plan,
+      plan: "free",
     });
     localStorage.setItem("nexoleal:current-business-id", created.business.id);
     toast.success("Negocio creado");
@@ -137,7 +134,7 @@ function SignupPage() {
       if (!signUpData.session) {
         localStorage.setItem(
           "nexoleal:pending-business",
-          JSON.stringify({ name: form.businessName, category: form.category, plan: form.plan }),
+          JSON.stringify({ name: form.businessName, category: form.category, plan: "free" }),
         );
         setStep("await");
         return;
@@ -319,26 +316,6 @@ function SignupPage() {
                   onClick={() => setForm({ ...form, category: c.value })}
                 >
                   {c.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="auth-flow-field">
-            <span className="auth-flow-label">Plan</span>
-            <div className="auth-flow-plans">
-              {(["free", "pro"] as const).map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  data-active={form.plan === p}
-                  className="auth-flow-plan"
-                  onClick={() => setForm({ ...form, plan: p })}
-                >
-                  <p className="auth-flow-plan-title">{p}</p>
-                  <p className="auth-flow-plan-desc">
-                    {p === "free" ? "Hasta 100 clientes" : "Ilimitado + IA"}
-                  </p>
                 </button>
               ))}
             </div>

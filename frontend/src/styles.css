@@ -1080,48 +1080,6 @@
   color: var(--paper);
 }
 
-.auth-flow-plans {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.auth-flow-plan {
-  border-radius: 1.25rem;
-  border: 1px solid var(--hair);
-  background: rgba(255, 255, 255, 0.55);
-  padding: 1.125rem 1rem;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    border-color 240ms var(--ease-editorial),
-    background 240ms var(--ease-editorial),
-    transform 240ms var(--ease-editorial);
-}
-
-.auth-flow-plan:hover {
-  transform: translateY(-2px);
-}
-
-.auth-flow-plan[data-active="true"] {
-  border-color: var(--ink);
-  background: rgba(231, 242, 106, 0.22);
-  box-shadow: 0 8px 24px rgba(26, 26, 24, 0.06);
-}
-
-.auth-flow-plan-title {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.auth-flow-plan-desc {
-  margin-top: 0.25rem;
-  font-size: 0.8125rem;
-  color: var(--ink-mute);
-}
-
 .auth-flow-actions {
   display: flex;
   gap: 0.75rem;
