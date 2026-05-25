@@ -150,6 +150,14 @@ export type Dictionary = {
     explore: string;
     footerMadeIn: string;
     footerRights: string;
+    footerContact: {
+      office: string;
+      officeLine: string;
+      support: string;
+      supportLine: string;
+      product: string;
+      productLine: string;
+    };
     footerGroups: {
       product: {
         heading: string;
@@ -934,6 +942,14 @@ const es: Dictionary = {
     explore: "Explorar",
     footerMadeIn: "Hecho en México · 2026",
     footerRights: "© 2026 NexoLeal. Todos los derechos reservados.",
+    footerContact: {
+      office: "Oficina",
+      officeLine: "Ciudad de México, México",
+      support: "Soporte",
+      supportLine: "Respuesta en menos de 24 horas",
+      product: "Producto",
+      productLine: "Empieza gratis en minutos",
+    },
     footerGroups: {
       product: {
         heading: "Producto",
@@ -1790,6 +1806,14 @@ const en: Dictionary = {
     explore: "Explore",
     footerMadeIn: "Made in Mexico · 2026",
     footerRights: "© 2026 NexoLeal. All rights reserved.",
+    footerContact: {
+      office: "Office",
+      officeLine: "Mexico City, Mexico",
+      support: "Support",
+      supportLine: "Reply within 24 hours",
+      product: "Product",
+      productLine: "Start free in minutes",
+    },
     footerGroups: {
       product: {
         heading: "Product",

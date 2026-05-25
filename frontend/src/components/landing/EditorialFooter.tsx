@@ -1,153 +1,126 @@
 import { useLocale } from "@/contexts/LocaleContext";
 
+const SUPPORT_EMAIL = "hola@nexoleal.com";
+
 export function EditorialFooter() {
   const { d } = useLocale();
+  const c = d.landing.footerContact;
+  const g = d.landing.footerGroups;
 
-  const LINK_GROUPS = [
+  const PRIMARY_LINKS = [
+    { label: d.nav.product, href: "#producto" },
+    { label: d.nav.cases, href: "#casos" },
+    { label: d.nav.pricing, href: "#producto" },
+    { label: d.nav.blog, href: "#diario" },
+  ];
+
+  const SECONDARY_LINKS = [
+    { label: g.company.work, href: `mailto:${SUPPORT_EMAIL}` },
+    { label: g.legal.terms, href: "/terms" },
+    { label: g.legal.privacy, href: "/privacy" },
+    { label: g.legal.cookies, href: "/privacy" },
+  ];
+
+  const CONTACT_BLOCKS = [
     {
-      heading: d.landing.footerGroups.product.heading,
-      links: [
-        { label: d.landing.footerGroups.product.features, href: "#producto" },
-        { label: d.landing.footerGroups.product.pricing, href: "#producto" },
-        { label: d.landing.footerGroups.product.changes, href: "#diario" },
-      ],
+      title: c.office,
+      lines: [c.officeLine, SUPPORT_EMAIL],
+      hrefs: [undefined, `mailto:${SUPPORT_EMAIL}`] as (string | undefined)[],
     },
     {
-      heading: d.landing.footerGroups.company.heading,
-      links: [
-        { label: d.landing.footerGroups.company.about, href: "#producto" },
-        { label: d.landing.footerGroups.company.diary, href: "#diario" },
-        { label: d.landing.footerGroups.company.contact, href: "mailto:hola@nexoleal.com" },
-        { label: d.landing.footerGroups.company.work, href: "mailto:hola@nexoleal.com" },
-      ],
+      title: c.support,
+      lines: [c.supportLine, SUPPORT_EMAIL],
+      hrefs: [undefined, `mailto:${SUPPORT_EMAIL}`] as (string | undefined)[],
     },
     {
-      heading: d.landing.footerGroups.legal.heading,
-      links: [
-        { label: d.landing.footerGroups.legal.terms, href: "/terms" },
-        { label: d.landing.footerGroups.legal.privacy, href: "/privacy" },
-        { label: d.landing.footerGroups.legal.cookies, href: "/privacy" },
-      ],
+      title: c.product,
+      lines: [c.productLine],
+      hrefs: ["/signup"] as (string | undefined)[],
     },
   ];
 
   return (
-    <footer
-      id="diario"
-      style={{
-        background: "var(--paper-warm)",
-        padding: "clamp(3rem, 8vw, 6rem) clamp(1.5rem, 5vw, 5rem) clamp(2rem, 5vw, 4rem)",
-        color: "var(--ink)",
-      }}
-    >
-      <div className="mx-auto" style={{ maxWidth: "min(1280px, 92vw)" }}>
-        <div className="grid gap-12 md:grid-cols-[1fr_auto]">
-          {/* Left: oversized wordmark + tagline */}
-          <div>
-            <div
-              className="font-display"
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 500,
-                fontSize: "clamp(3.5rem, 12vw, 9rem)",
-                lineHeight: 0.9,
-                letterSpacing: "-0.035em",
-                color: "var(--ink)",
-              }}
-            >
-              NexoLeal<sup style={{ fontSize: "0.3em", verticalAlign: "super" }}>®</sup>
-            </div>
-            <div
-              style={{
-                marginTop: "0.5rem",
-                fontFamily: "var(--font-sans)",
-                fontSize: "0.875rem",
-                color: "var(--ink-soft)",
-              }}
-            >
-              {d.landing.footerMadeIn}
-            </div>
-          </div>
-
-          {/* Right: link columns */}
-          <div
-            className="grid gap-x-12 gap-y-8 md:text-right"
-            style={{
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(140px, 100%), max-content))",
-            }}
-          >
-            {LINK_GROUPS.map((group) => (
-              <div key={group.heading}>
-                <div
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "0.7rem",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "var(--ink-soft)",
-                    marginBottom: "0.875rem",
-                  }}
-                >
-                  {group.heading}
-                </div>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                  {group.links.map((l) => (
-                    <li key={l.label} style={{ marginBottom: "0.4rem" }}>
-                      <FooterLink href={l.href}>{l.label}</FooterLink>
-                    </li>
-                  ))}
-                </ul>
+    <footer id="diario" className="editorial-footer">
+      <div className="editorial-footer__inner">
+        <div className="editorial-footer__contact-grid">
+          {CONTACT_BLOCKS.map((block) => (
+            <div key={block.title} className="editorial-footer__contact-block">
+              <h3 className="editorial-footer__contact-title">{block.title}</h3>
+              <div className="editorial-footer__contact-body">
+                {block.lines.map((line, index) => {
+                  const href = block.hrefs[index];
+                  if (href) {
+                    return (
+                      <FooterLink key={line} href={href} variant="contact">
+                        {line}
+                      </FooterLink>
+                    );
+                  }
+                  return <p key={line}>{line}</p>;
+                })}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
-        {/* Hairline */}
-        <div
-          aria-hidden="true"
-          style={{
-            height: "1px",
-            background: "var(--hair)",
-            margin: "clamp(2rem, 5vw, 4rem) 0",
-          }}
-        />
+        <div className="editorial-footer__rule" aria-hidden="true" />
 
-        {/* Fine print */}
-        <div
-          className="flex flex-wrap items-center justify-between gap-4"
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "0.75rem",
-            color: "var(--ink-soft)",
-          }}
-        >
-          <div>{d.landing.footerRights}</div>
-          <div className="flex items-center gap-3">
-            <SocialGlyph href="https://instagram.com" label="Instagram">
-              <rect
-                x="3"
-                y="3"
-                width="14"
-                height="14"
-                rx="4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
+        <div className="editorial-footer__main">
+          <div className="editorial-footer__brand">
+            <div className="editorial-footer__wordmark" aria-label="NexoLeal">
+              NexoLeal<sup>®</sup>
+            </div>
+            <div className="editorial-footer__illustrations" aria-hidden="true">
+              <img
+                src="/landing/cloud/loyalty-card.svg"
+                alt=""
+                width={120}
+                height={76}
+                className="editorial-footer__illustration editorial-footer__illustration--card"
               />
+              <img
+                src="/landing/cloud/qr-code.svg"
+                alt=""
+                width={72}
+                height={72}
+                className="editorial-footer__illustration editorial-footer__illustration--qr"
+              />
+            </div>
+          </div>
+
+          <nav className="editorial-footer__nav" aria-label={d.landing.aboutAriaLabel}>
+            <ul className="editorial-footer__nav-primary">
+              {PRIMARY_LINKS.map((link) => (
+                <li key={link.label}>
+                  <FooterLink href={link.href} variant="primary">
+                    {link.label}
+                  </FooterLink>
+                </li>
+              ))}
+            </ul>
+            <ul className="editorial-footer__nav-secondary">
+              {SECONDARY_LINKS.map((link) => (
+                <li key={link.label}>
+                  <FooterLink href={link.href} variant="secondary">
+                    {link.label}
+                  </FooterLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        <div className="editorial-footer__rule" aria-hidden="true" />
+
+        <div className="editorial-footer__bottom">
+          <div className="editorial-footer__social">
+            <SocialGlyph href="https://instagram.com" label="Instagram">
+              <rect x="3" y="3" width="14" height="14" rx="4" fill="none" stroke="currentColor" strokeWidth="1.4" />
               <circle cx="10" cy="10" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
               <circle cx="14.4" cy="5.6" r="0.9" fill="currentColor" />
             </SocialGlyph>
             <SocialGlyph href="https://linkedin.com" label="LinkedIn">
-              <rect
-                x="3"
-                y="3"
-                width="14"
-                height="14"
-                rx="2.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
-              />
+              <rect x="3" y="3" width="14" height="14" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
               <rect x="6" y="8" width="1.8" height="6.5" fill="currentColor" />
               <circle cx="6.9" cy="5.9" r="1.1" fill="currentColor" />
               <path
@@ -162,39 +135,28 @@ export function EditorialFooter() {
               />
             </SocialGlyph>
           </div>
+
+          <div className="editorial-footer__meta">
+            <span>{d.landing.footerMadeIn}</span>
+            <span>{d.landing.footerRights}</span>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
 
-function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+function FooterLink({
+  href,
+  children,
+  variant,
+}: {
+  href: string;
+  children: React.ReactNode;
+  variant: "primary" | "secondary" | "contact";
+}) {
   return (
-    <a
-      href={href}
-      className="inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-      style={{
-        fontFamily: "var(--font-display)",
-        fontWeight: 400,
-        fontSize: "1rem",
-        lineHeight: 1.8,
-        color: "var(--ink)",
-        textDecoration: "none",
-        backgroundImage: "linear-gradient(currentColor, currentColor)",
-        backgroundSize: "0 1px",
-        backgroundPosition: "0 100%",
-        backgroundRepeat: "no-repeat",
-        transition: "background-size 220ms cubic-bezier(0.22, 1, 0.36, 1)",
-        // @ts-expect-error css var
-        "--tw-ring-color": "var(--ink)",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundSize = "100% 1px";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundSize = "0 1px";
-      }}
-    >
+    <a href={href} className={`editorial-footer__link editorial-footer__link--${variant}`}>
       {children}
     </a>
   );
@@ -215,18 +177,7 @@ function SocialGlyph({
       aria-label={label}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-      style={{
-        width: 28,
-        height: 28,
-        borderRadius: "9999px",
-        color: "var(--ink-soft)",
-        transition: "color 180ms",
-        // @ts-expect-error css var
-        "--tw-ring-color": "var(--ink)",
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
-      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink-soft)")}
+      className="editorial-footer__social-link"
     >
       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
         {children}
