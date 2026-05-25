@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
   errorComponent: RouteError,
   head: () => ({
     meta: [
-      { title: "NexoLeal · Tarjetas de sellos y QR para negocios locales" },
+      { title: "NexoLeal · Hecho para volver. Una y otra vez." },
       {
         name: "description",
         content:
