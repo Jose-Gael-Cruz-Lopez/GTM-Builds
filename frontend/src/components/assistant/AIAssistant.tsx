@@ -172,8 +172,11 @@ export function AIAssistant({ businessId }: { businessId: string }) {
   });
 
   const campaignMutation = useMutation({
-    mutationFn: (vars: { segment: "lost" | "frequent" | "new"; discountPct: number; durationDays: number }) =>
-      assistantApi.createCampaign(businessId, vars),
+    mutationFn: (vars: {
+      segment: "lost" | "frequent" | "new";
+      discountPct: number;
+      durationDays: number;
+    }) => assistantApi.createCampaign(businessId, vars),
     onSuccess: (data) => {
       setStep("campaign-done");
       aiSays(
@@ -186,14 +189,18 @@ export function AIAssistant({ businessId }: { businessId: string }) {
             label: "Ver campañas",
             icon: <Check className="h-3.5 w-3.5" />,
             onClick: () =>
-              navigate({ to: "/campaigns/$businessId", params: { businessId } }),
+              navigate({
+                to: "/campaigns/$businessId",
+                params: { businessId },
+                search: { tab: "draft" },
+              }),
           },
           {
             label: "Hacer otro análisis",
             variant: "outline",
             onClick: () => handleReset(),
           },
-        ]
+        ],
       );
     },
     onError: () => {
@@ -220,10 +227,9 @@ export function AIAssistant({ businessId }: { businessId: string }) {
           {
             label: "Volver al panel",
             variant: "outline",
-            onClick: () =>
-              navigate({ to: "/dashboard/$businessId", params: { businessId } }),
+            onClick: () => navigate({ to: "/dashboard/$businessId", params: { businessId } }),
           },
-        ]
+        ],
       );
     },
     onError: () => {
@@ -236,7 +242,11 @@ export function AIAssistant({ businessId }: { businessId: string }) {
   function handleAnalyze() {
     disableLastActions();
     userSays("Resumen rápido");
-    addMsg({ from: "ai", content: "Analizando los datos de tu negocio con IA...", isLoading: true });
+    addMsg({
+      from: "ai",
+      content: "Analizando los datos de tu negocio con IA...",
+      isLoading: true,
+    });
     setStep("analyzing");
     analyzeMutation.mutate();
   }
@@ -278,7 +288,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
           variant: "outline",
           onClick: () => handleReset(),
         },
-      ]
+      ],
     );
   }
 
@@ -293,7 +303,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
         `Perfecto. Tengo **${analysisData?.segments.lostClients ?? "varios"} clientes** que ya no regresan.\n\n` +
           `${rec?.forLost ?? "Un descuento personalizado puede traerlos de vuelta."}\n\n` +
           `¿Con cuánto descuento quieres invitarlos a volver?`,
-        buildDiscountActions(rec?.suggestedDiscountLost ?? 15, () => setStep("lost-discount"))
+        buildDiscountActions(rec?.suggestedDiscountLost ?? 15, () => setStep("lost-discount")),
       );
       setStep("lost-discount");
     } else if (segment === "frequent") {
@@ -303,7 +313,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
         `Tienes **${analysisData?.segments.frequentClients ?? "varios"} clientes frecuentes** que merecen reconocimiento. 🏆\n\n` +
           `${rec?.forFrequent ?? "Un programa de recompensas los fidelizará aún más."}\n\n` +
           `¿Cuántas visitas se necesitan para recibir la recompensa?`,
-        buildVisitsActions(rec?.suggestedVisitsForReward ?? 5)
+        buildVisitsActions(rec?.suggestedVisitsForReward ?? 5),
       );
       setStep("frequent-visits");
     } else {
@@ -313,7 +323,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
         `Tienes **${analysisData?.segments.newClients ?? "varios"} clientes nuevos** explorando tu negocio. 🌟\n\n` +
           `${rec?.forNew ?? "Un incentivo en la segunda visita los convierte en regulares."}\n\n` +
           `¿Qué descuento quieres ofrecerles para que vuelvan?`,
-        buildDiscountActions(rec?.suggestedDiscountNew ?? 10, () => setStep("new-discount"))
+        buildDiscountActions(rec?.suggestedDiscountNew ?? 10, () => setStep("new-discount")),
       );
       setStep("new-discount");
     }
@@ -374,7 +384,10 @@ export function AIAssistant({ businessId }: { businessId: string }) {
     setSelectedDiscount(value);
     userSays(`${value}%`);
     const seg = activeSegment ?? "lost";
-    aiSays(`¡Perfecto! **${value}% de descuento**. ¿Por cuánto tiempo tendrá vigencia?`, buildDurationActions(seg));
+    aiSays(
+      `¡Perfecto! **${value}% de descuento**. ¿Por cuánto tiempo tendrá vigencia?`,
+      buildDurationActions(seg),
+    );
     setStep(seg === "lost" ? "lost-duration" : "new-duration");
   }
 
@@ -398,7 +411,8 @@ export function AIAssistant({ businessId }: { businessId: string }) {
   function selectDuration(days: number, seg: "lost" | "frequent" | "new") {
     disableLastActions();
     setSelectedDuration(days);
-    const label = days === 7 ? "1 semana" : days === 14 ? "2 semanas" : days === 30 ? "1 mes" : `${days} días`;
+    const label =
+      days === 7 ? "1 semana" : days === 14 ? "2 semanas" : days === 30 ? "1 mes" : `${days} días`;
     userSays(label);
     const disc = selectedDiscount ?? 15;
     const clientCount =
@@ -409,7 +423,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
           : (analysisData?.segments.newClients ?? 0);
     aiSays(
       `Creando la campaña para **${clientCount} clientes** con **${disc}% de descuento** por **${days} días**...`,
-      undefined
+      undefined,
     );
     setStep("creating-campaign");
     campaignMutation.mutate({ segment: seg, discountPct: disc, durationDays: days });
@@ -446,7 +460,10 @@ export function AIAssistant({ businessId }: { businessId: string }) {
             disableLastActions();
             userSays(`Sí, ${disc}% de descuento`);
             setSelectedDiscount(disc);
-            aiSays("¿Por cuánto tiempo tendrá vigencia el descuento?", buildDurationActions("frequent"));
+            aiSays(
+              "¿Por cuánto tiempo tendrá vigencia el descuento?",
+              buildDurationActions("frequent"),
+            );
             setStep("frequent-duration");
           },
         },
@@ -461,7 +478,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
             loyaltyMutation.mutate({ visitsRequired: n });
           },
         },
-      ]
+      ],
     );
     setStep("frequent-discount");
   }
@@ -494,8 +511,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
       {
         id: nextId(),
         from: "ai",
-        content:
-          "¡Hola de nuevo! ¿Qué quieres analizar ahora?",
+        content: "¡Hola de nuevo! ¿Qué quieres analizar ahora?",
         actions: [
           {
             label: "Resumen rápido",
@@ -574,7 +590,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
                     msg.from === "user"
                       ? "rounded-tr-sm bg-[var(--color-ink)] text-white"
                       : "rounded-tl-sm bg-[var(--color-cream)] text-[color:var(--color-ink)]",
-                    msg.isLoading && "flex items-center gap-2"
+                    msg.isLoading && "flex items-center gap-2",
                   )}
                 >
                   {msg.isLoading ? (
@@ -597,7 +613,7 @@ export function AIAssistant({ businessId }: { businessId: string }) {
                         className={cn(
                           "h-8 gap-1.5 rounded-full text-xs",
                           action.variant !== "outline" &&
-                            "bg-[var(--color-signal)] text-[color:var(--color-ink)] hover:bg-[var(--color-signal)]/90"
+                            "bg-[var(--color-signal)] text-[color:var(--color-ink)] hover:bg-[var(--color-signal)]/90",
                         )}
                         onClick={action.onClick}
                       >
