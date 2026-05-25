@@ -9,6 +9,31 @@ import { createSupabaseClient, mapSupabaseError, SupabaseError } from '../lib/su
 
 type HonoEnv = { Bindings: Env; Variables: ContextVariables }
 
+type StatsDb = ReturnType<typeof createSupabaseClient>
+
+async function snapshotBusinessStats(db: StatsDb, businessId: string) {
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+
+  const [allClients, todayVisits] = await Promise.all([
+    db.get('client_business_loyalty', {
+      filters: [{ column: 'business_id', operator: 'eq', value: businessId }],
+    }),
+    db.get('visits', {
+      filters: [
+        { column: 'business_id', operator: 'eq', value: businessId },
+        { column: 'created_at', operator: 'gte', value: todayStart.toISOString() },
+      ],
+    }),
+  ])
+
+  return {
+    totalClients: allClients.length,
+    activeClients: allClients.filter((c) => c.status === 'active').length,
+    visitsToday: todayVisits.length,
+  }
+}
+
 export const visitRoutes = new Hono<HonoEnv>()
 
 // ─── POST /visits ─────────────────────────────────────────────────────────────
@@ -62,11 +87,13 @@ visitRoutes.post('/', requireStaff(), async (c) => {
 
   if (existingVisit) {
     // Already registered (network retry scenario) — return the existing visit
+    const stats = await snapshotBusinessStats(db, staffBusinessId)
     return c.json(
       ok({
         visit: existingVisit,
         rewardUnlocked: existingVisit.reward_unlocked,
         alreadyRegistered: true,
+        stats,
       }),
       200
     )
@@ -133,7 +160,8 @@ visitRoutes.post('/', requireStaff(), async (c) => {
       const existing = await db.getOne('visits', {
         filters: [{ column: 'idempotency_key', operator: 'eq', value: idempotencyKey }],
       })
-      return c.json(ok({ visit: existing, rewardUnlocked: existing!.reward_unlocked, alreadyRegistered: true }), 200)
+      const stats = await snapshotBusinessStats(db, staffBusinessId)
+      return c.json(ok({ visit: existing, rewardUnlocked: existing!.reward_unlocked, alreadyRegistered: true, stats }), 200)
     }
     throw error
   }
@@ -175,6 +203,8 @@ visitRoutes.post('/', requireStaff(), async (c) => {
   // ── Step 11: Invalidate analytics cache for this business ─────────────────
   await c.env.ANALYTICS_CACHE.delete(`stats:summary:${staffBusinessId}`).catch(console.error)
 
+  const stats = await snapshotBusinessStats(db, staffBusinessId)
+
   return c.json(
     ok({
       visit: {
@@ -198,6 +228,7 @@ visitRoutes.post('/', requireStaff(), async (c) => {
             description: reward.description,
           }
         : null,
+      stats,
     }),
     201
   )

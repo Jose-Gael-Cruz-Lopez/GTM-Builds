@@ -28,6 +28,11 @@ export interface RegisterVisitResponse {
   rewardUnlocked: boolean;
   reward?: { id: string; description: string } | null;
   alreadyRegistered?: boolean;
+  stats?: {
+    visitsToday: number;
+    activeClients: number;
+    totalClients: number;
+  };
 }
 
 export interface ListMyVisitsParams {

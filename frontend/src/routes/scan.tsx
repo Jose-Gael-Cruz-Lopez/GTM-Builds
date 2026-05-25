@@ -2,6 +2,7 @@ import { RouteError } from "@/components/RouteError";
 import { createFileRoute } from "@tanstack/react-router";
 import { routeMeta } from "@/lib/route-meta";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Html5Qrcode } from "html5-qrcode";
 import { toast } from "sonner";
 import { visitsApi, type RegisterVisitResponse } from "@/lib/api/visits";
@@ -19,6 +20,7 @@ import { ScanReticle } from "@/components/scan/ScanReticle";
 import { ScanStatusPanel, type ScanStatus } from "@/components/scan/ScanStatusPanel";
 import { StaffKeySheet } from "@/components/scan/StaffKeySheet";
 import { CameraPermissionState } from "@/components/scan/CameraPermissionState";
+import { refreshDashboardStats } from "@/lib/dashboard-query-keys";
 
 export const Route = createFileRoute("/scan")({
   component: ScanPage,
@@ -86,6 +88,7 @@ async function checkIsOwner(businessId: string): Promise<boolean> {
 }
 
 function ScanPage() {
+  const qc = useQueryClient();
   const [keyReady, setKeyReady] = useState(false);
   const [keyLoading, setKeyLoading] = useState(true);
   const [storedKey, setStoredKey] = useState("");
@@ -114,8 +117,18 @@ function ScanPage() {
     }, ms);
   }, []);
 
+  const bumpDashboardStats = useCallback(
+    (bid: string, res: RegisterVisitResponse) => {
+      if (res.alreadyRegistered) return;
+      refreshDashboardStats(qc, bid, res.stats);
+    },
+    [qc],
+  );
+
   const applySuccess = useCallback(
-    (res: RegisterVisitResponse) => {
+    (res: RegisterVisitResponse, bid: string | null) => {
+      if (bid) bumpDashboardStats(bid, res);
+
       const visit = res.visit as { clientName?: string };
       const clientFirstName = firstName(visit.clientName ?? "Cliente");
       const stampsRemaining = res.stamps?.remaining ?? 0;
@@ -139,7 +152,7 @@ function ScanPage() {
       hapticSuccess();
       scheduleClear(3000);
     },
-    [scheduleClear],
+    [bumpDashboardStats, scheduleClear],
   );
 
   const applyError = useCallback(
@@ -200,7 +213,7 @@ function ScanPage() {
         }
 
         const res = await visitsApi.register({ token });
-        applySuccess(res);
+        applySuccess(res, businessId);
       } catch (e) {
         if (e instanceof ApiError) {
           applyError(e.code, e.message);
@@ -217,7 +230,7 @@ function ScanPage() {
         }, 2000);
       }
     },
-    [applyError, applySuccess, scheduleClear],
+    [applyError, applySuccess, businessId, scheduleClear],
   );
 
   const runSimulate = useCallback(
@@ -300,7 +313,13 @@ function ScanPage() {
   useEffect(() => {
     const syncQueue = async () => {
       if (!navigator.onLine || !keyReady) return;
-      const { processed } = await replayQueuedScans((token) => visitsApi.register({ token }));
+      const { processed } = await replayQueuedScans(async (token) => {
+        const res = await visitsApi.register({ token });
+        if (businessId && !res.alreadyRegistered) {
+          refreshDashboardStats(qc, businessId, res.stats);
+        }
+        return res;
+      });
       if (processed > 0) {
         toast.success(`${processed} visita(s) sincronizada(s)`);
         const items = await listQueuedScans();
@@ -312,7 +331,7 @@ function ScanPage() {
     window.addEventListener("online", onOnline);
     void syncQueue();
     return () => window.removeEventListener("online", onOnline);
-  }, [keyReady]);
+  }, [businessId, keyReady, qc]);
 
   // Camera scanner lifecycle
   useEffect(() => {

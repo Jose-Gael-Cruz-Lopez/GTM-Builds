@@ -3,14 +3,11 @@ import { Link } from "@tanstack/react-router";
 import type { FileRouteTypes } from "@/routeTree.gen";
 import {
   Building2,
-  Gift,
   LayoutDashboard,
   LogOut,
-  Megaphone,
   Menu,
   Settings,
   Sparkles,
-  TrendingUp,
   Users,
   Footprints,
   Scan,
@@ -28,11 +25,11 @@ export type DashboardNavId =
   | "sucursales"
   | "clientes"
   | "visitas"
-  | "recompensas"
   | "escaner"
-  | "campanas"
+  | "config"
+  | "recompensas"
   | "marketing"
-  | "config";
+  | "campanas";
 
 interface DashboardShellProps {
   businessId: string;
@@ -75,27 +72,10 @@ const NAV_ITEM_DEFS: {
     mobileTab: true,
   },
   {
-    id: "recompensas",
-    icon: Gift,
-    to: "/dashboard/$businessId/redemptions",
-  },
-  {
     id: "escaner",
     icon: Scan,
     to: "/scan",
     mobileTab: true,
-  },
-  {
-    id: "campanas",
-    icon: Megaphone,
-    to: "/campaigns/$businessId",
-    mobileTab: true,
-  },
-  {
-    id: "marketing",
-    icon: TrendingUp,
-    to: "/dashboard/$businessId/marketing",
-    mobileTab: false,
   },
   {
     id: "config",
@@ -265,7 +245,7 @@ export function DashboardShell({
         className="fixed inset-x-0 bottom-0 z-30 border-t border-[color:var(--color-border)] bg-[var(--color-bg-paper)] lg:hidden"
         aria-label={d.dashboard.openMenu}
       >
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-4">
           {mobileTabs.map(({ id, icon: Icon, to, label }) => {
             const active = activeNav === id;
             const linkProps =
