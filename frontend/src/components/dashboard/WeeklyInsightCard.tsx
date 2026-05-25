@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import type { PeakHoursResponse } from "@/lib/api/analytics";
 import { buildPeakInsight } from "@/components/dashboard/PeakHoursHeatmap";
@@ -16,7 +17,7 @@ export function WeeklyInsightCard({ businessId, peakHours, isLoading }: WeeklyIn
     ? buildPeakInsight(peakHours)
     : "Comparte tu enlace con clientes para descubrir patrones de visita esta semana.";
 
-  const ctaHref = `/campaigns/${businessId}?action=generate&seed=peak-hours`;
+  const ctaTo = "/dashboard/$businessId/assistant" as const;
 
   return (
     <article className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[var(--color-cream)] p-6 shadow-[var(--shadow-soft)] md:p-8">
@@ -46,12 +47,13 @@ export function WeeklyInsightCard({ businessId, peakHours, isLoading }: WeeklyIn
           </ul>
         </div>
 
-        <a
-          href={ctaHref}
+        <Link
+          to={ctaTo}
+          params={{ businessId }}
           className="btn-signal inline-flex shrink-0 items-center justify-center text-sm"
         >
-          Generar campaña basada en este insight
-        </a>
+          Abrir asistente IA
+        </Link>
       </div>
     </article>
   );
