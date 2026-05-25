@@ -1,11 +1,11 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import {
   detectLocale,
   dictionaries,
   persistLocale,
   type Dictionary,
   type Locale,
-} from '@/lib/i18n';
+} from "@/lib/i18n";
 
 type LocaleContextValue = {
   locale: Locale;
@@ -17,7 +17,7 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   // Start with 'es' to avoid hydration mismatch; detect real preference on mount.
-  const [locale, setLocaleState] = useState<Locale>('es');
+  const [locale, setLocaleState] = useState<Locale>("es");
 
   useEffect(() => {
     setLocaleState(detectLocale());
@@ -42,6 +42,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
 export function useLocale(): LocaleContextValue {
   const ctx = useContext(LocaleContext);
-  if (!ctx) throw new Error('useLocale must be used inside <LocaleProvider>');
+  if (!ctx) throw new Error("useLocale must be used inside <LocaleProvider>");
   return ctx;
 }

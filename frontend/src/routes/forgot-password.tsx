@@ -90,12 +90,7 @@ function ForgotPasswordPage() {
             {d.forgotPassword.sentBodyMid} {cooldown}
             {d.forgotPassword.sentBodyPost}
           </p>
-          <Button
-            type="button"
-            disabled={cooldown > 0}
-            onClick={onSubmit}
-            className="mt-4 w-full"
-          >
+          <Button type="button" disabled={cooldown > 0} onClick={onSubmit} className="mt-4 w-full">
             {d.forgotPassword.resend} {cooldown > 0 ? `(${cooldown}s)` : ""}
           </Button>
         </div>

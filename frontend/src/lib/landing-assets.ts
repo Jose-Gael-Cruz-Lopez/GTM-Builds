@@ -219,7 +219,7 @@ export const cloudItems: CloudItem[] = [
 // Use case panels (scroll stack)
 // ============================================================
 
-import type { Dictionary } from '@/lib/i18n';
+import type { Dictionary } from "@/lib/i18n";
 
 export type UseCasePanel = {
   index: string;

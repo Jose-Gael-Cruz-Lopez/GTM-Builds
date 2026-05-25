@@ -25,7 +25,10 @@ export const Route = createFileRoute("/user/register")({
 
 // Static shape for type inference; messages are injected at runtime via the hook below.
 const _baseSchema = z.object({
-  phone: z.string().trim().regex(/^\d{10}$/),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\d{10}$/),
   referralCode: z.string().trim().optional(),
 });
 type FormValues = z.infer<typeof _baseSchema>;
@@ -39,7 +42,10 @@ function UserRegisterPage() {
   const form = useForm<FormValues>({
     resolver: zodResolver(
       z.object({
-        phone: z.string().trim().regex(/^\d{10}$/, d.userRegister.phoneInvalid),
+        phone: z
+          .string()
+          .trim()
+          .regex(/^\d{10}$/, d.userRegister.phoneInvalid),
         referralCode: z.string().trim().optional(),
       }),
     ),

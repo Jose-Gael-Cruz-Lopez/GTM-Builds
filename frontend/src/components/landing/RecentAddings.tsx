@@ -74,7 +74,12 @@ export function RecentAddings() {
           }}
         >
           {SHOWCASES.map((s) => (
-            <ShowcaseTile key={s.name} {...s} colorsLabel={d.landing.colors} exploreLabel={d.landing.explore} />
+            <ShowcaseTile
+              key={s.name}
+              {...s}
+              colorsLabel={d.landing.colors}
+              exploreLabel={d.landing.explore}
+            />
           ))}
         </div>
       </div>
