@@ -446,7 +446,7 @@ export type Dictionary = {
     filterArchived: string;
     loading: string;
     nothingHere: string;
-    back: string;
+    backLink: string;
     statusDraft: string;
     statusActive: string;
     statusSent: string;
@@ -1240,7 +1240,7 @@ const es: Dictionary = {
     filterArchived: "Archivadas",
     loading: "Cargando campañas...",
     nothingHere: "Nada por aquí todavía.",
-    back: "Panel",
+    backLink: "Panel",
     statusDraft: "Borrador",
     statusActive: "Activa",
     statusSent: "Enviada",
@@ -2062,7 +2062,7 @@ const en: Dictionary = {
     filterArchived: "Archived",
     loading: "Loading campaigns...",
     nothingHere: "Nothing here yet.",
-    back: "Panel",
+    backLink: "Panel",
     statusDraft: "Draft",
     statusActive: "Active",
     statusSent: "Sent",
