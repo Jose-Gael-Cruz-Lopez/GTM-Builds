@@ -31,7 +31,7 @@ interface GoogleSignInButtonProps {
   intent: AuthIntent;
   label?: string;
   className?: string;
-  variant?: "default" | "hero" | "outline";
+  variant?: "default" | "hero" | "outline" | "flow";
 }
 
 export function GoogleSignInButton({
@@ -55,20 +55,22 @@ export function GoogleSignInButton({
     }
   };
 
-  if (variant === "hero") {
+  if (variant === "hero" || variant === "flow") {
+    const defaultClass =
+      variant === "flow"
+        ? "auth-flow-btn auth-flow-btn-full auth-flow-btn-primary inline-flex items-center justify-center gap-2"
+        : "inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-[var(--ink)] bg-[var(--ink)] px-6 py-3.5 text-sm font-medium text-[var(--paper)] transition hover:opacity-90 disabled:opacity-60";
+
     return (
       <button
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className={
-          className ??
-          "inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-[var(--ink)] bg-[var(--ink)] px-6 py-3.5 text-sm font-medium text-[var(--paper)] transition hover:opacity-90 disabled:opacity-60"
-        }
+        className={className ?? defaultClass}
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleMark />}
         {loading ? "Conectando…" : label}
-        {!loading && <span aria-hidden="true">→</span>}
+        {variant === "hero" && !loading && <span aria-hidden="true">→</span>}
       </button>
     );
   }
