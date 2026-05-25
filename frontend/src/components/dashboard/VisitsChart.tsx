@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
-import { analyticsApi } from "@/lib/api/analytics";
+import { analyticsApi, type VisitsResponse } from "@/lib/api/analytics";
 import { ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import {
@@ -22,6 +22,8 @@ import {
 export interface VisitsChartProps {
   businessId: string;
   defaultDays?: 7 | 30 | 90;
+  /** When set, skips the API and renders preview/demo series instead. */
+  getPreviewData?: (days: 7 | 30 | 90) => VisitsResponse;
 }
 
 interface ChartPoint {
@@ -31,18 +33,22 @@ interface ChartPoint {
 
 const PERIOD_OPTIONS = [7, 30, 90] as const;
 
-export function VisitsChart({ businessId, defaultDays = 30 }: VisitsChartProps) {
+export function VisitsChart({ businessId, defaultDays = 30, getPreviewData }: VisitsChartProps) {
   const [days, setDays] = useState<(typeof PERIOD_OPTIONS)[number]>(defaultDays);
 
   const visits = useQuery({
     queryKey: ["business", businessId, "visits-chart", days],
     queryFn: () => analyticsApi.visits(businessId, days),
+    enabled: !getPreviewData,
     retry: (count, err) => !(err instanceof ApiError && err.code === "AUTH_FORBIDDEN") && count < 2,
   });
 
-  if (visits.isLoading) return <AnalyticsCardSkeleton />;
+  const previewData = getPreviewData?.(days);
+  const chartData = previewData ?? visits.data;
 
-  if (visits.isError || !visits.data || visits.data.labels.length === 0) {
+  if (!getPreviewData && visits.isLoading) return <AnalyticsCardSkeleton />;
+
+  if (!getPreviewData && (visits.isError || !chartData || chartData.labels.length === 0)) {
     return (
       <div className="surface-paper p-5">
         <div className="mb-4 flex items-center justify-between">
@@ -54,9 +60,9 @@ export function VisitsChart({ businessId, defaultDays = 30 }: VisitsChartProps) 
     );
   }
 
-  const chart: ChartPoint[] = visits.data.labels.map((label, i) => ({
+  const chart: ChartPoint[] = chartData.labels.map((label, i) => ({
     day: formatDay(label),
-    visits: visits.data!.values[i] ?? 0,
+    visits: chartData.values[i] ?? 0,
   }));
 
   const useBars = days <= 7;
@@ -67,7 +73,7 @@ export function VisitsChart({ businessId, defaultDays = 30 }: VisitsChartProps) 
         <div>
           <h3 className="font-display font-semibold">Visitas</h3>
           <p className="mt-1 text-xs text-[color:var(--color-ink-soft)]">
-            {visits.data.totalVisits} total · {visits.data.avgPerDay.toFixed(1)}/día
+            {chartData.totalVisits} total · {chartData.avgPerDay.toFixed(1)}/día
           </p>
         </div>
         <PeriodToggle days={days} onChange={setDays} />
