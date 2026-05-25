@@ -84,8 +84,6 @@ export function ScrollStackPanel({
         }}
       >
         <div ref={revealRef} className="scroll-stack-panel-content">
-          <div className="scroll-stack-hairline scroll-stack-meta" aria-hidden="true" />
-
           <div className="scroll-stack-index-cluster scroll-stack-meta">
             <div className="scroll-stack-eyebrow">{d.landing.panelEyebrow}</div>
             <div className="scroll-stack-index">{panel.index}</div>
@@ -101,7 +99,7 @@ export function ScrollStackPanel({
           <div className="scroll-stack-headline-block scroll-stack-headline-layer">
             <h2 className="scroll-stack-headline font-display">
               {lines.map((line, i) => (
-                <span key={i} className="rise-mask block">
+                <span key={i} className="rise-mask" style={{ display: "block" }}>
                   <span className="rise-line">{line}</span>
                 </span>
               ))}
