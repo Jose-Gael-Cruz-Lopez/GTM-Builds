@@ -32,6 +32,7 @@ export function FinalCTA() {
           <div className="mt-8 flex justify-center">
             <GoogleSignInButton
               intent="business"
+              source="signup"
               label="Crear cuenta con Google"
               className="h-14 bg-background px-8 text-base font-semibold text-foreground hover:bg-background/90"
             />

@@ -60,6 +60,7 @@ export function Navbar() {
           ) : (
             <GoogleSignInButton
               intent="business"
+              source="login"
               label="Entrar con Google"
               className="btn-signal h-9 px-4 text-sm"
             />
