@@ -10,7 +10,7 @@ import { businessesApi } from "@/lib/api/businesses";
 import { onboardingSearch } from "@/lib/auth";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SignupFlowShell } from "@/components/auth/SignupFlowShell";
-import { BUSINESS_CATEGORY_OPTIONS } from "@/lib/business-categories";
+import { BUSINESS_CATEGORY_OPTIONS, uiCategoryToDb } from "@/lib/business-categories";
 import { useLocale } from "@/contexts/LocaleContext";
 
 const searchSchema = z.object({
@@ -95,7 +95,7 @@ function SignupPage() {
   const createBusinessAndContinue = async () => {
     const created = await businessesApi.create({
       name: form.businessName,
-      category: form.category as never,
+      category: uiCategoryToDb(form.category),
       plan: "free",
     });
     localStorage.setItem("nexoleal:current-business-id", created.business.id);
