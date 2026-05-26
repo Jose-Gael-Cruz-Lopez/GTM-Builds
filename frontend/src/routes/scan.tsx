@@ -496,7 +496,7 @@ function ScanPage() {
 
   const settingsHref = isOwner && businessId ? `/settings/${businessId}` : undefined;
   const effectiveBid = ownerBid ?? businessId ?? null;
-  const backHref = isOwner && effectiveBid ? `/dashboard/${effectiveBid}` : undefined;
+  const backHref = effectiveBid ? `/dashboard/${effectiveBid}` : undefined;
 
   return (
     <div
