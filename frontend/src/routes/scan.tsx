@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Html5Qrcode } from "html5-qrcode";
 import { toast } from "sonner";
+import { z } from "zod";
 import { visitsApi, type RegisterVisitResponse } from "@/lib/api/visits";
 import { ApiError } from "@/lib/api-client";
 import {
@@ -21,8 +22,14 @@ import { ScanStatusPanel, type ScanStatus } from "@/components/scan/ScanStatusPa
 import { StaffKeySheet } from "@/components/scan/StaffKeySheet";
 import { CameraPermissionState } from "@/components/scan/CameraPermissionState";
 import { refreshDashboardStats } from "@/lib/dashboard-query-keys";
+import { businessesApi } from "@/lib/api/businesses";
+
+const searchSchema = z.object({
+  bid: z.string().optional(),
+});
 
 export const Route = createFileRoute("/scan")({
+  validateSearch: (search) => searchSchema.parse(search),
   component: ScanPage,
   errorComponent: RouteError,
   head: () =>
@@ -89,6 +96,7 @@ async function checkIsOwner(businessId: string): Promise<boolean> {
 
 function ScanPage() {
   const qc = useQueryClient();
+  const { bid: ownerBid } = Route.useSearch();
   const [keyReady, setKeyReady] = useState(false);
   const [keyLoading, setKeyLoading] = useState(true);
   const [storedKey, setStoredKey] = useState("");
@@ -275,7 +283,7 @@ function ScanPage() {
     [applyError, scheduleClear],
   );
 
-  // Load staff key from IndexedDB
+  // Load staff key from IndexedDB; auto-create one for owners coming from the dashboard
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -293,15 +301,39 @@ function ScanPage() {
             setIsOwner(owner);
           }
         }
+      } else if (ownerBid) {
+        // Came from dashboard: verify ownership then auto-create a staff key
+        const owner = await checkIsOwner(ownerBid);
+        if (cancelled) return;
+        if (owner) {
+          try {
+            const res = await businessesApi.createStaffKey(ownerBid, { label: "Dueño (auto)" });
+            if (cancelled) return;
+            await setStaffKey(res.headerValue);
+            setStoredKey(res.headerValue);
+            setKeyReady(true);
+            setBusinessId(ownerBid);
+            setIsOwner(true);
+            const name = await resolveBusinessName(ownerBid);
+            if (!cancelled) setBusinessName(name);
+          } catch {
+            if (!cancelled) {
+              toast.error("No se pudo configurar el escáner automáticamente.");
+              setKeySheetOpen(true);
+            }
+          }
+        } else if (!cancelled) {
+          setKeySheetOpen(true);
+        }
       } else {
         setKeySheetOpen(true);
       }
-      setKeyLoading(false);
+      if (!cancelled) setKeyLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [ownerBid]);
 
   // Dev simulate query param
   useEffect(() => {
