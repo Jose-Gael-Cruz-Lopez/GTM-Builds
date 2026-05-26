@@ -207,7 +207,7 @@ function SignupPage() {
     >
       {step === 1 ? (
         <div>
-          <GoogleSignInButton intent="business" label={d.signup.googleContinue} variant="flow" />
+          <GoogleSignInButton intent="business" source="signup" label={d.signup.googleContinue} variant="flow" />
 
           <div className="auth-flow-divider">
             <span>{d.common.orDivider}</span>
