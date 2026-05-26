@@ -404,13 +404,13 @@ function ScanPage() {
     };
   }, [keyReady, cameraDenied, cameraActive, simulate, processToken]);
 
-  // Auto-start camera once key is ready (unless simulate-only view)
+  // Auto-start camera once key is ready and loading is done so the container div is in the DOM
   useEffect(() => {
-    if (keyReady && !cameraDenied && !simulate) {
+    if (keyReady && !keyLoading && !cameraDenied && !simulate) {
       setCameraActive(true);
       setStatus({ kind: "idle" });
     }
-  }, [keyReady, cameraDenied, simulate]);
+  }, [keyReady, keyLoading, cameraDenied, simulate]);
 
   useEffect(() => {
     return () => {

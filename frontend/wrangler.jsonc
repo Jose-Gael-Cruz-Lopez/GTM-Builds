@@ -10,6 +10,6 @@
   "vars": {
     "SUPABASE_URL": "https://lajrjnjyvbpaaspzgpvh.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhanJqbmp5dmJwYWFzcHpncHZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Njc4NzAsImV4cCI6MjA5NTE0Mzg3MH0.GNhZPu-gRkNW9RbaReR_UlmTRtEi5A5effiQFX3ZbUQ",
-    "VITE_API_URL": "https://nexoleal-backend.nexoleal.workers.dev"
-  }
+    "VITE_API_URL": "https://nexoleal-backend.nexoleal.workers.dev",
+  },
 }
