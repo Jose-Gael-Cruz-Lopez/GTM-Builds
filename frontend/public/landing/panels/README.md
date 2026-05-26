@@ -8,13 +8,13 @@ All current images are sourced from the Unsplash free library
 without attribution. Files are cropped to focal subject and saved
 progressive for fast first-paint.
 
-| File              | Subject               | Source        |
-| ----------------- | --------------------- | ------------- |
-| `cafeteria.jpg`   | Barista pouring latte | Unsplash      |
-| `retail.jpg`      | Boutique shop window  | Unsplash      |
-| `salon.jpg`       | Hair salon interior   | Unsplash      |
-| `restaurante.jpg` | Restaurant dining room| Unsplash      |
-| `servicios.jpg`   | Tailor hands & fabric | Unsplash      |
+| File              | Subject                | Source   |
+| ----------------- | ---------------------- | -------- |
+| `cafeteria.jpg`   | Barista pouring latte  | Unsplash |
+| `retail.jpg`      | Boutique shop window   | Unsplash |
+| `salon.jpg`       | Hair salon interior    | Unsplash |
+| `restaurante.jpg` | Restaurant dining room | Unsplash |
+| `servicios.jpg`   | Tailor hands & fabric  | Unsplash |
 
 When replacing with brand photography, keep the same dimensions and
 prefer a single human subject or quiet interior — the panel veil

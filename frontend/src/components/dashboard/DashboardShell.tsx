@@ -119,7 +119,9 @@ function SidebarNav({
         const linkProps =
           typeof to === "string" && to.includes("$businessId")
             ? { to, params: { businessId } as { businessId: string } }
-            : { to };
+            : id === "escaner"
+              ? { to, search: { bid: businessId } as { bid: string } }
+              : { to };
         return (
           <Link
             key={id}
@@ -251,7 +253,9 @@ export function DashboardShell({
             const linkProps =
               typeof to === "string" && to.includes("$businessId")
                 ? { to, params: { businessId } as { businessId: string } }
-                : { to };
+                : id === "escaner"
+                  ? { to, search: { bid: businessId } as { bid: string } }
+                  : { to };
             return (
               <Link
                 key={id}
