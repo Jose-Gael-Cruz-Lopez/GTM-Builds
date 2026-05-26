@@ -369,8 +369,24 @@ function ScanPage() {
   useEffect(() => {
     if (!keyReady || cameraDenied || !cameraActive || simulate) return;
 
+    // Guard: element must exist before Html5Qrcode constructor is called
+    const container = document.getElementById(CONTAINER_ID);
+    if (!container) return;
+
     let cancelled = false;
-    const scanner = new Html5Qrcode(CONTAINER_ID);
+    let scanner: Html5Qrcode;
+
+    try {
+      scanner = new Html5Qrcode(CONTAINER_ID);
+    } catch {
+      if (!cancelled) {
+        setCameraDenied(true);
+        setCameraActive(false);
+        setStatus({ kind: "error-camera" });
+      }
+      return;
+    }
+
     scannerRef.current = scanner;
 
     scanner
@@ -406,10 +422,34 @@ function ScanPage() {
 
   // Auto-start camera once key is ready and loading is done so the container div is in the DOM
   useEffect(() => {
-    if (keyReady && !keyLoading && !cameraDenied && !simulate) {
-      setCameraActive(true);
-      setStatus({ kind: "idle" });
-    }
+    if (!keyReady || keyLoading || cameraDenied || simulate) return;
+
+    let cancelled = false;
+
+    const requestAndStart = async () => {
+      // Ask for camera permission proactively so the browser shows the dialog
+      if (navigator.mediaDevices?.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          stream.getTracks().forEach((t) => t.stop());
+        } catch {
+          if (!cancelled) {
+            setCameraDenied(true);
+            setStatus({ kind: "error-camera" });
+          }
+          return;
+        }
+      }
+      if (!cancelled) {
+        setCameraActive(true);
+        setStatus({ kind: "idle" });
+      }
+    };
+
+    void requestAndStart();
+    return () => {
+      cancelled = true;
+    };
   }, [keyReady, keyLoading, cameraDenied, simulate]);
 
   useEffect(() => {
@@ -433,8 +473,8 @@ function ScanPage() {
       setBusinessName(name);
       setIsOwner(owner);
     }
+    // Don't set cameraActive directly — let the auto-start effect handle permission request
     setCameraDenied(false);
-    setCameraActive(true);
     setStatus({ kind: "idle" });
   };
 
@@ -475,7 +515,15 @@ function ScanPage() {
         ) : cameraDenied ? (
           <div className="flex flex-1 flex-col justify-center py-6">
             <CameraPermissionState
-              onActivate={() => {
+              onActivate={async () => {
+                try {
+                  // Explicitly request permission — shows the browser dialog if still "prompt"
+                  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                  stream.getTracks().forEach((t) => t.stop());
+                } catch {
+                  // Permission denied by user or not supported; leave cameraDenied = true
+                  return;
+                }
                 setCameraDenied(false);
                 setCameraActive(true);
                 setStatus({ kind: "idle" });
