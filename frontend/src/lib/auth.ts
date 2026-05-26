@@ -5,6 +5,27 @@ import { supabase } from "@/integrations/supabase/client";
 export type AuthIntent = "business" | "client";
 
 const AUTH_INTENT_KEY = "nexoleal:auth-intent";
+const AUTH_SOURCE_KEY = "nexoleal:auth-source";
+
+export type AuthSource = "login" | "signup";
+
+export function setAuthSource(source: AuthSource) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(AUTH_SOURCE_KEY, source);
+  }
+}
+
+export function readAuthSource(): AuthSource | null {
+  if (typeof window === "undefined") return null;
+  const value = localStorage.getItem(AUTH_SOURCE_KEY);
+  return value === "login" || value === "signup" ? value : null;
+}
+
+export function clearAuthSource() {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(AUTH_SOURCE_KEY);
+  }
+}
 
 export function setAuthIntent(intent: AuthIntent) {
   if (typeof window !== "undefined") {
@@ -24,8 +45,9 @@ export function clearAuthIntent() {
   }
 }
 
-export async function signInWithGoogle(intent: AuthIntent) {
+export async function signInWithGoogle(intent: AuthIntent, source?: AuthSource) {
   setAuthIntent(intent);
+  if (source) setAuthSource(source);
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {

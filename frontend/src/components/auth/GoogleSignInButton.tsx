@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { signInWithGoogle, type AuthIntent } from "@/lib/auth";
+import { signInWithGoogle, type AuthIntent, type AuthSource } from "@/lib/auth";
 
 function GoogleMark() {
   return (
@@ -29,6 +29,7 @@ function GoogleMark() {
 
 interface GoogleSignInButtonProps {
   intent: AuthIntent;
+  source: AuthSource;
   label?: string;
   className?: string;
   variant?: "default" | "hero" | "outline" | "flow";
@@ -36,6 +37,7 @@ interface GoogleSignInButtonProps {
 
 export function GoogleSignInButton({
   intent,
+  source,
   label = "Continuar con Google",
   className,
   variant = "default",
@@ -45,7 +47,7 @@ export function GoogleSignInButton({
   const handleClick = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle(intent);
+      await signInWithGoogle(intent, source);
     } catch (err) {
       console.error(err);
       toast.error("No pudimos conectar con Google", {

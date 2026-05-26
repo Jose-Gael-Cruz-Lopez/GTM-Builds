@@ -5,7 +5,13 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
-import { clearAuthIntent, onboardingSearch, readAuthIntent } from "@/lib/auth";
+import {
+  clearAuthIntent,
+  clearAuthSource,
+  onboardingSearch,
+  readAuthIntent,
+  readAuthSource,
+} from "@/lib/auth";
 
 export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
@@ -25,10 +31,13 @@ function AuthCallback() {
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
 
+      const source = readAuthSource();
+      clearAuthSource();
+
       if (!data.session) {
         clearAuthIntent();
         toast.error("No pudimos iniciar sesión. Inténtalo de nuevo.");
-        navigate({ to: "/login" });
+        navigate({ to: source === "signup" ? "/signup" : "/login" });
         return;
       }
 
@@ -79,7 +88,7 @@ function AuthCallback() {
         .limit(1)
         .maybeSingle();
 
-      if (intent === "business") {
+      if (intent === "business" || source === "signup") {
         if (owned.data?.id) {
           navigate({ to: "/dashboard/$businessId", params: { businessId: owned.data.id } });
         } else {
