@@ -5,7 +5,13 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { businessesApi } from "@/lib/api/businesses";
-import { clearAuthIntent, clearAuthSource, onboardingSearch, readAuthIntent, readAuthSource } from "@/lib/auth";
+import {
+  clearAuthIntent,
+  clearAuthSource,
+  onboardingSearch,
+  readAuthIntent,
+  readAuthSource,
+} from "@/lib/auth";
 
 export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
