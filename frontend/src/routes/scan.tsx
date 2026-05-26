@@ -495,6 +495,8 @@ function ScanPage() {
   };
 
   const settingsHref = isOwner && businessId ? `/settings/${businessId}` : undefined;
+  const effectiveBid = businessId ?? ownerBid ?? null;
+  const backHref = effectiveBid ? `/dashboard/${effectiveBid}` : undefined;
 
   return (
     <div
@@ -505,6 +507,7 @@ function ScanPage() {
         businessName={businessName}
         settingsHref={settingsHref}
         onSettingsClick={() => setKeySheetOpen(true)}
+        backHref={backHref}
       />
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col">
