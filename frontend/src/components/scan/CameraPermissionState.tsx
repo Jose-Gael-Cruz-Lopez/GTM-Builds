@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { IsoScene } from "@/components/ui/iso-scene";
 
 interface CameraPermissionStateProps {
-  onActivate: () => void;
+  onActivate: () => void | Promise<void>;
 }
 
 export function CameraPermissionState({ onActivate }: CameraPermissionStateProps) {
