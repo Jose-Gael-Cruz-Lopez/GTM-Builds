@@ -92,16 +92,24 @@ Sin markdown, sin explicaciones, sin texto adicional.
 
 // ─── Fallback campaigns (used if NIM fails) ───────────────────────────────────
 
-const FALLBACK_CAMPAIGNS: CampaignSuggestion[] = [
-  {
+const FALLBACK_CAMPAIGNS: Record<CampaignSuggestion['targetSegment'], CampaignSuggestion> = {
+  at_risk: {
     title: 'Reactivación de clientes inactivos',
     messageTemplate:
-      '¡Hola {name}! Hace {days} días que no te vemos en {businessName}. Te esperamos esta semana con un 10% de descuento. ¡Muéstrale este mensaje a tu estilista!',
+      '¡Hola {name}! Hace {days} días que no te vemos en {businessName}. Te esperamos esta semana con un descuento especial. ¡Muéstrale este mensaje a tu estilista!',
     targetSegment: 'at_risk',
     sendTiming: 'Martes o miércoles por la mañana',
     expectedLift: '+12% visitas en 2 semanas',
   },
-  {
+  lost: {
+    title: 'Te extrañamos — vuelve con beneficio exclusivo',
+    messageTemplate:
+      '¡{name}, hace mucho que no sabemos de ti! En {businessName} queremos que regreses. Ven esta semana y recibe un beneficio especial de bienvenida. ¿Te animás?',
+    targetSegment: 'lost',
+    sendTiming: 'Lunes o martes por la mañana',
+    expectedLift: '+8% reactivación de clientes perdidos',
+  },
+  frequent: {
     title: 'Llena tu tarjeta este fin de semana',
     messageTemplate:
       '¡{name}! Te faltan {stamps} sellos para tu próxima recompensa en {businessName}. Este sábado reserva con nosotros y avanza más rápido. ¡Link de reserva aquí!',
@@ -109,7 +117,7 @@ const FALLBACK_CAMPAIGNS: CampaignSuggestion[] = [
     sendTiming: 'Jueves tarde antes del fin de semana',
     expectedLift: '+20% reservas el fin de semana',
   },
-  {
+  all: {
     title: 'Día tranquilo — oferta especial',
     messageTemplate:
       '¡Hola {name}! Los lunes son tranquilos en {businessName} y tú mereces atención personalizada. Reserva hoy con 15 min extra sin costo. ¿Te animás?',
@@ -117,7 +125,11 @@ const FALLBACK_CAMPAIGNS: CampaignSuggestion[] = [
     sendTiming: 'Domingo tarde para promover el lunes',
     expectedLift: '+25% ocupación el día tranquilo',
   },
-]
+}
+
+function selectFallback(targetSegment?: string): CampaignSuggestion {
+  return FALLBACK_CAMPAIGNS[targetSegment as CampaignSuggestion['targetSegment']] ?? FALLBACK_CAMPAIGNS.at_risk
+}
 
 // ─── User prompt builder ──────────────────────────────────────────────────────
 
@@ -213,7 +225,7 @@ export async function generateCampaigns(
     if (!response.ok) {
       const errBody = await response.json().catch(() => ({})) as { detail?: string; message?: string }
       console.error(`[NIM] error ${response.status}: ${errBody.detail ?? errBody.message ?? response.statusText}`)
-      return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }
+      return { campaigns: [selectFallback(context.targetSegment)], usedFallback: true }
     }
 
     const data = await response.json() as {
@@ -226,7 +238,7 @@ export async function generateCampaigns(
 
     if (!text) {
       console.error('[NIM] Empty response from model')
-      return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }
+      return { campaigns: [selectFallback(context.targetSegment)], usedFallback: true }
     }
 
     // Strip possible markdown fences that the model might add
@@ -237,7 +249,7 @@ export async function generateCampaigns(
       parsed = JSON.parse(cleaned) as { campaign?: CampaignSuggestion; campaigns?: CampaignSuggestion[] }
     } catch {
       console.error('[NIM] Failed to parse JSON response:', text)
-      return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }
+      return { campaigns: [selectFallback(context.targetSegment)], usedFallback: true }
     }
 
     // Support both { campaign: {} } and { campaigns: [] } shapes
@@ -256,7 +268,7 @@ export async function generateCampaigns(
     )
 
     if (validated.length === 0) {
-      return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }
+      return { campaigns: [selectFallback(context.targetSegment)], usedFallback: true }
     }
 
     return { campaigns: validated, usedFallback: false }
@@ -264,7 +276,7 @@ export async function generateCampaigns(
     // Mirrors the error handling pattern in nimClient.js
     const msg = error instanceof Error ? error.message : String(error)
     console.error('[NIM] Unexpected error:', msg)
-    return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }
+    return { campaigns: [selectFallback(context.targetSegment)], usedFallback: true }
   }
 }
 
