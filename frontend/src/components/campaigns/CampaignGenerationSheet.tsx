@@ -235,7 +235,7 @@ export function CampaignGenerationSheet({
                   </p>
                   <Button
                     className="mt-4"
-                    onClick={() => generate.mutate()}
+                    onClick={() => generate.mutate(undefined)}
                     disabled={generate.isPending}
                   >
                     <Sparkles className="h-4 w-4" /> Generar promociones
@@ -328,7 +328,7 @@ export function CampaignGenerationSheet({
                 className="ml-auto"
                 onClick={() => {
                   setStep(3);
-                  generate.mutate();
+                  generate.mutate(undefined);
                 }}
                 disabled={generate.isPending}
               >
