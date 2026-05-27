@@ -1,8 +1,10 @@
 import { RouteError } from "@/components/RouteError";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Building2, Bot, ChevronRight, Users } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { AIAssistant } from "@/components/assistant/AIAssistant";
 
 import { businessesApi } from "@/lib/api/businesses";
 import { analyticsApi } from "@/lib/api/analytics";
@@ -51,6 +53,8 @@ function DashboardPage() {
   const { businessId } = Route.useParams();
   const { user } = useSession();
   const { businessName, business } = useOwnedBusiness();
+
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const ownerFirstName =
     user?.user_metadata?.full_name?.split(/\s+/)[0] ?? user?.email?.split("@")[0] ?? "equipo";
@@ -170,10 +174,10 @@ function DashboardPage() {
           />
         </Link>
 
-        <Link
-          to="/dashboard/$businessId/assistant"
-          params={{ businessId }}
-          className="surface-paper group flex items-center gap-4 p-5 transition-shadow hover:shadow-[var(--shadow-soft)]"
+        <button
+          type="button"
+          onClick={() => setAssistantOpen(true)}
+          className="surface-paper group flex w-full items-center gap-4 p-5 text-left transition-shadow hover:shadow-[var(--shadow-soft)]"
         >
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[var(--color-signal)]">
             <Bot className="h-6 w-6 text-[color:var(--color-ink)]" aria-hidden />
@@ -188,8 +192,17 @@ function DashboardPage() {
             className="h-4 w-4 shrink-0 text-[color:var(--color-ink-soft)] transition-transform group-hover:translate-x-0.5"
             aria-hidden
           />
-        </Link>
+        </button>
       </div>
+
+      <Sheet open={assistantOpen} onOpenChange={setAssistantOpen}>
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col p-0 sm:max-w-md [&>button]:hidden"
+        >
+          <AIAssistant businessId={businessId} onClose={() => setAssistantOpen(false)} />
+        </SheetContent>
+      </Sheet>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiTile
