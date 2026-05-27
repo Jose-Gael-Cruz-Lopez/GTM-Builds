@@ -24,12 +24,13 @@ campaignRoutes.post(
     const businessId = c.req.param('id')
     const db = createSupabaseClient(c.env, 'service')
 
-    const body = await c.req.json<{
+    type GenerateBody = {
       targetSegment?: 'at_risk' | 'lost' | 'all' | 'frequent'
       objective?: string
       tone?: string
       extraSpecs?: string
-    }>().catch(() => ({}))
+    }
+    const body = await c.req.json<GenerateBody>().catch((): GenerateBody => ({}))
 
     // Gather business context to build the NIM prompt
     const [business, allLoyalties] = await Promise.all([
