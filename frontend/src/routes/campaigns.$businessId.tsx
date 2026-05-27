@@ -22,7 +22,7 @@ import { getSegmentCount } from "@/components/campaigns/segment-utils";
 import { cn } from "@/lib/utils";
 
 const searchSchema = z.object({
-  tab: z.enum(["all", "draft", "active", "sent", "archived"]).optional().default("all"),
+  tab: z.enum(["all", "draft", "active", "sent"]).optional().default("all"),
   action: z.enum(["generate"]).optional(),
 });
 
@@ -54,7 +54,6 @@ const TABS: { value: Tab; label: string }[] = [
   { value: "draft", label: "Borradores" },
   { value: "active", label: "Activas" },
   { value: "sent", label: "Enviadas" },
-  { value: "archived", label: "Archivadas" },
 ];
 
 function CampaignsPage() {
@@ -128,7 +127,6 @@ function CampaignsPage() {
     draft: grouped.draft.length,
     active: grouped.active.length,
     sent: grouped.sent.length,
-    archived: grouped.archived.length,
   };
 
   const visibleCampaigns: Campaign[] =

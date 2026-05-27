@@ -63,10 +63,9 @@ export interface BusinessContext {
 // ─── NIM API constants (mirroring nimClient.js) ───────────────────────────────
 
 const NIM_URL = 'https://integrate.api.nvidia.com/v1/chat/completions'
-// nvidia/llama-3.1-nemotron-ultra-253b-v1 is NVIDIA's most capable model (253B params,
-// derived from Llama 3.1 405B). Falls back to llama-3.3-70b if API key doesn't support it.
 const NIM_MODEL = 'nvidia/llama-3.1-nemotron-ultra-253b-v1'
 const NIM_FALLBACK_MODEL = 'meta/llama-3.3-70b-instruct'
+const NIM_CAMPAIGNS_MODEL = 'meta/llama-3.3-70b-instruct'
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 // Role: campaign strategist for Latin American SMBs.
@@ -176,8 +175,9 @@ export async function generateCampaigns(
   const userContent = buildUserPrompt(context)
 
   try {
-    const response = await nimFetchWithFallback(
+    const response = await nimFetch(
       apiKey,
+      NIM_CAMPAIGNS_MODEL,
       [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: userContent },
