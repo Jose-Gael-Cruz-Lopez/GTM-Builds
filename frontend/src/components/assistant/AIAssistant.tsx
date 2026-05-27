@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Check,
   Loader2,
+  PieChart,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -50,16 +51,21 @@ type Step =
   | "creating-campaign"
   | "campaign-done"
   | "service-analysis"
+  | "clients-analysis"
   | "loyalty-visits"
   | "loyalty-done";
+
+type PendingAction = "summary" | "activity" | "clients";
 
 let msgId = 0;
 const nextId = () => String(++msgId);
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function AIAssistant({ businessId }: { businessId: string }) {
+export function AIAssistant({ businessId, onClose }: { businessId: string; onClose?: () => void }) {
   const navigate = useNavigate();
+
+  const pendingActionRef = useRef<PendingAction>("summary");
 
   const [step, setStep] = useState<Step>("welcome");
   const [messages, setMessages] = useState<Message[]>([
@@ -67,18 +73,24 @@ export function AIAssistant({ businessId }: { businessId: string }) {
       id: nextId(),
       from: "ai",
       content:
-        "¡Hola! Soy tu asistente de negocio con IA. Puedo analizar tus visitas recientes y ayudarte a tomar acciones concretas para retener y ganar clientes. ¿Qué quieres hacer?",
+        "¡Hola! Soy tu asistente de negocio con IA. Puedo analizar tus visitas recientes y ayudarte a tomar acciones concretas para retener y ganar clientes. ¿Qué quieres saber?",
       actions: [
         {
-          label: "Resumen rápido",
+          label: "Dame un resumen",
           icon: <BarChart3 className="h-3.5 w-3.5" />,
-          onClick: () => handleAnalyze(),
+          onClick: () => handleAnalyze("summary"),
         },
         {
-          label: "Análisis de actividad",
+          label: "¿Cómo mejorar mis ventas?",
           icon: <TrendingUp className="h-3.5 w-3.5" />,
           variant: "outline",
-          onClick: () => handleServiceAnalysisRequest(),
+          onClick: () => handleAnalyze("activity"),
+        },
+        {
+          label: "¿Cuántos clientes tengo?",
+          icon: <PieChart className="h-3.5 w-3.5" />,
+          variant: "outline",
+          onClick: () => handleAnalyze("clients"),
         },
       ],
     },
@@ -88,7 +100,6 @@ export function AIAssistant({ businessId }: { businessId: string }) {
   const [activeSegment, setActiveSegment] = useState<"lost" | "frequent" | "new" | null>(null);
   const [selectedDiscount, setSelectedDiscount] = useState<number | null>(null);
   const [customDiscountInput, setCustomDiscountInput] = useState("");
-  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
   const [customDurationInput, setCustomDurationInput] = useState("");
   const [customVisitsInput, setCustomVisitsInput] = useState("");
 
@@ -121,48 +132,123 @@ export function AIAssistant({ businessId }: { businessId: string }) {
     });
   }
 
+  // ─── Display functions (called from onSuccess) ────────────────────────────
+
+  function doSummary(data: AnalyzeResponse) {
+    setStep("summary");
+    const { segments, periodDays, visitCount, insights } = data;
+    const summary =
+      `En los últimos **${periodDays} días** analicé **${visitCount} visitas**:\n\n` +
+      `• **${segments.newClients}** clientes nuevos\n` +
+      `• **${segments.frequentClients}** clientes frecuentes (4+ visitas)\n` +
+      `• **${segments.lostClients}** clientes que ya no regresan\n` +
+      `• **${segments.atRiskClients}** clientes en riesgo de perderse\n\n` +
+      `${insights.segmentAnalysis.frequentInsight}\n\n¿Qué quieres hacer?`;
+
+    aiSays(summary, [
+      {
+        label: "Campaña para perdidos",
+        icon: <Users className="h-3.5 w-3.5" />,
+        onClick: () => handleCampaignFlow("lost"),
+      },
+      {
+        label: "Premio a frecuentes",
+        icon: <Sparkles className="h-3.5 w-3.5" />,
+        variant: "outline",
+        onClick: () => handleCampaignFlow("frequent"),
+      },
+      {
+        label: "Incentivo para nuevos",
+        icon: <UserPlus className="h-3.5 w-3.5" />,
+        variant: "outline",
+        onClick: () => handleCampaignFlow("new"),
+      },
+      {
+        label: "Ver análisis de actividad",
+        icon: <TrendingUp className="h-3.5 w-3.5" />,
+        variant: "outline",
+        onClick: () => doActivityAnalysis(data),
+      },
+    ]);
+  }
+
+  function doActivityAnalysis(data: AnalyzeResponse) {
+    const { insights, peakDay, slowDay, peakHour, slowHour } = data;
+    const { serviceAnalysis } = insights;
+
+    setStep("service-analysis");
+    aiSays(
+      `**Análisis de tu actividad:**\n\n` +
+        `**Horarios activos:** ${peakDay} a las ${peakHour}\n` +
+        `**Horarios tranquilos:** ${slowDay} a las ${slowHour}\n\n` +
+        `**Períodos de baja actividad:**\n${serviceAnalysis.slowPeriods.map((p) => `• ${p}`).join("\n")}\n\n` +
+        `**¿Por qué está tranquilo?**\n${serviceAnalysis.lowPerformanceReasons.map((r) => `• ${r}`).join("\n")}\n\n` +
+        `**Predicciones si actúas:**\n${serviceAnalysis.predictions.map((p) => `• ${p}`).join("\n")}\n\n` +
+        `**Recomendación:** ${insights.recommendations.forLost}`,
+      [
+        {
+          label: "Crear campaña para los días tranquilos",
+          icon: <Sparkles className="h-3.5 w-3.5" />,
+          onClick: () => handleCampaignFlow("lost"),
+        },
+        {
+          label: "Ver resumen de clientes",
+          variant: "outline",
+          onClick: () => doSummary(data),
+        },
+      ],
+    );
+  }
+
+  function doClientsAnalysis(data: AnalyzeResponse) {
+    setStep("clients-analysis");
+    const { segments, insights } = data;
+    const msg =
+      `**Tus clientes actuales:**\n\n` +
+      `• **${segments.total}** clientes en total\n` +
+      `• **${segments.newClients}** clientes nuevos (últimos 30 días)\n` +
+      `• **${segments.frequentClients}** clientes frecuentes (4+ visitas)\n` +
+      `• **${segments.atRiskClients}** en riesgo de perderse\n` +
+      `• **${segments.lostClients}** que ya no regresan\n\n` +
+      `${insights.segmentAnalysis.lostInsight}\n\n` +
+      `**Recomendación:** ${insights.recommendations.forLost}\n\n¿Qué quieres hacer?`;
+
+    aiSays(msg, [
+      {
+        label: "Reactivar clientes perdidos",
+        icon: <Users className="h-3.5 w-3.5" />,
+        onClick: () => handleCampaignFlow("lost"),
+      },
+      {
+        label: "Premio a frecuentes",
+        icon: <Sparkles className="h-3.5 w-3.5" />,
+        variant: "outline",
+        onClick: () => handleCampaignFlow("frequent"),
+      },
+      {
+        label: "Incentivo para nuevos",
+        icon: <UserPlus className="h-3.5 w-3.5" />,
+        variant: "outline",
+        onClick: () => handleCampaignFlow("new"),
+      },
+    ]);
+  }
+
   // ─── Mutations ────────────────────────────────────────────────────────────
 
   const analyzeMutation = useMutation({
     mutationFn: () => assistantApi.analyze(businessId),
     onSuccess: (data) => {
       setAnalysisData(data);
-      setStep("summary");
-
-      const { segments, periodDays, visitCount, insights } = data;
-      const summary =
-        `En los últimos **${periodDays} días** analicé **${visitCount} visitas**:\n\n` +
-        `• **${segments.newClients}** clientes nuevos\n` +
-        `• **${segments.frequentClients}** clientes frecuentes (4+ visitas)\n` +
-        `• **${segments.lostClients}** clientes que ya no regresan\n` +
-        `• **${segments.atRiskClients}** clientes en riesgo de perderse\n\n` +
-        `${insights.segmentAnalysis.frequentInsight}\n\n¿Qué quieres hacer?`;
-
-      aiSays(summary, [
-        {
-          label: "Campaña para perdidos",
-          icon: <Users className="h-3.5 w-3.5" />,
-          onClick: () => handleCampaignFlow("lost"),
-        },
-        {
-          label: "Premio a frecuentes",
-          icon: <Sparkles className="h-3.5 w-3.5" />,
-          variant: "outline",
-          onClick: () => handleCampaignFlow("frequent"),
-        },
-        {
-          label: "Incentivo para nuevos",
-          icon: <UserPlus className="h-3.5 w-3.5" />,
-          variant: "outline",
-          onClick: () => handleCampaignFlow("new"),
-        },
-        {
-          label: "Ver análisis de actividad",
-          icon: <TrendingUp className="h-3.5 w-3.5" />,
-          variant: "outline",
-          onClick: () => handleServiceAnalysis(),
-        },
-      ]);
+      setMessages((prev) => prev.filter((m) => !m.isLoading));
+      const action = pendingActionRef.current;
+      if (action === "activity") {
+        doActivityAnalysis(data);
+      } else if (action === "clients") {
+        doClientsAnalysis(data);
+      } else {
+        doSummary(data);
+      }
     },
     onError: () => {
       toast.error("No se pudo conectar con el asistente. Intenta de nuevo.");
@@ -239,9 +325,26 @@ export function AIAssistant({ businessId }: { businessId: string }) {
 
   // ─── Flow handlers ────────────────────────────────────────────────────────
 
-  function handleAnalyze() {
+  function handleAnalyze(action: PendingAction = "summary") {
+    pendingActionRef.current = action;
     disableLastActions();
-    userSays("Resumen rápido");
+
+    const userMsg =
+      action === "summary"
+        ? "Dame un resumen de lo que está pasando"
+        : action === "activity"
+          ? "¿Cómo puedo mejorar mis ventas?"
+          : "¿Cuántos clientes tengo y dame un análisis?";
+    userSays(userMsg);
+
+    // If we already have data, skip the API call
+    if (analysisData) {
+      if (action === "activity") doActivityAnalysis(analysisData);
+      else if (action === "clients") doClientsAnalysis(analysisData);
+      else doSummary(analysisData);
+      return;
+    }
+
     addMsg({
       from: "ai",
       content: "Analizando los datos de tu negocio con IA...",
@@ -249,47 +352,6 @@ export function AIAssistant({ businessId }: { businessId: string }) {
     });
     setStep("analyzing");
     analyzeMutation.mutate();
-  }
-
-  function handleServiceAnalysisRequest() {
-    disableLastActions();
-    userSays("Análisis de actividad");
-    if (analysisData) {
-      handleServiceAnalysis();
-    } else {
-      addMsg({ from: "ai", content: "Primero necesito analizar tus datos...", isLoading: true });
-      setStep("analyzing");
-      analyzeMutation.mutate();
-    }
-  }
-
-  function handleServiceAnalysis() {
-    if (!analysisData) return;
-    const { insights, peakDay, slowDay, peakHour, slowHour } = analysisData;
-    const { serviceAnalysis } = insights;
-
-    setStep("service-analysis");
-    aiSays(
-      `**Análisis de tu actividad:**\n\n` +
-        `**Horarios activos:** ${peakDay} a las ${peakHour}\n` +
-        `**Horarios tranquilos:** ${slowDay} a las ${slowHour}\n\n` +
-        `**Períodos de baja actividad:**\n${serviceAnalysis.slowPeriods.map((p) => `• ${p}`).join("\n")}\n\n` +
-        `**¿Por qué está tranquilo?**\n${serviceAnalysis.lowPerformanceReasons.map((r) => `• ${r}`).join("\n")}\n\n` +
-        `**Predicciones si actúas:**\n${serviceAnalysis.predictions.map((p) => `• ${p}`).join("\n")}\n\n` +
-        `**Recomendación:** ${insights.recommendations.forLost}`,
-      [
-        {
-          label: "Crear campaña para los días tranquilos",
-          icon: <Sparkles className="h-3.5 w-3.5" />,
-          onClick: () => handleCampaignFlow("lost"),
-        },
-        {
-          label: "Ver resumen de clientes",
-          variant: "outline",
-          onClick: () => handleReset(),
-        },
-      ],
-    );
   }
 
   function handleCampaignFlow(segment: "lost" | "frequent" | "new") {
@@ -410,7 +472,6 @@ export function AIAssistant({ businessId }: { businessId: string }) {
 
   function selectDuration(days: number, seg: "lost" | "frequent" | "new") {
     disableLastActions();
-    setSelectedDuration(days);
     const label =
       days === 7 ? "1 semana" : days === 14 ? "2 semanas" : days === 30 ? "1 mes" : `${days} días`;
     userSays(label);
@@ -505,7 +566,6 @@ export function AIAssistant({ businessId }: { businessId: string }) {
     setAnalysisData(null);
     setActiveSegment(null);
     setSelectedDiscount(null);
-    setSelectedDuration(null);
     msgId = 0;
     setMessages([
       {
@@ -514,15 +574,21 @@ export function AIAssistant({ businessId }: { businessId: string }) {
         content: "¡Hola de nuevo! ¿Qué quieres analizar ahora?",
         actions: [
           {
-            label: "Resumen rápido",
+            label: "Dame un resumen",
             icon: <BarChart3 className="h-3.5 w-3.5" />,
-            onClick: () => handleAnalyze(),
+            onClick: () => handleAnalyze("summary"),
           },
           {
-            label: "Análisis de actividad",
+            label: "¿Cómo mejorar mis ventas?",
             icon: <TrendingUp className="h-3.5 w-3.5" />,
             variant: "outline",
-            onClick: () => handleServiceAnalysisRequest(),
+            onClick: () => handleAnalyze("activity"),
+          },
+          {
+            label: "¿Cuántos clientes tengo?",
+            icon: <PieChart className="h-3.5 w-3.5" />,
+            variant: "outline",
+            onClick: () => handleAnalyze("clients"),
           },
         ],
       },
@@ -546,6 +612,10 @@ export function AIAssistant({ businessId }: { businessId: string }) {
     messages.at(-1)?.from === "ai" &&
     messages.at(-1)?.content.includes("número de visitas");
 
+  const handleBack = onClose
+    ? onClose
+    : () => navigate({ to: "/dashboard/$businessId", params: { businessId } });
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -554,8 +624,8 @@ export function AIAssistant({ businessId }: { businessId: string }) {
           variant="outline"
           size="icon"
           className="shrink-0"
-          onClick={() => navigate({ to: "/dashboard/$businessId", params: { businessId } })}
-          aria-label="Volver al panel"
+          onClick={handleBack}
+          aria-label="Cerrar asistente"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -711,7 +781,6 @@ export function AIAssistant({ businessId }: { businessId: string }) {
 }
 
 // ─── Markdown-lite renderer ───────────────────────────────────────────────────
-// Renders **bold**, bullet lists, and newlines from the AI content strings.
 
 function MessageContent({ content }: { content: string }) {
   const lines = content.split("\n");
