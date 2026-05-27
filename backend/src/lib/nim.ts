@@ -58,6 +58,10 @@ export interface BusinessContext {
   avgVisitsPerClient: number
   peakDay?: string       // e.g. 'Saturday'
   slowDay?: string       // e.g. 'Monday'
+  targetSegment?: 'at_risk' | 'lost' | 'all' | 'frequent'
+  objective?: string
+  tone?: string
+  extraSpecs?: string
 }
 
 // ─── NIM API constants (mirroring nimClient.js) ───────────────────────────────
@@ -73,16 +77,17 @@ const NIM_CAMPAIGNS_MODEL = 'meta/llama-3.3-70b-instruct'
 
 const SYSTEM_PROMPT = `
 Eres un experto en marketing de retención para pequeños negocios en Latinoamérica con más de 15 años de experiencia.
-Recibes datos reales de un negocio y su base de clientes.
-Devuelves exactamente 3 campañas de reactivación y lealtad en formato JSON, altamente personalizadas para el tipo de negocio.
-Cada campaña debe incluir:
+Recibes datos reales de un negocio, su base de clientes y las instrucciones específicas del dueño del negocio.
+Devuelves exactamente 1 campaña de reactivación y lealtad en formato JSON, altamente personalizada para el tipo de negocio y el segmento indicado.
+La campaña debe incluir:
 - Un título atractivo y específico para el negocio
-- Un mensaje cálido, cercano y en español latinoamericano que genere urgencia sin ser agresivo
-- Segmento objetivo claro con justificación
+- Un mensaje cálido, cercano y en español latinoamericano que genere urgencia sin ser agresivo, adaptado al objetivo y tono indicados
+- El segmento objetivo exacto que se te indica
 - Timing óptimo basado en los datos del negocio
 - Estimación realista del impacto esperado con porcentajes específicos
 Las variables de mensaje son: {name} (nombre del cliente), {days} (días sin visitar), {businessName} (nombre del negocio), {stamps} (sellos faltantes).
-Responde SOLO con JSON válido, sin markdown, sin explicaciones, sin texto adicional.
+Responde SOLO con JSON válido: { "campaign": { "title", "messageTemplate", "targetSegment", "sendTiming", "expectedLift" } }
+Sin markdown, sin explicaciones, sin texto adicional.
 `.trim()
 
 // ─── Fallback campaigns (used if NIM fails) ───────────────────────────────────
@@ -116,6 +121,20 @@ const FALLBACK_CAMPAIGNS: CampaignSuggestion[] = [
 
 // ─── User prompt builder ──────────────────────────────────────────────────────
 
+const SEGMENT_LABELS: Record<string, string> = {
+  at_risk: 'clientes en riesgo (no han visitado recientemente)',
+  lost: 'clientes perdidos (sin visitas en mucho tiempo)',
+  frequent: 'clientes frecuentes (3+ visitas, tus mejores clientes)',
+  all: 'todos los clientes activos',
+}
+
+const TONE_LABELS: Record<string, string> = {
+  calido: 'cálido y cercano',
+  urgente: 'urgente con límite de tiempo',
+  exclusivo: 'exclusivo y premium',
+  divertido: 'divertido y casual',
+}
+
 function buildUserPrompt(ctx: BusinessContext): string {
   const categoryNames: Record<string, string> = {
     barbershop: 'barbería',
@@ -127,6 +146,8 @@ function buildUserPrompt(ctx: BusinessContext): string {
   }
 
   const categoryName = categoryNames[ctx.category] ?? ctx.category
+  const segmentLabel = ctx.targetSegment ? SEGMENT_LABELS[ctx.targetSegment] ?? ctx.targetSegment : 'todos los clientes activos'
+  const toneLabel = ctx.tone ? TONE_LABELS[ctx.tone] ?? ctx.tone : 'cálido y cercano'
 
   return JSON.stringify({
     negocio: ctx.businessName,
@@ -137,8 +158,11 @@ function buildUserPrompt(ctx: BusinessContext): string {
     promedioVisitasPorCliente: parseFloat(ctx.avgVisitsPerClient.toFixed(1)),
     diaMasActivo: ctx.peakDay ?? 'Desconocido',
     diaMasTranquilo: ctx.slowDay ?? 'Desconocido',
-    instrucciones:
-      'Genera exactamente 3 campañas variadas: una para clientes en riesgo, una para recuperar perdidos, y una para aumentar frecuencia de los activos. Devuelve: { "campaigns": [ { "title", "messageTemplate", "targetSegment", "sendTiming", "expectedLift" } ] }',
+    segmentoObjetivo: segmentLabel,
+    objetivoDeLaCampaña: ctx.objective ?? 'reactivar clientes y aumentar visitas',
+    tonoDeLaCampaña: toneLabel,
+    especificacionesExtra: ctx.extraSpecs ?? null,
+    instrucciones: `Genera exactamente 1 campaña para el segmento indicado (${segmentLabel}), con el tono "${toneLabel}" y el objetivo especificado. Devuelve: { "campaign": { "title", "messageTemplate", "targetSegment", "sendTiming", "expectedLift" } }`,
   })
 }
 
@@ -208,29 +232,28 @@ export async function generateCampaigns(
     // Strip possible markdown fences that the model might add
     const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim()
 
-    let parsed: { campaigns: CampaignSuggestion[] }
+    let parsed: { campaign?: CampaignSuggestion; campaigns?: CampaignSuggestion[] }
     try {
-      parsed = JSON.parse(cleaned) as { campaigns: CampaignSuggestion[] }
+      parsed = JSON.parse(cleaned) as { campaign?: CampaignSuggestion; campaigns?: CampaignSuggestion[] }
     } catch {
       console.error('[NIM] Failed to parse JSON response:', text)
       return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }
     }
 
-    if (!Array.isArray(parsed.campaigns) || parsed.campaigns.length === 0) {
-      console.error('[NIM] campaigns array missing or empty in response')
-      return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }
-    }
+    // Support both { campaign: {} } and { campaigns: [] } shapes
+    const raw = parsed.campaign
+      ? [parsed.campaign]
+      : Array.isArray(parsed.campaigns)
+        ? parsed.campaigns.slice(0, 1)
+        : []
 
-    // Validate and sanitize each campaign
     const validSegments = new Set(['at_risk', 'lost', 'all', 'frequent'])
-    const validated = parsed.campaigns
-      .filter(
-        (c) =>
-          typeof c.title === 'string' &&
-          typeof c.messageTemplate === 'string' &&
-          validSegments.has(c.targetSegment)
-      )
-      .slice(0, 3)
+    const validated = raw.filter(
+      (c) =>
+        typeof c.title === 'string' &&
+        typeof c.messageTemplate === 'string' &&
+        validSegments.has(c.targetSegment)
+    )
 
     if (validated.length === 0) {
       return { campaigns: FALLBACK_CAMPAIGNS, usedFallback: true }

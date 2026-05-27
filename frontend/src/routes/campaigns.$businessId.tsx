@@ -16,7 +16,6 @@ import { CampaignCard } from "@/components/campaigns/CampaignCard";
 import { CampaignEditDialog } from "@/components/campaigns/CampaignEditDialog";
 import { CampaignGenerationSheet } from "@/components/campaigns/CampaignGenerationSheet";
 import { CampaignAudiencePreviewDialog } from "@/components/campaigns/CampaignAudiencePreviewDialog";
-import { CampaignMarkSentDialog } from "@/components/campaigns/CampaignMarkSentDialog";
 import { CampaignEmptyState } from "@/components/campaigns/CampaignEmptyState";
 import { getSegmentCount } from "@/components/campaigns/segment-utils";
 import { cn } from "@/lib/utils";
@@ -65,7 +64,6 @@ function CampaignsPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [activating, setActivating] = useState<Campaign | null>(null);
-  const [markSentId, setMarkSentId] = useState<string | null>(null);
 
   const list = useQuery({
     queryKey: ["business", businessId, "campaigns"],
@@ -80,6 +78,17 @@ function CampaignsPage() {
   const churn = useQuery({
     queryKey: ["business", businessId, "analytics", "churn-risk"],
     queryFn: () => analyticsApi.churnRisk(businessId),
+  });
+
+  const clearDrafts = useMutation({
+    mutationFn: () => campaignsApi.clearDrafts(businessId),
+    onSuccess: (d) => {
+      toast.success(
+        `${d.deleted} borrador${d.deleted === 1 ? "" : "es"} eliminado${d.deleted === 1 ? "" : "s"}`,
+      );
+      qc.invalidateQueries({ queryKey: ["business", businessId, "campaigns"] });
+    },
+    onError: (e: ApiError) => toast.error(e.message),
   });
 
   const activate = useMutation({
@@ -97,20 +106,6 @@ function CampaignsPage() {
       campaignsApi.update(businessId, campaignId, { status: "archived" }),
     onSuccess: () => {
       toast.success("Archivada");
-      qc.invalidateQueries({ queryKey: ["business", businessId, "campaigns"] });
-    },
-    onError: (e: ApiError) => toast.error(e.message),
-  });
-
-  const markSent = useMutation({
-    mutationFn: (campaignId: string) =>
-      campaignsApi.update(businessId, campaignId, {
-        status: "sent",
-        sentAt: new Date().toISOString(),
-      }),
-    onSuccess: () => {
-      toast.success("Campaña marcada como enviada");
-      setMarkSentId(null);
       qc.invalidateQueries({ queryKey: ["business", businessId, "campaigns"] });
     },
     onError: (e: ApiError) => toast.error(e.message),
@@ -143,12 +138,6 @@ function CampaignsPage() {
     });
   };
 
-  const openWhatsApp = (campaign: Campaign) => {
-    const text = encodeURIComponent(campaign.message_template);
-    window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
-    setMarkSentId(campaign.id);
-  };
-
   return (
     <div className="min-h-screen bg-[var(--bg-paper)]">
       <header className="border-b border-[var(--border)] bg-white">
@@ -179,9 +168,22 @@ function CampaignsPage() {
                 : `${total} campaña${total === 1 ? "" : "s"} en total.`}
             </p>
           </div>
-          <Button size="lg" onClick={() => setSheetOpen(true)}>
-            <Wand2 className="h-4 w-4" /> Generar con IA
-          </Button>
+          <div className="flex items-center gap-2">
+            {grouped.draft.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-[var(--ink-soft)]"
+                onClick={() => clearDrafts.mutate()}
+                disabled={clearDrafts.isPending}
+              >
+                {clearDrafts.isPending ? "Limpiando..." : "Limpiar borradores"}
+              </Button>
+            )}
+            <Button size="lg" onClick={() => setSheetOpen(true)}>
+              <Wand2 className="h-4 w-4" /> Generar con IA
+            </Button>
+          </div>
         </div>
 
         <div
@@ -232,7 +234,6 @@ function CampaignsPage() {
                 onActivate={() => setActivating(c)}
                 onArchive={() => archive.mutate(c.id)}
                 onEdit={() => setEditing(c.id)}
-                onWhatsApp={() => openWhatsApp(c)}
               />
             ))}
           </div>
@@ -268,15 +269,6 @@ function CampaignsPage() {
             onClose={() => setActivating(null)}
             onConfirm={() => activate.mutate(activating.id)}
             confirming={activate.isPending}
-          />
-        )}
-
-        {markSentId && (
-          <CampaignMarkSentDialog
-            open
-            onClose={() => setMarkSentId(null)}
-            onConfirm={() => markSent.mutate(markSentId)}
-            confirming={markSent.isPending}
           />
         )}
       </main>

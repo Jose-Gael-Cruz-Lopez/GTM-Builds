@@ -24,6 +24,13 @@ campaignRoutes.post(
     const businessId = c.req.param('id')
     const db = createSupabaseClient(c.env, 'service')
 
+    const body = await c.req.json<{
+      targetSegment?: 'at_risk' | 'lost' | 'all' | 'frequent'
+      objective?: string
+      tone?: string
+      extraSpecs?: string
+    }>().catch(() => ({}))
+
     // Gather business context to build the NIM prompt
     const [business, allLoyalties] = await Promise.all([
       db.getOne('businesses', {
@@ -74,6 +81,10 @@ campaignRoutes.post(
       avgVisitsPerClient,
       peakDay: dayNames[peakDayIndex] ?? 'Unknown',
       slowDay: dayNames[slowDayIndex] ?? 'Unknown',
+      targetSegment: body.targetSegment,
+      objective: body.objective,
+      tone: body.tone,
+      extraSpecs: body.extraSpecs,
     }
 
     // Generate via NVIDIA NIM
@@ -115,6 +126,37 @@ campaignRoutes.post(
     )
   }
 )
+
+// ─── DELETE /businesses/:id/campaigns/drafts ─────────────────────────────────
+// Delete all draft campaigns for a business.
+
+campaignRoutes.delete('/:id/campaigns/drafts', requireAdmin(), async (c) => {
+  const businessId = c.req.param('id')
+  const db = createSupabaseClient(c.env, 'service')
+
+  const drafts = await db.get('campaigns', {
+    filters: [
+      { column: 'business_id', operator: 'eq', value: businessId },
+      { column: 'status', operator: 'eq', value: 'draft' },
+    ],
+  })
+
+  if (drafts.length === 0) {
+    return c.json(ok({ deleted: 0 }), 200)
+  }
+
+  await Promise.all(
+    drafts.map((d) =>
+      db.patch(
+        'campaigns',
+        { status: 'archived' },
+        [{ column: 'id', operator: 'eq', value: d.id }]
+      )
+    )
+  )
+
+  return c.json(ok({ deleted: drafts.length }), 200)
+})
 
 // ─── GET /businesses/:id/campaigns ───────────────────────────────────────────
 // List all campaigns for a business. Filter by status with ?status=draft|active|sent|archived
