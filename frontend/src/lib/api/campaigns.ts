@@ -29,6 +29,7 @@ export interface GenerateCampaignsRequest {
   targetSegment?: CampaignTargetSegment;
   objective?: string;
   tone?: string;
+  extraSpecs?: string;
 }
 
 export interface UpdateCampaignPatch {
@@ -78,4 +79,8 @@ export const campaignsApi = {
     }),
   stats: (businessId: string, campaignId: string) =>
     apiFetch<CampaignStatsResponse>(`/businesses/${businessId}/campaigns/${campaignId}/stats`),
+  clearDrafts: (businessId: string) =>
+    apiFetch<{ deleted: number }>(`/businesses/${businessId}/campaigns/drafts`, {
+      method: "DELETE",
+    }),
 };

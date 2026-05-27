@@ -9,6 +9,8 @@ import {
   UserMinus,
   Users,
   Zap,
+  Send,
+  RefreshCw,
 } from "lucide-react";
 import type { CampaignTargetSegment } from "@/integrations/supabase/types";
 import { campaignsApi, type Campaign } from "@/lib/api/campaigns";
@@ -67,8 +69,8 @@ export function CampaignGenerationSheet({
   const [segment, setSegment] = useState<CampaignTargetSegment>("at_risk");
   const [objective, setObjective] = useState("");
   const [tone, setTone] = useState("calido");
-  const [drafts, setDrafts] = useState<Campaign[]>([]);
-  const [refinement, setRefinement] = useState("");
+  const [extraSpecs, setExtraSpecs] = useState("");
+  const [draft, setDraft] = useState<Campaign | null>(null);
 
   const clients = useQuery({
     queryKey: ["business", businessId, "analytics", "clients"],
@@ -84,19 +86,22 @@ export function CampaignGenerationSheet({
   const count = getSegmentCount(segment, clients.data, churn.data);
 
   const generate = useMutation({
-    mutationFn: (overrides?: { objective?: string }) =>
+    mutationFn: (specs?: string) =>
       campaignsApi.generate(businessId, {
         targetSegment: segment,
-        objective: overrides?.objective ?? (objective.trim() || undefined),
+        objective: objective.trim() || undefined,
         tone,
+        extraSpecs: specs?.trim() || undefined,
       }),
     onSuccess: (d) => {
-      setDrafts(d.campaigns);
+      const campaign = d.campaigns[0];
+      if (!campaign) return;
+      setDraft(campaign);
       setStep(3);
       toast.success(
         d.generatedBy === "fallback"
-          ? "Generamos 3 plantillas. (IA no disponible — usamos fallback)"
-          : `¡3 campañas generadas con ${d.model}!`,
+          ? "Campaña generada (modo sin conexión)."
+          : `¡Campaña generada con IA!`,
       );
       qc.invalidateQueries({ queryKey: ["business", businessId, "campaigns"] });
     },
@@ -108,8 +113,8 @@ export function CampaignGenerationSheet({
     setSegment("at_risk");
     setObjective("");
     setTone("calido");
-    setDrafts([]);
-    setRefinement("");
+    setExtraSpecs("");
+    setDraft(null);
   };
 
   const handleOpenChange = (next: boolean) => {
@@ -117,13 +122,21 @@ export function CampaignGenerationSheet({
     onOpenChange(next);
   };
 
+  const handleRefine = () => {
+    setDraft(null);
+    generate.mutate(extraSpecs);
+    setExtraSpecs("");
+  };
+
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
-      <DrawerContent className="mx-auto max-h-[70vh] max-w-2xl overflow-hidden">
+      <DrawerContent className="mx-auto max-h-[80vh] max-w-2xl overflow-hidden">
         <DrawerHeader className="border-b pb-4 text-left">
           <DrawerTitle className="font-display text-2xl">Generar con IA</DrawerTitle>
           <DrawerDescription>
-            Diseña una promoción o descuento para tus clientes con IA. Paso {step} de 3.
+            {step === 3 && draft
+              ? "Revisa tu campaña y decide qué hacer."
+              : `Paso ${step} de 3 — Crea una campaña personalizada para tus clientes.`}
           </DrawerDescription>
           <div className="mt-3 flex gap-1.5">
             {[1, 2, 3].map((s) => (
@@ -139,10 +152,11 @@ export function CampaignGenerationSheet({
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto px-4 py-5">
+          {/* Step 1 — Segment */}
           {step === 1 && (
             <div className="grid gap-4">
               <p className="text-sm text-[var(--ink-soft)]">
-                ¿A quién quieres llegar? Elige el grupo de clientes que recibirán la promoción.
+                ¿A quién quieres llegar? Elige el grupo de clientes que recibirán la campaña.
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {SEGMENT_OPTIONS.map((opt) => {
@@ -163,9 +177,7 @@ export function CampaignGenerationSheet({
                     >
                       <span
                         className="grid h-10 w-10 place-items-center rounded-[var(--radius-sm)]"
-                        style={{
-                          backgroundColor: `color-mix(in srgb, ${opt.accent} 20%, white)`,
-                        }}
+                        style={{ backgroundColor: `color-mix(in srgb, ${opt.accent} 20%, white)` }}
                       >
                         <Icon className="h-5 w-5" style={{ color: opt.accent }} />
                       </span>
@@ -177,32 +189,30 @@ export function CampaignGenerationSheet({
                   );
                 })}
               </div>
-
               <p className="rounded-[var(--radius-sm)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--ink)]">
-                <strong>{count}</strong> cliente{count === 1 ? "" : "s"} con escaneo QR recibirán
-                esta promoción.
+                <strong>{count}</strong> cliente{count === 1 ? "" : "s"} recibirán esta campaña.
               </p>
             </div>
           )}
 
+          {/* Step 2 — Objective + tone + extra specs */}
           {step === 2 && (
             <div className="grid gap-4">
               <p className="text-sm text-[var(--ink-soft)]">
-                La IA diseñará un descuento o promoción personalizada para los clientes
-                seleccionados.
+                Dile a la IA qué quieres lograr. Entre más detallado, mejor será la campaña.
               </p>
               <div className="grid gap-2">
-                <Label htmlFor="objective">¿Qué quieres lograr con esta campaña?</Label>
+                <Label htmlFor="objective">¿Qué quieres lograr?</Label>
                 <Textarea
                   id="objective"
                   value={objective}
                   onChange={(e) => setObjective(e.target.value)}
-                  rows={4}
-                  placeholder="Ej: Quiero que regresen con un descuento del 20%, o dar una promoción 2x1 en bebidas..."
+                  rows={3}
+                  placeholder="Ej: Que regresen clientes que no vienen hace 2 semanas con un descuento del 15%..."
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="tone">Tono de la promoción</Label>
+                <Label htmlFor="tone">Tono del mensaje</Label>
                 <Select value={tone} onValueChange={setTone}>
                   <SelectTrigger id="tone">
                     <SelectValue />
@@ -216,96 +226,88 @@ export function CampaignGenerationSheet({
                   </SelectContent>
                 </Select>
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor="extraSpecs">Especificaciones extra (opcional)</Label>
+                <Textarea
+                  id="extraSpecs"
+                  value={extraSpecs}
+                  onChange={(e) => setExtraSpecs(e.target.value)}
+                  rows={2}
+                  placeholder="Ej: Menciona que tenemos nueva sucursal, incluye límite de 3 días, usa el nombre del negocio..."
+                />
+              </div>
             </div>
           )}
 
+          {/* Step 3 — Generated campaign */}
           {step === 3 && (
             <div className="grid gap-4">
               {generate.isPending ? (
                 <div className="flex flex-col items-center gap-3 py-12 text-center">
                   <Loader2 className="h-8 w-8 animate-spin text-[var(--signal)]" />
                   <p className="text-sm text-[var(--ink-soft)]">
-                    Generando promociones para tus clientes...
+                    La IA está creando tu campaña personalizada...
                   </p>
                 </div>
-              ) : drafts.length === 0 ? (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-[var(--ink-soft)]">
-                    Pulsa generar para crear tus promociones.
-                  </p>
-                  <Button
-                    className="mt-4"
-                    onClick={() => generate.mutate(undefined)}
-                    disabled={generate.isPending}
-                  >
-                    <Sparkles className="h-4 w-4" /> Generar promociones
-                  </Button>
-                </div>
-              ) : (
+              ) : draft ? (
                 <>
-                  {drafts.map((draft, i) => (
-                    <div
-                      key={draft.id}
-                      className="relative rounded-[var(--radius-lg)] rounded-bl-sm border bg-[var(--cream)] p-4 shadow-[var(--shadow-soft)]"
-                    >
-                      <span className="absolute -left-1 -top-1 grid h-6 w-6 place-items-center rounded-full bg-[var(--signal)] text-[10px] font-bold text-[var(--ink)]">
-                        {i + 1}
-                      </span>
-                      <h4 className="font-display font-semibold text-[var(--ink)]">
-                        {draft.title}
-                      </h4>
-                      <p className="mt-2 text-sm whitespace-pre-wrap text-[var(--ink-soft)]">
-                        {draft.message_template}
+                  <div className="relative rounded-[var(--radius-lg)] rounded-bl-sm border bg-[var(--cream)] p-5 shadow-[var(--shadow-soft)]">
+                    <h4 className="font-display text-lg font-semibold text-[var(--ink)]">
+                      {draft.title}
+                    </h4>
+                    <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-[var(--ink-soft)]">
+                      {draft.message_template}
+                    </p>
+                    {draft.send_timing && (
+                      <p className="mt-3 text-xs text-[var(--ink-soft)]">
+                        <strong>Cuándo enviar:</strong> {draft.send_timing}
                       </p>
-                      <div className="mt-3 flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => onEdit(draft.id)}>
-                          Editar
-                        </Button>
-                        <Button size="sm" onClick={() => onActivate(draft)}>
-                          Aprobar campaña
-                        </Button>
-                      </div>
+                    )}
+                    {draft.expected_lift && (
+                      <span className="mt-2 inline-flex items-center rounded-[var(--radius-pill)] bg-[var(--health)]/25 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--ink)]">
+                        {draft.expected_lift}
+                      </span>
+                    )}
+                    <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
+                      <Button size="sm" variant="outline" onClick={() => onEdit(draft.id)}>
+                        Editar texto
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          onActivate(draft);
+                        }}
+                      >
+                        <Send className="h-3.5 w-3.5" /> Enviar a clientes
+                      </Button>
                     </div>
-                  ))}
+                  </div>
 
-                  <div className="mt-2 grid gap-3 rounded-[var(--radius)] border border-dashed border-[var(--border)] p-4">
-                    <p className="text-sm font-medium text-[var(--ink)]">¿No es lo que buscabas?</p>
-                    <Label htmlFor="refinement" className="text-xs text-[var(--ink-soft)]">
-                      Explica qué quieres cambiar y regeneramos la campaña
+                  <div className="grid gap-3 rounded-[var(--radius)] border border-dashed border-[var(--border)] p-4">
+                    <p className="text-sm font-medium text-[var(--ink)]">
+                      ¿No es exactamente lo que buscabas?
+                    </p>
+                    <Label htmlFor="refine-specs" className="text-xs text-[var(--ink-soft)]">
+                      Agrega especificaciones y la IA regenera la campaña
                     </Label>
                     <Textarea
-                      id="refinement"
-                      value={refinement}
-                      onChange={(e) => setRefinement(e.target.value)}
+                      id="refine-specs"
+                      value={extraSpecs}
+                      onChange={(e) => setExtraSpecs(e.target.value)}
                       rows={2}
-                      placeholder="Ej: Quiero que el descuento sea mayor, o que incluya una fecha límite..."
+                      placeholder="Ej: Quiero que mencione el descuento en el primer párrafo, con más urgencia..."
                     />
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={!refinement.trim() || generate.isPending}
-                      onClick={() => {
-                        const combined = [objective.trim(), refinement.trim()]
-                          .filter(Boolean)
-                          .join("\n\nAjuste: ");
-                        setDrafts([]);
-                        setRefinement("");
-                        generate.mutate({ objective: combined });
-                      }}
+                      disabled={!extraSpecs.trim() || generate.isPending}
+                      onClick={handleRefine}
                     >
-                      {generate.isPending ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" /> Regenerando...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4" /> Regenerar con estos cambios
-                        </>
-                      )}
+                      <RefreshCw className="h-4 w-4" /> Mejorar campaña
                     </Button>
                   </div>
                 </>
-              )}
+              ) : null}
             </div>
           )}
         </div>
@@ -328,7 +330,7 @@ export function CampaignGenerationSheet({
                 className="ml-auto"
                 onClick={() => {
                   setStep(3);
-                  generate.mutate(undefined);
+                  generate.mutate(extraSpecs || undefined);
                 }}
                 disabled={generate.isPending}
               >
@@ -338,12 +340,12 @@ export function CampaignGenerationSheet({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4" /> Generar borradores
+                    <Sparkles className="h-4 w-4" /> Generar campaña
                   </>
                 )}
               </Button>
             )}
-            {step === 3 && (
+            {step === 3 && !generate.isPending && (
               <Button
                 type="button"
                 variant="ghost"

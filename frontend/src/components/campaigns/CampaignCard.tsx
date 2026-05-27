@@ -1,4 +1,4 @@
-import { Edit2, Archive, Send, MessageCircle, Users } from "lucide-react";
+import { Edit2, Archive, Send, Users } from "lucide-react";
 import type { Campaign } from "@/lib/api/campaigns";
 import { Button } from "@/components/ui/button";
 import { CampaignStatsPanel } from "@/components/campaigns/CampaignStatsPanel";
@@ -19,7 +19,6 @@ export function CampaignCard({
   onActivate,
   onArchive,
   onEdit,
-  onWhatsApp,
 }: {
   businessId: string;
   campaign: Campaign;
@@ -27,7 +26,6 @@ export function CampaignCard({
   onActivate: () => void;
   onArchive: () => void;
   onEdit: () => void;
-  onWhatsApp: () => void;
 }) {
   const status = STATUS_CONFIG[campaign.status];
 
@@ -74,11 +72,6 @@ export function CampaignCard({
           {campaign.status === "draft" && (
             <Button size="sm" onClick={onActivate}>
               <Send className="h-3 w-3" /> Activar
-            </Button>
-          )}
-          {campaign.status !== "archived" && (
-            <Button size="sm" variant="outline" onClick={onWhatsApp}>
-              <MessageCircle className="h-3 w-3" /> Enviar por WhatsApp
             </Button>
           )}
           {campaign.status !== "archived" && (
