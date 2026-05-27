@@ -198,7 +198,7 @@ function DashboardPage() {
       <Sheet open={assistantOpen} onOpenChange={setAssistantOpen}>
         <SheetContent
           side="right"
-          className="flex w-full flex-col p-0 sm:max-w-md [&>button]:hidden"
+          className="flex w-full flex-col p-0 sm:max-w-2xl [&>button]:hidden"
         >
           <AIAssistant businessId={businessId} onClose={() => setAssistantOpen(false)} />
         </SheetContent>

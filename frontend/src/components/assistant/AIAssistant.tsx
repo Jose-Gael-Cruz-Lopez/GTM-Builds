@@ -136,14 +136,23 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
 
   function doSummary(data: AnalyzeResponse) {
     setStep("summary");
-    const { segments, periodDays, visitCount, insights } = data;
+    const { segments, periodDays, visitCount, peakDay, peakHour, slowDay, slowHour, insights } = data;
+    const demoNote = data.isDemo ? "\n\n_(Vista previa con datos de ejemplo — comparte tu QR para ver tus métricas reales)_" : "";
     const summary =
-      `En los últimos **${periodDays} días** analicé **${visitCount} visitas**:\n\n` +
-      `• **${segments.newClients}** clientes nuevos\n` +
+      `En los últimos **${periodDays} días** analicé **${visitCount} visitas** de tu negocio:\n\n` +
+      `**Distribución de clientes:**\n` +
+      `• **${segments.total}** clientes en total\n` +
+      `• **${segments.newClients}** clientes nuevos (explorando por primera vez)\n` +
       `• **${segments.frequentClients}** clientes frecuentes (4+ visitas)\n` +
-      `• **${segments.lostClients}** clientes que ya no regresan\n` +
-      `• **${segments.atRiskClients}** clientes en riesgo de perderse\n\n` +
-      `${insights.segmentAnalysis.frequentInsight}\n\n¿Qué quieres hacer?`;
+      `• **${segments.atRiskClients}** clientes en riesgo de perderse\n` +
+      `• **${segments.lostClients}** clientes que ya no regresan\n\n` +
+      `**Actividad del negocio:**\n` +
+      `• Pico de visitas: **${peakDay}** a las **${peakHour}**\n` +
+      `• Horario tranquilo: **${slowDay}** a las **${slowHour}**\n\n` +
+      `${insights.segmentAnalysis.frequentInsight}\n\n` +
+      `${insights.segmentAnalysis.newInsight}` +
+      demoNote +
+      `\n\n¿Qué quieres hacer?`;
 
     aiSays(summary, [
       {
@@ -173,18 +182,21 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
   }
 
   function doActivityAnalysis(data: AnalyzeResponse) {
-    const { insights, peakDay, slowDay, peakHour, slowHour } = data;
+    const { insights, peakDay, slowDay, peakHour, slowHour, visitCount, periodDays } = data;
     const { serviceAnalysis } = insights;
+    const avgPerDay = (visitCount / periodDays).toFixed(1);
 
     setStep("service-analysis");
     aiSays(
-      `**Análisis de tu actividad:**\n\n` +
-        `**Horarios activos:** ${peakDay} a las ${peakHour}\n` +
-        `**Horarios tranquilos:** ${slowDay} a las ${slowHour}\n\n` +
+      `**Análisis completo de tu actividad (${periodDays} días):**\n\n` +
+        `**Volumen:** ${visitCount} visitas totales · **${avgPerDay}** visitas/día en promedio\n\n` +
+        `**Horario estrella:** ${peakDay} a las ${peakHour} — tu momento de mayor flujo\n` +
+        `**Horario tranquilo:** ${slowDay} a las ${slowHour} — oportunidad de crecimiento\n\n` +
         `**Períodos de baja actividad:**\n${serviceAnalysis.slowPeriods.map((p) => `• ${p}`).join("\n")}\n\n` +
-        `**¿Por qué está tranquilo?**\n${serviceAnalysis.lowPerformanceReasons.map((r) => `• ${r}`).join("\n")}\n\n` +
-        `**Predicciones si actúas:**\n${serviceAnalysis.predictions.map((p) => `• ${p}`).join("\n")}\n\n` +
-        `**Recomendación:** ${insights.recommendations.forLost}`,
+        `**¿Por qué baja la actividad?**\n${serviceAnalysis.lowPerformanceReasons.map((r) => `• ${r}`).join("\n")}\n\n` +
+        `**Períodos activos:**\n${serviceAnalysis.activePeriods.map((p) => `• ${p}`).join("\n")}\n\n` +
+        `**Qué pasará si actúas ahora:**\n${serviceAnalysis.predictions.map((p) => `• ${p}`).join("\n")}\n\n` +
+        `**Recomendación para días lentos:** ${insights.recommendations.forLost}`,
       [
         {
           label: "Crear campaña para los días tranquilos",
@@ -203,15 +215,23 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
   function doClientsAnalysis(data: AnalyzeResponse) {
     setStep("clients-analysis");
     const { segments, insights } = data;
+    const retentionRate = segments.total > 0 ? Math.round((segments.frequentClients / segments.total) * 100) : 0;
+    const churnRate = segments.total > 0 ? Math.round(((segments.lostClients + segments.atRiskClients) / segments.total) * 100) : 0;
     const msg =
-      `**Tus clientes actuales:**\n\n` +
+      `**Radiografía completa de tus clientes:**\n\n` +
       `• **${segments.total}** clientes en total\n` +
       `• **${segments.newClients}** clientes nuevos (últimos 30 días)\n` +
-      `• **${segments.frequentClients}** clientes frecuentes (4+ visitas)\n` +
+      `• **${segments.frequentClients}** clientes frecuentes (4+ visitas) — **${retentionRate}%** de tu base\n` +
       `• **${segments.atRiskClients}** en riesgo de perderse\n` +
       `• **${segments.lostClients}** que ya no regresan\n\n` +
-      `${insights.segmentAnalysis.lostInsight}\n\n` +
-      `**Recomendación:** ${insights.recommendations.forLost}\n\n¿Qué quieres hacer?`;
+      `**Tasa de abandono actual: ${churnRate}%**\n\n` +
+      `**Sobre los clientes perdidos:**\n${insights.segmentAnalysis.lostInsight}\n\n` +
+      `**Sobre los clientes nuevos:**\n${insights.segmentAnalysis.newInsight}\n\n` +
+      `**Cómo retener a los frecuentes:**\n${insights.segmentAnalysis.frequentInsight}\n\n` +
+      `**Plan de acción recomendado:**\n` +
+      `• Perdidos: ${insights.recommendations.forLost}\n` +
+      `• Nuevos: ${insights.recommendations.forNew}\n` +
+      `• Frecuentes: ${insights.recommendations.forFrequent}\n\n¿Qué quieres hacer?`;
 
     aiSays(msg, [
       {

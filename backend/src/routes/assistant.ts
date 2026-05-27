@@ -63,6 +63,54 @@ assistantRoutes.post(
     const analysisVisits = fifteenDayVisits.length >= 50 ? fifteenDayVisits : thirtyDayVisits
     const periodDays = fifteenDayVisits.length >= 50 ? 15 : 30
 
+    // When the business has no real data yet, use demo numbers that match the
+    // dashboard's demo preview so the AI assistant and the dashboard are consistent.
+    const isDemo = allLoyalties.length === 0 && thirtyDayVisits.length === 0
+
+    if (isDemo) {
+      const demoCtx: AssistantAnalysisContext = {
+        businessName: business.name,
+        category: business.category,
+        periodDays: 30,
+        visitCount: 372,
+        totalClients: 127,
+        newClients: 23,
+        frequentClients: 84,
+        lostClients: 15,
+        atRiskClients: 28,
+        peakDay: 'Sábado',
+        slowDay: 'Lunes',
+        peakHour: '5pm',
+        slowHour: '7am',
+      }
+
+      const { insights, usedFallback } = await analyzeBusinessInsights(c.env.NIM_API_KEY, demoCtx)
+
+      return c.json(
+        ok({
+          periodDays: 30,
+          visitCount: 372,
+          uniqueClientsInPeriod: 84,
+          segments: {
+            total: 127,
+            newClients: 23,
+            frequentClients: 84,
+            lostClients: 15,
+            atRiskClients: 28,
+          },
+          peakDay: 'Sábado',
+          slowDay: 'Lunes',
+          peakHour: '5pm',
+          slowHour: '7am',
+          insights,
+          usedFallback,
+          isDemo: true,
+          generatedAt: new Date().toISOString(),
+        }),
+        200
+      )
+    }
+
     // Compute unique client IDs from analysis visits
     const visitClientIds = new Set(analysisVisits.map((v) => v.client_id))
 
@@ -132,6 +180,7 @@ assistantRoutes.post(
         slowHour: ctx.slowHour,
         insights,
         usedFallback,
+        isDemo: false,
         generatedAt: new Date().toISOString(),
       }),
       200
