@@ -40,6 +40,7 @@ export interface AnalyzeResponse {
   slowHour: string;
   insights: AssistantInsights;
   usedFallback: boolean;
+  isDemo: boolean;
   generatedAt: string;
 }
 

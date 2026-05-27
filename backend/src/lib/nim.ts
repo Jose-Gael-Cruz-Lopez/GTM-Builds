@@ -63,22 +63,26 @@ export interface BusinessContext {
 // ─── NIM API constants (mirroring nimClient.js) ───────────────────────────────
 
 const NIM_URL = 'https://integrate.api.nvidia.com/v1/chat/completions'
-// `nvidia/llama-3.1-nemotron-70b-instruct` is in the catalog but not enabled
-// for free-tier API keys (returns 404 at /chat/completions). Llama-3.3-70b is
-// the strongest instruction-tuned model available on the free tier and follows
-// JSON-output instructions reliably.
-const NIM_MODEL = 'meta/llama-3.3-70b-instruct'
+// nvidia/llama-3.1-nemotron-ultra-253b-v1 is NVIDIA's most capable model (253B params,
+// derived from Llama 3.1 405B). Falls back to llama-3.3-70b if API key doesn't support it.
+const NIM_MODEL = 'nvidia/llama-3.1-nemotron-ultra-253b-v1'
+const NIM_FALLBACK_MODEL = 'meta/llama-3.3-70b-instruct'
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 // Role: campaign strategist for Latin American SMBs.
 // Mirrors the SYSTEM_PROMPT pattern from nimClient.js but focused on loyalty campaigns.
 
 const SYSTEM_PROMPT = `
-Eres un experto en marketing de retención para pequeños negocios en Latinoamérica.
-Recibes datos de un negocio y su base de clientes.
-Devuelves exactamente 3 campañas de reactivación y lealtad en formato JSON.
-Cada campaña debe ser específica para el tipo de negocio, usar lenguaje cercano y latinoamericano, y tener un objetivo claro.
-Los mensajes usan estas variables: {name} para el nombre del cliente, {days} para días sin visitar, {businessName} para el nombre del negocio, {stamps} para sellos faltantes.
+Eres un experto en marketing de retención para pequeños negocios en Latinoamérica con más de 15 años de experiencia.
+Recibes datos reales de un negocio y su base de clientes.
+Devuelves exactamente 3 campañas de reactivación y lealtad en formato JSON, altamente personalizadas para el tipo de negocio.
+Cada campaña debe incluir:
+- Un título atractivo y específico para el negocio
+- Un mensaje cálido, cercano y en español latinoamericano que genere urgencia sin ser agresivo
+- Segmento objetivo claro con justificación
+- Timing óptimo basado en los datos del negocio
+- Estimación realista del impacto esperado con porcentajes específicos
+Las variables de mensaje son: {name} (nombre del cliente), {days} (días sin visitar), {businessName} (nombre del negocio), {stamps} (sellos faltantes).
 Responde SOLO con JSON válido, sin markdown, sin explicaciones, sin texto adicional.
 `.trim()
 
@@ -141,6 +145,30 @@ function buildUserPrompt(ctx: BusinessContext): string {
 
 // ─── NIM API call (TypeScript port of nimClient.js) ───────────────────────────
 
+async function nimFetch(apiKey: string, model: string, messages: { role: string; content: string }[], maxTokens: number, temperature: number) {
+  return fetch(NIM_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      messages,
+    }),
+  })
+}
+
+async function nimFetchWithFallback(apiKey: string, messages: { role: string; content: string }[], maxTokens: number, temperature: number) {
+  const res = await nimFetch(apiKey, NIM_MODEL, messages, maxTokens, temperature)
+  if (res.status === 404 || res.status === 422) {
+    return nimFetch(apiKey, NIM_FALLBACK_MODEL, messages, maxTokens, temperature)
+  }
+  return res
+}
+
 export async function generateCampaigns(
   apiKey: string,
   context: BusinessContext
@@ -148,22 +176,15 @@ export async function generateCampaigns(
   const userContent = buildUserPrompt(context)
 
   try {
-    const response = await fetch(NIM_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: NIM_MODEL,
-        max_tokens: 2048,
-        temperature: 0.8,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userContent },
-        ],
-      }),
-    })
+    const response = await nimFetchWithFallback(
+      apiKey,
+      [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userContent },
+      ],
+      2048,
+      0.8,
+    )
 
     if (!response.ok) {
       const errBody = await response.json().catch(() => ({})) as { detail?: string; message?: string }
@@ -262,10 +283,15 @@ const FALLBACK_INSIGHTS: AssistantInsights = {
 }
 
 const ASSISTANT_SYSTEM_PROMPT = `
-Eres un experto analista de negocios y marketing de retención para pequeños negocios en Latinoamérica.
-Recibes datos de visitas y clientes de un negocio local.
-Devuelves un análisis detallado y recomendaciones accionables en formato JSON.
-Usa lenguaje cercano, cálido y en español latinoamericano. Sin tecnicismos innecesarios.
+Eres un experto analista de negocios y marketing de retención con más de 15 años de experiencia ayudando a pequeños negocios en Latinoamérica a crecer.
+Recibes datos reales de visitas y clientes de un negocio local y generas un análisis profundo y personalizado.
+Tu análisis debe ser:
+- Específico para el tipo de negocio (barbería, café, veterinaria, etc.)
+- Basado ÚNICAMENTE en los datos reales recibidos, sin inventar
+- Con recomendaciones concretas y accionables que el dueño pueda implementar esta semana
+- Usando lenguaje cercano, motivador y en español latinoamericano
+- Con insights que vayan más allá de lo obvio: identifica patrones, oportunidades ocultas y riesgos reales
+- Cada campo de texto debe tener mínimo 2-3 oraciones explicando el "por qué" y el "cómo"
 Responde SOLO con JSON válido. Sin markdown, sin texto adicional, sin explicaciones fuera del JSON.
 `.trim()
 
@@ -325,22 +351,15 @@ export async function analyzeBusinessInsights(
   ctx: AssistantAnalysisContext
 ): Promise<{ insights: AssistantInsights; usedFallback: boolean }> {
   try {
-    const response = await fetch(NIM_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: NIM_MODEL,
-        max_tokens: 1024,
-        temperature: 0.7,
-        messages: [
-          { role: 'system', content: ASSISTANT_SYSTEM_PROMPT },
-          { role: 'user', content: buildAssistantPrompt(ctx) },
-        ],
-      }),
-    })
+    const response = await nimFetchWithFallback(
+      apiKey,
+      [
+        { role: 'system', content: ASSISTANT_SYSTEM_PROMPT },
+        { role: 'user', content: buildAssistantPrompt(ctx) },
+      ],
+      3000,
+      0.7,
+    )
 
     if (!response.ok) {
       const errBody = await response.json().catch(() => ({})) as { detail?: string; message?: string }
