@@ -136,8 +136,11 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
 
   function doSummary(data: AnalyzeResponse) {
     setStep("summary");
-    const { segments, periodDays, visitCount, peakDay, peakHour, slowDay, slowHour, insights } = data;
-    const demoNote = data.isDemo ? "\n\n_(Vista previa con datos de ejemplo — comparte tu QR para ver tus métricas reales)_" : "";
+    const { segments, periodDays, visitCount, peakDay, peakHour, slowDay, slowHour, insights } =
+      data;
+    const demoNote = data.isDemo
+      ? "\n\n_(Vista previa con datos de ejemplo — comparte tu QR para ver tus métricas reales)_"
+      : "";
     const summary =
       `En los últimos **${periodDays} días** analicé **${visitCount} visitas** de tu negocio:\n\n` +
       `**Distribución de clientes:**\n` +
@@ -215,8 +218,12 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
   function doClientsAnalysis(data: AnalyzeResponse) {
     setStep("clients-analysis");
     const { segments, insights } = data;
-    const retentionRate = segments.total > 0 ? Math.round((segments.frequentClients / segments.total) * 100) : 0;
-    const churnRate = segments.total > 0 ? Math.round(((segments.lostClients + segments.atRiskClients) / segments.total) * 100) : 0;
+    const retentionRate =
+      segments.total > 0 ? Math.round((segments.frequentClients / segments.total) * 100) : 0;
+    const churnRate =
+      segments.total > 0
+        ? Math.round(((segments.lostClients + segments.atRiskClients) / segments.total) * 100)
+        : 0;
     const msg =
       `**Radiografía completa de tus clientes:**\n\n` +
       `• **${segments.total}** clientes en total\n` +
