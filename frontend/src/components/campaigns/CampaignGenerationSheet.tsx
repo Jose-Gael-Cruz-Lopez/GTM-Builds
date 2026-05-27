@@ -32,7 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   getSegmentCount,
@@ -66,10 +65,10 @@ export function CampaignGenerationSheet({
   const qc = useQueryClient();
   const [step, setStep] = useState<Step>(1);
   const [segment, setSegment] = useState<CampaignTargetSegment>("at_risk");
-  const [customSegment, setCustomSegment] = useState("");
   const [objective, setObjective] = useState("");
   const [tone, setTone] = useState("calido");
   const [drafts, setDrafts] = useState<Campaign[]>([]);
+  const [refinement, setRefinement] = useState("");
 
   const clients = useQuery({
     queryKey: ["business", businessId, "analytics", "clients"],
@@ -85,10 +84,10 @@ export function CampaignGenerationSheet({
   const count = getSegmentCount(segment, clients.data, churn.data);
 
   const generate = useMutation({
-    mutationFn: () =>
+    mutationFn: (overrides?: { objective?: string }) =>
       campaignsApi.generate(businessId, {
         targetSegment: segment,
-        objective: objective.trim() || customSegment.trim() || undefined,
+        objective: overrides?.objective ?? (objective.trim() || undefined),
         tone,
       }),
     onSuccess: (d) => {
@@ -107,10 +106,10 @@ export function CampaignGenerationSheet({
   const reset = () => {
     setStep(1);
     setSegment("at_risk");
-    setCustomSegment("");
     setObjective("");
     setTone("calido");
     setDrafts([]);
+    setRefinement("");
   };
 
   const handleOpenChange = (next: boolean) => {
@@ -124,7 +123,7 @@ export function CampaignGenerationSheet({
         <DrawerHeader className="border-b pb-4 text-left">
           <DrawerTitle className="font-display text-2xl">Generar con IA</DrawerTitle>
           <DrawerDescription>
-            Hola — vamos a crear mensajes que reconecten con tus clientes. Paso {step} de 3.
+            Diseña una promoción o descuento para tus clientes con IA. Paso {step} de 3.
           </DrawerDescription>
           <div className="mt-3 flex gap-1.5">
             {[1, 2, 3].map((s) => (
@@ -143,7 +142,7 @@ export function CampaignGenerationSheet({
           {step === 1 && (
             <div className="grid gap-4">
               <p className="text-sm text-[var(--ink-soft)]">
-                ¿A quién quieres llegar? Elige un segmento ilustrado o describe uno personalizado.
+                ¿A quién quieres llegar? Elige el grupo de clientes que recibirán la promoción.
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {SEGMENT_OPTIONS.map((opt) => {
@@ -179,38 +178,31 @@ export function CampaignGenerationSheet({
                 })}
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="custom-segment">Segmento personalizado (opcional)</Label>
-                <Input
-                  id="custom-segment"
-                  value={customSegment}
-                  onChange={(e) => setCustomSegment(e.target.value)}
-                  placeholder="Ej: clientes que cumplen años esta semana"
-                />
-              </div>
-
               <p className="rounded-[var(--radius-sm)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--ink)]">
-                <strong>{count}</strong> cliente{count === 1 ? "" : "s"}{" "}
-                {SEGMENT_OPTIONS.find((o) => o.value === segment)?.label.toLowerCase()} recibirán
-                esta campaña.
+                <strong>{count}</strong> cliente{count === 1 ? "" : "s"} con escaneo QR recibirán
+                esta promoción.
               </p>
             </div>
           )}
 
           {step === 2 && (
             <div className="grid gap-4">
+              <p className="text-sm text-[var(--ink-soft)]">
+                La IA diseñará un descuento o promoción personalizada para los clientes
+                seleccionados.
+              </p>
               <div className="grid gap-2">
-                <Label htmlFor="objective">Objetivo de la campaña</Label>
+                <Label htmlFor="objective">¿Qué quieres lograr con esta campaña?</Label>
                 <Textarea
                   id="objective"
                   value={objective}
                   onChange={(e) => setObjective(e.target.value)}
                   rows={4}
-                  placeholder="Queremos que regresen esta semana..."
+                  placeholder="Ej: Quiero que regresen con un descuento del 20%, o dar una promoción 2x1 en bebidas..."
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="tone">Tono del mensaje</Label>
+                <Label htmlFor="tone">Tono de la promoción</Label>
                 <Select value={tone} onValueChange={setTone}>
                   <SelectTrigger id="tone">
                     <SelectValue />
@@ -233,45 +225,86 @@ export function CampaignGenerationSheet({
                 <div className="flex flex-col items-center gap-3 py-12 text-center">
                   <Loader2 className="h-8 w-8 animate-spin text-[var(--signal)]" />
                   <p className="text-sm text-[var(--ink-soft)]">
-                    Redactando 3 borradores para tu segmento...
+                    Generando promociones para tus clientes...
                   </p>
                 </div>
               ) : drafts.length === 0 ? (
                 <div className="py-8 text-center">
                   <p className="text-sm text-[var(--ink-soft)]">
-                    Pulsa generar para crear tus borradores.
+                    Pulsa generar para crear tus promociones.
                   </p>
                   <Button
                     className="mt-4"
                     onClick={() => generate.mutate()}
                     disabled={generate.isPending}
                   >
-                    <Sparkles className="h-4 w-4" /> Generar borradores
+                    <Sparkles className="h-4 w-4" /> Generar promociones
                   </Button>
                 </div>
               ) : (
-                drafts.map((draft, i) => (
-                  <div
-                    key={draft.id}
-                    className="relative rounded-[var(--radius-lg)] rounded-bl-sm border bg-[var(--cream)] p-4 shadow-[var(--shadow-soft)]"
-                  >
-                    <span className="absolute -left-1 -top-1 grid h-6 w-6 place-items-center rounded-full bg-[var(--signal)] text-[10px] font-bold text-[var(--ink)]">
-                      {i + 1}
-                    </span>
-                    <h4 className="font-display font-semibold text-[var(--ink)]">{draft.title}</h4>
-                    <p className="mt-2 text-sm whitespace-pre-wrap text-[var(--ink-soft)]">
-                      {draft.message_template}
-                    </p>
-                    <div className="mt-3 flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => onEdit(draft.id)}>
-                        Editar
-                      </Button>
-                      <Button size="sm" onClick={() => onActivate(draft)}>
-                        Activar
-                      </Button>
+                <>
+                  {drafts.map((draft, i) => (
+                    <div
+                      key={draft.id}
+                      className="relative rounded-[var(--radius-lg)] rounded-bl-sm border bg-[var(--cream)] p-4 shadow-[var(--shadow-soft)]"
+                    >
+                      <span className="absolute -left-1 -top-1 grid h-6 w-6 place-items-center rounded-full bg-[var(--signal)] text-[10px] font-bold text-[var(--ink)]">
+                        {i + 1}
+                      </span>
+                      <h4 className="font-display font-semibold text-[var(--ink)]">
+                        {draft.title}
+                      </h4>
+                      <p className="mt-2 text-sm whitespace-pre-wrap text-[var(--ink-soft)]">
+                        {draft.message_template}
+                      </p>
+                      <div className="mt-3 flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => onEdit(draft.id)}>
+                          Editar
+                        </Button>
+                        <Button size="sm" onClick={() => onActivate(draft)}>
+                          Aprobar campaña
+                        </Button>
+                      </div>
                     </div>
+                  ))}
+
+                  <div className="mt-2 grid gap-3 rounded-[var(--radius)] border border-dashed border-[var(--border)] p-4">
+                    <p className="text-sm font-medium text-[var(--ink)]">¿No es lo que buscabas?</p>
+                    <Label htmlFor="refinement" className="text-xs text-[var(--ink-soft)]">
+                      Explica qué quieres cambiar y regeneramos la campaña
+                    </Label>
+                    <Textarea
+                      id="refinement"
+                      value={refinement}
+                      onChange={(e) => setRefinement(e.target.value)}
+                      rows={2}
+                      placeholder="Ej: Quiero que el descuento sea mayor, o que incluya una fecha límite..."
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!refinement.trim() || generate.isPending}
+                      onClick={() => {
+                        const combined = [objective.trim(), refinement.trim()]
+                          .filter(Boolean)
+                          .join("\n\nAjuste: ");
+                        setDrafts([]);
+                        setRefinement("");
+                        generate.mutate({ objective: combined });
+                      }}
+                    >
+                      {generate.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Regenerando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" /> Regenerar con estos cambios
+                        </>
+                      )}
+                    </Button>
                   </div>
-                ))
+                </>
               )}
             </div>
           )}

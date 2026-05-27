@@ -104,7 +104,7 @@ campaignRoutes.post(
       ok({
         campaigns: flatCampaigns,
         generatedBy: usedFallback ? 'fallback' : 'nvidia-nim',
-        model: 'nvidia/llama-3.1-nemotron-70b-instruct',
+        model: 'meta/llama-3.3-70b-instruct',
         context: {
           totalClients,
           atRiskClients,

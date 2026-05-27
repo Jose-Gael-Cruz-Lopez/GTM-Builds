@@ -6,7 +6,7 @@ export function CampaignEmptyState({ onGenerate }: { onGenerate: () => void }) {
   return (
     <IsoScene
       title="Genera tu primera campaña en 60 segundos"
-      description="Elige un segmento, define tu objetivo y deja que la IA redacte mensajes listos para enviar por WhatsApp."
+      description="Elige un grupo de clientes, describe qué quieres lograr y la IA diseña el descuento o promoción ideal para enviar a todos ellos."
       action={
         <Button size="lg" onClick={onGenerate}>
           <Sparkles className="h-4 w-4" /> Generar con IA
