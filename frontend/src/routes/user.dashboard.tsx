@@ -1,12 +1,15 @@
 import { RouteError } from "@/components/RouteError";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { Copy, Gift, Store, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Copy, Gift, Store, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
+import { useMutation } from "@tanstack/react-query";
 import { RadialCountdown } from "@/components/ui/radial-countdown";
 import { ConsumerFlowShell } from "@/components/consumer/ConsumerFlowShell";
 import { useLocale } from "@/contexts/LocaleContext";
+import { consumerApi, CONSUMER_SESSION_KEY } from "@/lib/api/consumer";
+import { ApiError } from "@/lib/api-client";
 
 export const Route = createFileRoute("/user/dashboard")({
   component: UserDashboard,
@@ -16,16 +19,12 @@ export const Route = createFileRoute("/user/dashboard")({
 
 const CYCLE = 90;
 
-function buildQrPayload(phone: string): string {
-  const windowIndex = Math.floor(Date.now() / 1000 / CYCLE);
-  return JSON.stringify({ p: phone, w: windowIndex });
-}
-
 function UserDashboard() {
   const navigate = useNavigate();
   const { d } = useLocale();
-  const [secondsLeft, setSecondsLeft] = useState<number>(CYCLE);
-  const [qrPayload, setQrPayload] = useState<string>("");
+  const [token, setToken] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<Date | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState(CYCLE);
   const [phone, setPhone] = useState<string>("");
   const [referralCode, setReferralCode] = useState<string>("");
 
@@ -56,40 +55,62 @@ function UserDashboard() {
     [d],
   );
 
+  const generate = useMutation({
+    mutationFn: () => consumerApi.generateToken(),
+    onSuccess: (data) => {
+      setToken(data.token);
+      setExpiresAt(new Date(data.expiresAt));
+      setSecondsLeft(data.ttlSeconds);
+    },
+    onError: (e: ApiError) => {
+      if (e.code === "AUTH_INVALID" || e.code === "AUTH_MISSING") {
+        navigate({ to: "/user/register" });
+        return;
+      }
+      toast.error(e.message);
+    },
+  });
+
+  // Stable ref so the expiry interval doesn't need generate in its deps
+  const generateRef = useRef(generate.mutate);
+  generateRef.current = generate.mutate;
+
   useEffect(() => {
-    const raw = localStorage.getItem("nexoleal:consumer-session");
+    const raw = localStorage.getItem(CONSUMER_SESSION_KEY);
     if (!raw) {
       navigate({ to: "/user/register" });
       return;
     }
-    const session = JSON.parse(raw) as { phone: string; referralCode: string | null };
+    const session = JSON.parse(raw) as {
+      phone: string;
+      referralCode: string | null;
+      accessToken?: string;
+    };
+    if (!session.accessToken) {
+      navigate({ to: "/user/register" });
+      return;
+    }
     setPhone(session.phone);
-    const suffix = parseInt(session.phone.slice(-4), 10);
-    setReferralCode(`REF-${session.phone.slice(0, 3)}-${suffix}`);
-    setQrPayload(buildQrPayload(session.phone));
+    setReferralCode(
+      session.referralCode ?? `REF-${session.phone.slice(0, 3)}-${session.phone.slice(-4)}`,
+    );
+    generateRef.current();
   }, [navigate]);
 
   useEffect(() => {
-    if (!phone) return;
-
-    const tick = () => {
-      const ts = Math.floor(Date.now() / 1000);
-      const remaining = CYCLE - (ts % CYCLE);
-      setSecondsLeft(remaining);
-      if (remaining === CYCLE) {
-        setQrPayload(buildQrPayload(phone));
+    if (!expiresAt) return;
+    const id = setInterval(() => {
+      const remain = Math.max(0, Math.round((expiresAt.getTime() - Date.now()) / 1000));
+      setSecondsLeft(remain);
+      if (remain === 0) {
+        generateRef.current();
       }
-    };
-
-    tick();
-    const id = setInterval(tick, 1000);
+    }, 500);
     return () => clearInterval(id);
-  }, [phone]);
+  }, [expiresAt]);
 
   const forceRefresh = () => {
-    setQrPayload(buildQrPayload(phone));
-    setSecondsLeft(CYCLE);
-    toast(d.userDashboard.codeRenewed);
+    generate.mutate();
   };
 
   const copyReferral = () => {
@@ -118,23 +139,30 @@ function UserDashboard() {
       <div className="consumer-panel mt-6">
         <div className="consumer-qr-wrap">
           <RadialCountdown seconds={secondsLeft} total={CYCLE} size={240} stroke={5}>
-            {qrPayload ? (
+            {generate.isPending || !token ? (
+              <div className="flex h-[160px] w-[160px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : (
               <QRCodeSVG
-                value={qrPayload}
+                value={token}
                 size={160}
                 bgColor="transparent"
                 fgColor="#1a1a18"
                 level="M"
               />
-            ) : (
-              <div className="h-[160px] w-[160px] animate-pulse rounded-xl bg-[var(--hair)]" />
             )}
           </RadialCountdown>
           <p className="consumer-qr-caption">{d.userDashboard.showQr}</p>
           <p className="consumer-qr-timer">
             {d.userDashboard.renewsIn.replace("{n}", String(secondsLeft))}
           </p>
-          <button type="button" onClick={forceRefresh} className="consumer-qr-refresh">
+          <button
+            type="button"
+            onClick={forceRefresh}
+            className="consumer-qr-refresh"
+            disabled={generate.isPending}
+          >
             <RefreshCw className="h-3.5 w-3.5" aria-hidden />
             {d.userDashboard.renewNow}
           </button>
