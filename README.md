@@ -10,6 +10,18 @@
 [![Frontend](https://img.shields.io/badge/frontend-live-brightgreen)](https://tanstack-start-app.nexoleal.workers.dev)
 [![Backend API](https://img.shields.io/badge/API-live-brightgreen)](https://nexoleal-backend.nexoleal.workers.dev/health)
 
+📋 Registro de Issues
+🟢 Pendientes de Solución
+[ ] Generación de QR: Error persistente de "Client profile not found. Call POST /consumer/register first." que impide la visualización del código QR.
+
+[ ] Validación de QR: Falta implementar y verificar la lógica de validación para los códigos QR escaneados.
+
+[ ] Rendimiento del Asistente IA: El proceso de creación de resúmenes por parte del asistente de IA presenta una latencia elevada.
+
+[ ] Navegación del Asistente: El botón "Volver al panel" dentro de la interfaz del asistente de IA no ejecuta ninguna acción.
+
+[ ] Funcionalidad de la Barra Lateral: Los apartados de "Sucursales", "Clientes" y "Visitas" carecen de funcionalidad implementada actualmente.
+
 ## Producción (Cloudflare Workers)
 
 | Servicio | Worker | URL |
