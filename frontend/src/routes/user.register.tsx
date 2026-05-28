@@ -79,11 +79,12 @@ function UserRegisterPage() {
       toast.success(d.userRegister.successMsg);
       navigate({ to: "/user/dashboard" });
     } catch (e) {
-      // Log the underlying cause so a 500/4xx is debuggable from DevTools
-      // instead of disappearing behind the generic toast.
+      // Always log the underlying cause so failures are debuggable from
+      // DevTools. Only append the raw message to the toast in dev — prod
+      // users shouldn't see backend internals (e.g. schema-cache errors).
       console.error("[user.register] submit failed:", e);
       const detail =
-        e instanceof ApiError
+        import.meta.env.DEV && e instanceof ApiError
           ? `${d.userRegister.errorMsg} (${e.message})`
           : d.userRegister.errorMsg;
       toast.error(detail);
