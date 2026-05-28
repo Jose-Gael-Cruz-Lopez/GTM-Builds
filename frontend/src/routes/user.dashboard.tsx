@@ -63,7 +63,14 @@ function UserDashboard() {
       setSecondsLeft(data.ttlSeconds);
     },
     onError: (e: ApiError) => {
-      if (e.code === "AUTH_INVALID" || e.code === "AUTH_MISSING") {
+      // NOT_FOUND = stale session pointing at a missing clients row.
+      // Clear it so the next register attempt re-links via the login backfill.
+      if (
+        e.code === "AUTH_INVALID" ||
+        e.code === "AUTH_MISSING" ||
+        e.code === "NOT_FOUND"
+      ) {
+        localStorage.removeItem(CONSUMER_SESSION_KEY);
         navigate({ to: "/user/register" });
         return;
       }
