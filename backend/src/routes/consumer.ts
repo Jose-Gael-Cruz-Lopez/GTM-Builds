@@ -169,9 +169,31 @@ consumerRoutes.post('/login', strictRateLimit(), async (c) => {
   }
 
   const db = createSupabaseClient(c.env, 'service')
-  const client = await db.getOne('clients', {
+  let client = await db.getOne('clients', {
     filters: [{ column: 'auth_id', operator: 'eq', value: loginData.user.id }],
   })
+
+  // Self-heal: Supabase auth user exists but no clients row (e.g. a prior
+  // /register that signed up the user but then failed to insert the profile).
+  // Without this, every authed call returns 404 and the account is stuck.
+  if (!client) {
+    const referralCode = await makeReferralCode(loginData.user.id, c.env.TOKEN_SECRET)
+    try {
+      const [created] = await db.post('clients', {
+        auth_id: loginData.user.id,
+        full_name: username,
+        referral_code: referralCode,
+        referred_by_client_id: null,
+      })
+      client = created ?? null
+    } catch (error) {
+      if (error instanceof SupabaseError) {
+        const mapped = mapSupabaseError(error)
+        return c.json(err(mapped.code, mapped.message), mapped.status)
+      }
+      throw error
+    }
+  }
 
   return c.json(
     ok({
