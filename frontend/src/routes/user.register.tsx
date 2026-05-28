@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { ConsumerFlowShell } from "@/components/consumer/ConsumerFlowShell";
 import { useLocale } from "@/contexts/LocaleContext";
+import { consumerApi, CONSUMER_SESSION_KEY } from "@/lib/api/consumer";
+import { ApiError } from "@/lib/api-client";
 
 export const Route = createFileRoute("/user/register")({
   component: UserRegisterPage,
@@ -43,12 +45,37 @@ function UserRegisterPage() {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      let result: Awaited<ReturnType<typeof consumerApi.register>>;
+      try {
+        result = await consumerApi.register({
+          username: values.phone,
+          referralCode: values.referralCode || undefined,
+        });
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 409) {
+          const login = await consumerApi.login({ username: values.phone });
+          if (!login.accessToken) throw new Error("Login failed");
+          result = {
+            accessToken: login.accessToken,
+            refreshToken: login.refreshToken,
+            expiresIn: login.expiresIn,
+            client: login.client
+              ? { ...login.client, referredBy: false }
+              : { id: "", username: values.phone, referralCode: "", referredBy: false },
+          };
+        } else {
+          throw e;
+        }
+      }
+
       localStorage.setItem(
-        "nexoleal:consumer-session",
+        CONSUMER_SESSION_KEY,
         JSON.stringify({
           phone: values.phone,
-          referralCode: values.referralCode ?? null,
+          referralCode: result.client.referralCode || values.referralCode || null,
           registeredAt: Date.now(),
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
         }),
       );
       toast.success(d.userRegister.successMsg);
