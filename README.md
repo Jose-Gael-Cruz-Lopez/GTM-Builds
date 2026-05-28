@@ -14,15 +14,19 @@
 
 🟢 Pendientes de Solución
 
-[ ] Generación de QR: Error persistente de "Client profile not found. Call POST /consumer/register first." que impide la visualización del código QR.
+[ ] **Generación de QR:** Error persistente de "Client profile not found. Call POST /consumer/register first." que impide la visualización del código QR.
 
-[ ] Validación de QR: Falta implementar y verificar la lógica de validación para los códigos QR escaneados.
+[ ] **Validación de QR:** Falta implementar y verificar la lógica de validación para los códigos QR escaneados.
 
-[ ] Rendimiento del Asistente IA: El proceso de creación de resúmenes por parte del asistente de IA presenta una latencia elevada.
+[ ] **Rendimiento del Asistente IA:** El proceso de creación de resúmenes por parte del asistente de IA presenta una latencia elevada.
 
-[ ] Navegación del Asistente: El botón "Volver al panel" dentro de la interfaz del asistente de IA no ejecuta ninguna acción.
+[ ] **Navegación del Asistente:** El botón "Volver al panel" dentro de la interfaz del asistente de IA no ejecuta ninguna acción.
 
-[ ] Funcionalidad de la Barra Lateral: Los apartados de "Sucursales", "Clientes" y "Visitas" carecen de funcionalidad implementada actualmente.
+[ ] **Funcionalidad de la Barra Lateral:** Los apartados de "Sucursales", "Clientes" y "Visitas" carecen de funcionalidad implementada actualmente.
+
+[ ] **Botones "Segmentos en riesgo":** Al interactuar con estos botones, el panel principal se recarga sin actualizar la información o mostrar el contenido esperado.
+
+
 
 ## Producción (Cloudflare Workers)
 
