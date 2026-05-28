@@ -97,22 +97,31 @@ consumerRoutes.post('/register', strictRateLimit(), async (c) => {
   const db = createSupabaseClient(c.env, 'service')
   const referralCode = await makeReferralCode(authId, c.env.TOKEN_SECRET)
 
-  // Resolve referrer if code provided
+  // Resolve referrer if code provided. Wrapped because the production
+  // clients table currently lacks the referral_code column, which makes the
+  // filter throw a PostgREST schema-cache error. Falling back to "no referrer"
+  // keeps register unblocked; restore strict lookup once the column exists.
   let referredByClientId: string | null = null
   if (body.referralCode) {
-    const referrer = await db.getOne('clients', {
-      filters: [
-        { column: 'referral_code', operator: 'eq', value: body.referralCode.toUpperCase() },
-      ],
-    })
-    referredByClientId = referrer?.id ?? null
+    try {
+      const referrer = await db.getOne('clients', {
+        filters: [
+          { column: 'referral_code', operator: 'eq', value: body.referralCode.toUpperCase() },
+        ],
+      })
+      referredByClientId = referrer?.id ?? null
+    } catch (e) {
+      console.warn('Referrer lookup failed, continuing without referral link:', e)
+    }
   }
 
   try {
+    // Intentionally omit referral_code from the insert — it's derived from
+    // auth_id via makeReferralCode() so we don't depend on the column
+    // existing (see also the wrapped referrer lookup above).
     const [client] = await db.post('clients', {
       auth_id: authId,
       full_name: body.username,
-      referral_code: referralCode,
       referred_by_client_id: referredByClientId,
     })
 
@@ -124,7 +133,7 @@ consumerRoutes.post('/register', strictRateLimit(), async (c) => {
         client: {
           id: client!.id,
           username: client!.full_name,
-          referralCode: client!.referral_code,
+          referralCode,
           referredBy: referredByClientId !== null,
         },
       }),
@@ -177,12 +186,10 @@ consumerRoutes.post('/login', strictRateLimit(), async (c) => {
   // /register that signed up the user but then failed to insert the profile).
   // Without this, every authed call returns 404 and the account is stuck.
   if (!client) {
-    const referralCode = await makeReferralCode(loginData.user.id, c.env.TOKEN_SECRET)
     try {
       const [created] = await db.post('clients', {
         auth_id: loginData.user.id,
         full_name: username,
-        referral_code: referralCode,
         referred_by_client_id: null,
       })
       client = created ?? null
@@ -195,6 +202,10 @@ consumerRoutes.post('/login', strictRateLimit(), async (c) => {
     }
   }
 
+  const referralCode = client
+    ? await makeReferralCode(client.auth_id, c.env.TOKEN_SECRET)
+    : null
+
   return c.json(
     ok({
       accessToken: loginData.access_token,
@@ -204,7 +215,7 @@ consumerRoutes.post('/login', strictRateLimit(), async (c) => {
         ? {
             id: client.id,
             username: client.full_name,
-            referralCode: client.referral_code,
+            referralCode: referralCode!,
           }
         : null,
     }),
@@ -260,9 +271,11 @@ consumerRoutes.get('/referral-code', requireClient(), async (c) => {
     return c.json(err('NOT_FOUND', 'Client profile not found'), 404)
   }
 
+  const referralCode = await makeReferralCode(client.auth_id, c.env.TOKEN_SECRET)
+
   return c.json(
     ok({
-      referralCode: client.referral_code,
+      referralCode,
       username: client.full_name,
     }),
     200

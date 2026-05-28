@@ -43,7 +43,6 @@ describe('POST /consumer/login — clients row backfill', () => {
             id: 'client-new-1',
             auth_id: body.auth_id,
             full_name: body.full_name,
-            referral_code: body.referral_code,
             referred_by_client_id: body.referred_by_client_id,
           }
           postedRows.push(row)
@@ -82,6 +81,8 @@ describe('POST /consumer/login — clients row backfill', () => {
       full_name: TEST_USERNAME,
       referred_by_client_id: null,
     })
+    // referral_code is derived, never persisted
+    expect(postedRows[0]).not.toHaveProperty('referral_code')
   })
 
   it('returns the existing client when profile is already present (no backfill)', async () => {
@@ -111,7 +112,6 @@ describe('POST /consumer/login — clients row backfill', () => {
                 id: 'client-existing-1',
                 auth_id: TEST_AUTH_ID,
                 full_name: TEST_USERNAME,
-                referral_code: 'ABCD1234',
               },
             ]),
             { status: 200 },
@@ -136,7 +136,8 @@ describe('POST /consumer/login — clients row backfill', () => {
       data: { client: { id: string; referralCode: string } | null }
     }
     expect(body.data.client?.id).toBe('client-existing-1')
-    expect(body.data.client?.referralCode).toBe('ABCD1234')
+    // referralCode is derived from auth_id, not read from the row
+    expect(body.data.client?.referralCode).toMatch(/^[A-F0-9]{8}$/)
     expect(postCount).toBe(0)
   })
 })
