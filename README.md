@@ -11,7 +11,9 @@
 [![Backend API](https://img.shields.io/badge/API-live-brightgreen)](https://nexoleal-backend.nexoleal.workers.dev/health)
 
 📋 Registro de Issues
+
 🟢 Pendientes de Solución
+
 [ ] Generación de QR: Error persistente de "Client profile not found. Call POST /consumer/register first." que impide la visualización del código QR.
 
 [ ] Validación de QR: Falta implementar y verificar la lógica de validación para los códigos QR escaneados.
