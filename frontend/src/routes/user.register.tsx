@@ -54,14 +54,12 @@ function UserRegisterPage() {
       } catch (e) {
         if (e instanceof ApiError && e.status === 409) {
           const login = await consumerApi.login({ username: values.phone });
-          if (!login.accessToken) throw new Error("Login failed");
+          if (!login.accessToken || !login.client) throw new Error("Login failed");
           result = {
             accessToken: login.accessToken,
             refreshToken: login.refreshToken,
             expiresIn: login.expiresIn,
-            client: login.client
-              ? { ...login.client, referredBy: false }
-              : { id: "", username: values.phone, referralCode: "", referredBy: false },
+            client: { ...login.client, referredBy: false },
           };
         } else {
           throw e;
