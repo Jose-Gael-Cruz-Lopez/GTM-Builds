@@ -187,23 +187,38 @@ consumerRoutes.post('/login', strictRateLimit(), async (c) => {
   // Without this, every authed call returns 404 and the account is stuck.
   if (!client) {
     try {
+      // Use the request-supplied casing (matches /register's behavior) so a
+      // user re-recovering after a partial signup keeps the same display name.
       const [created] = await db.post('clients', {
         auth_id: loginData.user.id,
-        full_name: username,
+        full_name: body.username,
         referred_by_client_id: null,
       })
       client = created ?? null
     } catch (error) {
       if (error instanceof SupabaseError) {
-        const mapped = mapSupabaseError(error)
-        return c.json(err(mapped.code, mapped.message), mapped.status)
+        // Likely a concurrent backfill won the race and a unique constraint
+        // on auth_id rejected this insert. Re-query before giving up so
+        // simultaneous logins for the same orphan resolve idempotently.
+        client = await db.getOne('clients', {
+          filters: [{ column: 'auth_id', operator: 'eq', value: loginData.user.id }],
+        })
+        if (!client) {
+          const mapped = mapSupabaseError(error)
+          return c.json(err(mapped.code, mapped.message), mapped.status)
+        }
+      } else {
+        throw error
       }
-      throw error
     }
   }
 
-  const referralCode = client
-    ? await makeReferralCode(client.auth_id, c.env.TOKEN_SECRET)
+  const responseClient = client
+    ? {
+        id: client.id,
+        username: client.full_name,
+        referralCode: await makeReferralCode(client.auth_id, c.env.TOKEN_SECRET),
+      }
     : null
 
   return c.json(
@@ -211,13 +226,7 @@ consumerRoutes.post('/login', strictRateLimit(), async (c) => {
       accessToken: loginData.access_token,
       refreshToken: loginData.refresh_token!,
       expiresIn: loginData.expires_in!,
-      client: client
-        ? {
-            id: client.id,
-            username: client.full_name,
-            referralCode: referralCode!,
-          }
-        : null,
+      client: responseClient,
     }),
     200
   )
