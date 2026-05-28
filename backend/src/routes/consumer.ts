@@ -116,13 +116,14 @@ consumerRoutes.post('/register', strictRateLimit(), async (c) => {
   }
 
   try {
-    // Intentionally omit referral_code from the insert — it's derived from
-    // auth_id via makeReferralCode() so we don't depend on the column
-    // existing (see also the wrapped referrer lookup above).
+    // Insert only the columns we know exist in production. Both referral_code
+    // (derived from auth_id) and referred_by_client_id (column also missing
+    // in prod, surfaced as a PostgREST schema-cache error on register) are
+    // omitted. Once the schema catches up, attribution can be re-enabled by
+    // including referred_by_client_id here.
     const [client] = await db.post('clients', {
       auth_id: authId,
       full_name: body.username,
-      referred_by_client_id: referredByClientId,
     })
 
     return c.json(
@@ -189,10 +190,11 @@ consumerRoutes.post('/login', strictRateLimit(), async (c) => {
     try {
       // Use the request-supplied casing (matches /register's behavior) so a
       // user re-recovering after a partial signup keeps the same display name.
+      // Insert only known-present columns (see /register for the same rationale
+      // around omitted referral_code and referred_by_client_id).
       const [created] = await db.post('clients', {
         auth_id: loginData.user.id,
         full_name: body.username,
-        referred_by_client_id: null,
       })
       client = created ?? null
     } catch (error) {

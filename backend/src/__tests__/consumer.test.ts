@@ -43,9 +43,8 @@ describe('POST /consumer/login — clients row backfill', () => {
             id: 'client-new-1',
             auth_id: body.auth_id,
             full_name: body.full_name,
-            referred_by_client_id: body.referred_by_client_id,
           }
-          postedRows.push(row)
+          postedRows.push(body)
           return new Response(JSON.stringify([row]), { status: 201 })
         }
       }
@@ -79,10 +78,11 @@ describe('POST /consumer/login — clients row backfill', () => {
     expect(postedRows[0]).toMatchObject({
       auth_id: TEST_AUTH_ID,
       full_name: TEST_USERNAME,
-      referred_by_client_id: null,
     })
-    // referral_code is derived, never persisted
+    // Both columns are intentionally omitted — referral_code is derived,
+    // referred_by_client_id is absent in the production schema.
     expect(postedRows[0]).not.toHaveProperty('referral_code')
+    expect(postedRows[0]).not.toHaveProperty('referred_by_client_id')
   })
 
   it('returns the existing client when profile is already present (no backfill)', async () => {
@@ -254,6 +254,7 @@ describe('POST /consumer/register — derived referral_code', () => {
 
     expect(postedRows).toHaveLength(1)
     expect(postedRows[0]).not.toHaveProperty('referral_code')
+    expect(postedRows[0]).not.toHaveProperty('referred_by_client_id')
   })
 
   it('falls back to no referrer when the referrer lookup throws (missing column)', async () => {
