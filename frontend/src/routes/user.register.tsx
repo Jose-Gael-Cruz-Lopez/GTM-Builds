@@ -78,8 +78,15 @@ function UserRegisterPage() {
       );
       toast.success(d.userRegister.successMsg);
       navigate({ to: "/user/dashboard" });
-    } catch {
-      toast.error(d.userRegister.errorMsg);
+    } catch (e) {
+      // Log the underlying cause so a 500/4xx is debuggable from DevTools
+      // instead of disappearing behind the generic toast.
+      console.error("[user.register] submit failed:", e);
+      const detail =
+        e instanceof ApiError
+          ? `${d.userRegister.errorMsg} (${e.message})`
+          : d.userRegister.errorMsg;
+      toast.error(detail);
     }
   };
 
