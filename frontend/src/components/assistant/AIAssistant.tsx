@@ -65,6 +65,19 @@ const nextId = () => String(++msgId);
 export function AIAssistant({ businessId, onClose }: { businessId: string; onClose?: () => void }) {
   const navigate = useNavigate();
 
+  // Single "exit assistant" entry point used by every control that leaves
+  // the assistant. Calling both onClose and navigate is intentional:
+  //   - Modal mount (onClose set): close the overlay; navigate is a no-op
+  //     because the user is already at the dashboard URL.
+  //   - Standalone-route mount (onClose undefined): the optional-chain is a
+  //     no-op; navigate actually changes the URL.
+  // Without doing both, the "Volver al panel" button looked broken in modal
+  // mode — the bug behind #64.
+  const handleBack = () => {
+    onClose?.();
+    navigate({ to: "/dashboard/$businessId", params: { businessId } });
+  };
+
   const pendingActionRef = useRef<PendingAction>("summary");
 
   const [step, setStep] = useState<Step>("welcome");
@@ -340,15 +353,7 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
           {
             label: "Volver al panel",
             variant: "outline",
-            // The assistant renders both as a modal (with onClose) and as a
-            // standalone route. In modal mode the user is already at the
-            // dashboard URL, so navigate() is a no-op and the modal would
-            // stay open — close it first, then navigate as a fallback for
-            // the standalone-route case.
-            onClick: () => {
-              onClose?.();
-              navigate({ to: "/dashboard/$businessId", params: { businessId } });
-            },
+            onClick: handleBack,
           },
         ],
       );
@@ -646,10 +651,6 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
     step === "frequent-visits" &&
     messages.at(-1)?.from === "ai" &&
     messages.at(-1)?.content.includes("número de visitas");
-
-  const handleBack = onClose
-    ? onClose
-    : () => navigate({ to: "/dashboard/$businessId", params: { businessId } });
 
   return (
     <div className="flex h-full flex-col">
