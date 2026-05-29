@@ -9,6 +9,41 @@ globalThis.fetch = mockFetch as unknown as typeof fetch
 const TEST_USER_ID = 'admin-user-1'
 const TEST_BUSINESS_ID = 'biz-cache-1'
 
+// Canonical "success" NIM response shared by every test that needs the model
+// to return a parseable insights payload. Returning fresh Responses per call
+// is required — Response bodies are one-shot streams.
+function buildNimSuccessResponse(): Response {
+  return new Response(
+    JSON.stringify({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
+              serviceAnalysis: {
+                slowPeriods: [],
+                activePeriods: [],
+                lowPerformanceReasons: [],
+                predictions: [],
+              },
+              recommendations: {
+                forLost: 'a',
+                forFrequent: 'b',
+                forNew: 'c',
+                suggestedDiscountLost: 15,
+                suggestedDiscountFrequent: 10,
+                suggestedDiscountNew: 10,
+                suggestedVisitsForReward: 5,
+              },
+            }),
+          },
+        },
+      ],
+    }),
+    { status: 200 },
+  )
+}
+
 // Counts how many times the NIM endpoint is called so we can prove the cache
 // short-circuits before reaching the model.
 function makeMockNimCounter() {
@@ -41,35 +76,7 @@ function makeMockNimCounter() {
 
     if (url.includes('integrate.api.nvidia.com')) {
       nimCalls++
-      return new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                content: JSON.stringify({
-                  segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
-                  serviceAnalysis: {
-                    slowPeriods: [],
-                    activePeriods: [],
-                    lowPerformanceReasons: [],
-                    predictions: [],
-                  },
-                  recommendations: {
-                    forLost: 'a',
-                    forFrequent: 'b',
-                    forNew: 'c',
-                    suggestedDiscountLost: 15,
-                    suggestedDiscountFrequent: 10,
-                    suggestedDiscountNew: 10,
-                    suggestedVisitsForReward: 5,
-                  },
-                }),
-              },
-            },
-          ],
-        }),
-        { status: 200 },
-      )
+      return buildNimSuccessResponse()
     }
 
     return new Response(JSON.stringify([]), { status: 200 })
@@ -216,35 +223,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
       }
       if (url.includes('integrate.api.nvidia.com')) {
         nimCalls++
-        return new Response(
-          JSON.stringify({
-            choices: [
-              {
-                message: {
-                  content: JSON.stringify({
-                    segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
-                    serviceAnalysis: {
-                      slowPeriods: [],
-                      activePeriods: [],
-                      lowPerformanceReasons: [],
-                      predictions: [],
-                    },
-                    recommendations: {
-                      forLost: 'a',
-                      forFrequent: 'b',
-                      forNew: 'c',
-                      suggestedDiscountLost: 15,
-                      suggestedDiscountFrequent: 10,
-                      suggestedDiscountNew: 10,
-                      suggestedVisitsForReward: 5,
-                    },
-                  }),
-                },
-              },
-            ],
-          }),
-          { status: 200 },
-        )
+        return buildNimSuccessResponse()
       }
       return new Response(JSON.stringify([]), { status: 200 })
     })
@@ -341,35 +320,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
         }
         if (url.includes('integrate.api.nvidia.com')) {
           nimCalls++
-          return new Response(
-            JSON.stringify({
-              choices: [
-                {
-                  message: {
-                    content: JSON.stringify({
-                      segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
-                      serviceAnalysis: {
-                        slowPeriods: [],
-                        activePeriods: [],
-                        lowPerformanceReasons: [],
-                        predictions: [],
-                      },
-                      recommendations: {
-                        forLost: 'a',
-                        forFrequent: 'b',
-                        forNew: 'c',
-                        suggestedDiscountLost: 15,
-                        suggestedDiscountFrequent: 10,
-                        suggestedDiscountNew: 10,
-                        suggestedVisitsForReward: 5,
-                      },
-                    }),
-                  },
-                },
-              ],
-            }),
-            { status: 200 },
-          )
+          return buildNimSuccessResponse()
         }
         return new Response(JSON.stringify([]), { status: 200 })
       }
@@ -401,8 +352,10 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
 
     // ── Create branch ─────────────────────────────────────────────────────
+    // The mock factory already closes over loyaltyConfigExists and reads its
+    // live value at call time, so toggling the variable is sufficient — no
+    // need to rebind the implementation.
     loyaltyConfigExists = false
-    mockFetch.mockImplementation(buildMock())
 
     await callAnalyze() // re-prime
     expect(nimCalls).toBe(2)
@@ -513,35 +466,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
       }
       if (url.includes('integrate.api.nvidia.com')) {
         nimCalls++
-        return new Response(
-          JSON.stringify({
-            choices: [
-              {
-                message: {
-                  content: JSON.stringify({
-                    segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
-                    serviceAnalysis: {
-                      slowPeriods: [],
-                      activePeriods: [],
-                      lowPerformanceReasons: [],
-                      predictions: [],
-                    },
-                    recommendations: {
-                      forLost: 'a',
-                      forFrequent: 'b',
-                      forNew: 'c',
-                      suggestedDiscountLost: 15,
-                      suggestedDiscountFrequent: 10,
-                      suggestedDiscountNew: 10,
-                      suggestedVisitsForReward: 5,
-                    },
-                  }),
-                },
-              },
-            ],
-          }),
-          { status: 200 },
-        )
+        return buildNimSuccessResponse()
       }
       return new Response(JSON.stringify([]), { status: 200 })
     })
