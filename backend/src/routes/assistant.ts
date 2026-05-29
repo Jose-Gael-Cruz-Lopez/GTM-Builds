@@ -141,10 +141,14 @@ assistantRoutes.post(
 
       // Only cache successful (non-fallback) responses — caching a fallback
       // would lock the user into the generic copy for 30 minutes.
+      // waitUntil lets the response return immediately while the KV write
+      // finishes in the background (shaves ~10–50ms off the cold press).
       if (!usedFallback) {
-        await c.env.ANALYTICS_CACHE.put(cacheKey, JSON.stringify(demoPayload), {
-          expirationTtl: ANALYZE_CACHE_TTL_SECONDS,
-        }).catch(console.error)
+        c.executionCtx.waitUntil(
+          c.env.ANALYTICS_CACHE.put(cacheKey, JSON.stringify(demoPayload), {
+            expirationTtl: ANALYZE_CACHE_TTL_SECONDS,
+          }).catch(console.error),
+        )
       }
 
       return c.json(ok(demoPayload), 200)
@@ -224,9 +228,11 @@ assistantRoutes.post(
 
     // Only cache successful (non-fallback) responses — see demo branch above.
     if (!usedFallback) {
-      await c.env.ANALYTICS_CACHE.put(cacheKey, JSON.stringify(payload), {
-        expirationTtl: ANALYZE_CACHE_TTL_SECONDS,
-      }).catch(console.error)
+      c.executionCtx.waitUntil(
+        c.env.ANALYTICS_CACHE.put(cacheKey, JSON.stringify(payload), {
+          expirationTtl: ANALYZE_CACHE_TTL_SECONDS,
+        }).catch(console.error),
+      )
     }
 
     return c.json(ok(payload), 200)

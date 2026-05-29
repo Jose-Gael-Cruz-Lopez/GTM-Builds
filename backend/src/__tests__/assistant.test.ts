@@ -1,7 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { env } from 'cloudflare:test'
+import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import app from '../index'
 import { analyzeCacheKey } from '../routes/assistant'
+
+// Worker entry expects (request, env, ctx). Tests must supply ctx so the
+// route's c.executionCtx.waitUntil(...) — used to fire-and-forget cache writes
+// — works. After fetch, awaiting on the same ctx flushes those background
+// promises so subsequent assertions see the resulting KV state.
+async function fetchApp(request: Request): Promise<Response> {
+  const ctx = createExecutionContext()
+  const response = await app.fetch(request, env, ctx)
+  await waitOnExecutionContext(ctx)
+  return response
+}
 
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch as unknown as typeof fetch
@@ -86,7 +97,7 @@ function makeMockNimCounter() {
 
 async function callAnalyze(query = ''): Promise<Response> {
   const url = `http://localhost/businesses/${TEST_BUSINESS_ID}/assistant/analyze${query}`
-  return app.fetch(
+  return fetchApp(
     new Request(url, {
       method: 'POST',
       headers: {
@@ -95,7 +106,6 @@ async function callAnalyze(query = ''): Promise<Response> {
       },
       body: '{}',
     }),
-    env,
   )
 }
 
@@ -246,7 +256,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
         body: JSON.stringify({ segment: 'lost', discountPct: 15, durationDays: 14 }),
       },
     )
-    const campaignRes = await app.fetch(campaignReq, env)
+    const campaignRes = await fetchApp(campaignReq)
     expect(campaignRes.status).toBe(201)
 
     // Cache should be gone.
@@ -329,7 +339,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     mockFetch.mockImplementation(buildMock())
 
     async function loyaltyPatch(): Promise<Response> {
-      return app.fetch(
+      return fetchApp(
         new Request(`http://localhost/businesses/${TEST_BUSINESS_ID}/assistant/loyalty`, {
           method: 'PATCH',
           headers: {
@@ -338,7 +348,6 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
           },
           body: JSON.stringify({ visitsRequired: 7 }),
         }),
-        env,
       )
     }
 
@@ -477,7 +486,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).not.toBeNull()
 
     // Register a visit — the most common production trigger for invalidation.
-    const visitRes = await app.fetch(
+    const visitRes = await fetchApp(
       new Request('http://localhost/visits', {
         method: 'POST',
         headers: {
@@ -486,7 +495,6 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
         },
         body: JSON.stringify({ token: valid.token }),
       }),
-      env,
     )
     expect(visitRes.status).toBe(201)
 
