@@ -340,7 +340,15 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
           {
             label: "Volver al panel",
             variant: "outline",
-            onClick: () => navigate({ to: "/dashboard/$businessId", params: { businessId } }),
+            // The assistant renders both as a modal (with onClose) and as a
+            // standalone route. In modal mode the user is already at the
+            // dashboard URL, so navigate() is a no-op and the modal would
+            // stay open — close it first, then navigate as a fallback for
+            // the standalone-route case.
+            onClick: () => {
+              onClose?.();
+              navigate({ to: "/dashboard/$businessId", params: { businessId } });
+            },
           },
         ],
       );
