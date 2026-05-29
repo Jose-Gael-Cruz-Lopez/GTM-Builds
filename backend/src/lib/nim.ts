@@ -386,13 +386,16 @@ export async function analyzeBusinessInsights(
   ctx: AssistantAnalysisContext
 ): Promise<{ insights: AssistantInsights; usedFallback: boolean }> {
   try {
+    // 1500 max_tokens is ~2× the size of the largest realistic insights JSON
+    // (FALLBACK_INSIGHTS is ~700 tokens). Lower ceiling = faster generation
+    // on the 253B model and a tighter upper-bound on cold-start latency.
     const response = await nimFetchWithFallback(
       apiKey,
       [
         { role: 'system', content: ASSISTANT_SYSTEM_PROMPT },
         { role: 'user', content: buildAssistantPrompt(ctx) },
       ],
-      3000,
+      1500,
       0.7,
     )
 

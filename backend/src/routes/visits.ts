@@ -201,7 +201,10 @@ visitRoutes.post('/', requireStaff(), async (c) => {
   await invalidateToken(body.token, c.env.TOKEN_BLACKLIST, ttl)
 
   // ── Step 11: Invalidate analytics cache for this business ─────────────────
-  await c.env.ANALYTICS_CACHE.delete(`stats:summary:${staffBusinessId}`).catch(console.error)
+  await Promise.all([
+    c.env.ANALYTICS_CACHE.delete(`stats:summary:${staffBusinessId}`),
+    c.env.ANALYTICS_CACHE.delete(`assistant:analyze:${staffBusinessId}`),
+  ]).catch(console.error)
 
   const stats = await snapshotBusinessStats(db, staffBusinessId)
 
