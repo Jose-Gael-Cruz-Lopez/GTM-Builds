@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import app from '../index'
 import { analyzeCacheKey } from '../routes/assistant'
+import { generateToken, generateConsumerToken } from '../lib/tokenEngine'
+import { recalculateClientStatuses, deleteAllByPrefix } from '../cron'
 
 // Worker entry expects (request, env, ctx). Tests must supply ctx so the
 // route's c.executionCtx.waitUntil(...) — used to fire-and-forget cache writes
@@ -113,6 +115,12 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
   beforeEach(async () => {
     mockFetch.mockReset()
     await env.ANALYTICS_CACHE.delete(analyzeCacheKey(TEST_BUSINESS_ID))
+  })
+
+  // Best-effort cleanup so a mid-test assertion failure can't leak keys
+  // into the next test. delete() is a no-op when the key isn't present.
+  afterEach(async () => {
+    await env.ANALYTICS_CACHE.delete('unrelated:key')
   })
 
   it('caches the first response and serves subsequent calls from KV without re-calling NIM', async () => {
@@ -377,7 +385,6 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
 
   it('POST /visits invalidates the cache (most frequent trigger in production)', async () => {
     // Build a real valid token so requireStaff + tokenEngine.validateToken pass.
-    const { generateToken } = await import('../lib/tokenEngine')
     const STAFF_SECRET = 'a'.repeat(64) // matches TOKEN_SECRET in vitest.config.ts
     const TEST_CLIENT_AUTH_ID = 'client-auth-9'
     const valid = await generateToken(TEST_CLIENT_AUTH_ID, TEST_BUSINESS_ID, STAFF_SECRET, 90)
@@ -503,7 +510,6 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
   })
 
   it('POST /scanner/scan invalidates the cache', async () => {
-    const { generateConsumerToken } = await import('../lib/tokenEngine')
     const STAFF_SECRET = 'a'.repeat(64)
     const TEST_CLIENT_AUTH_ID = 'scanner-client-1'
     const valid = await generateConsumerToken(
@@ -605,15 +611,13 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
         body: JSON.stringify({ token: valid.token }),
       }),
     )
-    // Either 200 (success) or 201 — both proceed past the cache delete.
-    expect([200, 201]).toContain(scanRes.status)
+    // New visit path (idempotency GET returned empty above) → always 201.
+    expect(scanRes.status).toBe(201)
 
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
   })
 
   it('cron status recalc sweeps both stats:summary and assistant:analyze caches', async () => {
-    const { recalculateClientStatuses } = await import('../cron')
-
     mockFetch.mockImplementation(async (input: string | URL | Request) => {
       const url =
         typeof input === 'string'
@@ -644,15 +648,11 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     expect(await env.ANALYTICS_CACHE.get('stats:summary:biz-b')).toBeNull()
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey('biz-a'))).toBeNull()
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey('biz-b'))).toBeNull()
-    // Unrelated keys are not touched.
+    // Unrelated keys are not touched (afterEach handles cleanup).
     expect(await env.ANALYTICS_CACHE.get('unrelated:key')).toBe('{"keep":true}')
-
-    // Clean up
-    await env.ANALYTICS_CACHE.delete('unrelated:key')
   })
 
   it('deleteAllByPrefix paginates past the single-page cap (1500 keys)', async () => {
-    const { deleteAllByPrefix } = await import('../cron')
     const PREFIX = 'pagination-test:'
     const TOTAL = 1500 // > KV.list default page size of 1000
 
