@@ -2,8 +2,8 @@ import type { Env } from './types/env'
 import { createSupabaseClient } from './lib/supabase'
 
 // Walks every page of KV.list to handle the >1000-key case the single-call
-// form would silently truncate.
-async function deleteAllByPrefix(kv: KVNamespace, prefix: string): Promise<number> {
+// form would silently truncate. Exported for direct test coverage.
+export async function deleteAllByPrefix(kv: KVNamespace, prefix: string): Promise<number> {
   let deleted = 0
   let cursor: string | undefined
   do {

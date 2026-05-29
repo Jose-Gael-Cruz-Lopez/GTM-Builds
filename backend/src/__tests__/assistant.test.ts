@@ -501,4 +501,179 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     // Cache should be gone.
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
   })
+
+  it('POST /scanner/scan invalidates the cache', async () => {
+    const { generateConsumerToken } = await import('../lib/tokenEngine')
+    const STAFF_SECRET = 'a'.repeat(64)
+    const TEST_CLIENT_AUTH_ID = 'scanner-client-1'
+    const valid = await generateConsumerToken(
+      TEST_CLIENT_AUTH_ID,
+      'Test Client',
+      STAFF_SECRET,
+      90,
+    )
+
+    let nimCalls = 0
+    mockFetch.mockImplementation(async (input: string | URL | Request, init?: RequestInit) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url
+      const method = (
+        init?.method ?? (input instanceof Request ? input.method : 'GET')
+      ).toUpperCase()
+
+      if (url.includes('/auth/v1/user')) {
+        return new Response(JSON.stringify({ id: TEST_USER_ID }), { status: 200 })
+      }
+      if (url.includes('/rest/v1/businesses')) {
+        return new Response(
+          JSON.stringify([
+            { id: TEST_BUSINESS_ID, owner_id: TEST_USER_ID, name: 'Demo Co', category: 'cafe' },
+          ]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/staff_keys')) {
+        return new Response(
+          JSON.stringify([
+            { id: 'sk-1', business_id: TEST_BUSINESS_ID, key_hash: 'whatever', is_active: true },
+          ]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/clients')) {
+        return new Response(
+          JSON.stringify([{ id: 'scanner-client-row', auth_id: TEST_CLIENT_AUTH_ID }]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/client_business_loyalty')) {
+        if (method === 'GET') {
+          return new Response(
+            JSON.stringify([
+              {
+                id: 'cbl-2',
+                client_id: 'scanner-client-row',
+                business_id: TEST_BUSINESS_ID,
+                stamp_count: 0,
+                total_visits: 0,
+                total_rewards: 0,
+                status: 'active',
+              },
+            ]),
+            { status: 200 },
+          )
+        }
+        return new Response(JSON.stringify([{ id: 'cbl-2', status: 'active' }]), { status: 200 })
+      }
+      if (url.includes('/rest/v1/loyalty_configs')) {
+        return new Response(JSON.stringify([]), { status: 200 })
+      }
+      if (url.includes('/rest/v1/visits')) {
+        if (method === 'GET') return new Response(JSON.stringify([]), { status: 200 })
+        if (method === 'POST') {
+          return new Response(
+            JSON.stringify([{ id: 'scan-visit-1', reward_unlocked: false }]),
+            { status: 201 },
+          )
+        }
+      }
+      if (url.includes('/rest/v1/rewards') && method === 'POST') {
+        return new Response(JSON.stringify([{ id: 'r-1' }]), { status: 201 })
+      }
+      if (url.includes('integrate.api.nvidia.com')) {
+        nimCalls++
+        return buildNimSuccessResponse()
+      }
+      return new Response(JSON.stringify([]), { status: 200 })
+    })
+
+    await callAnalyze()
+    expect(nimCalls).toBe(1)
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).not.toBeNull()
+
+    const scanRes = await fetchApp(
+      new Request('http://localhost/scanner/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Staff-Key': `${TEST_BUSINESS_ID}:rawkey`,
+        },
+        body: JSON.stringify({ token: valid.token }),
+      }),
+    )
+    // Either 200 (success) or 201 — both proceed past the cache delete.
+    expect([200, 201]).toContain(scanRes.status)
+
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
+  })
+
+  it('cron status recalc sweeps both stats:summary and assistant:analyze caches', async () => {
+    const { recalculateClientStatuses } = await import('../cron')
+
+    mockFetch.mockImplementation(async (input: string | URL | Request) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url
+      // No rows → the cron's main loop short-circuits and we go straight to
+      // the cache sweep, which is what we want to verify.
+      if (url.includes('/rest/v1/')) {
+        return new Response(JSON.stringify([]), { status: 200 })
+      }
+      return new Response(JSON.stringify([]), { status: 200 })
+    })
+
+    // Seed both prefixes with a handful of keys.
+    await Promise.all([
+      env.ANALYTICS_CACHE.put('stats:summary:biz-a', '{"x":1}'),
+      env.ANALYTICS_CACHE.put('stats:summary:biz-b', '{"x":2}'),
+      env.ANALYTICS_CACHE.put(analyzeCacheKey('biz-a'), '{"insights":"y"}'),
+      env.ANALYTICS_CACHE.put(analyzeCacheKey('biz-b'), '{"insights":"z"}'),
+      env.ANALYTICS_CACHE.put('unrelated:key', '{"keep":true}'),
+    ])
+
+    await recalculateClientStatuses(env)
+
+    expect(await env.ANALYTICS_CACHE.get('stats:summary:biz-a')).toBeNull()
+    expect(await env.ANALYTICS_CACHE.get('stats:summary:biz-b')).toBeNull()
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey('biz-a'))).toBeNull()
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey('biz-b'))).toBeNull()
+    // Unrelated keys are not touched.
+    expect(await env.ANALYTICS_CACHE.get('unrelated:key')).toBe('{"keep":true}')
+
+    // Clean up
+    await env.ANALYTICS_CACHE.delete('unrelated:key')
+  })
+
+  it('deleteAllByPrefix paginates past the single-page cap (1500 keys)', async () => {
+    const { deleteAllByPrefix } = await import('../cron')
+    const PREFIX = 'pagination-test:'
+    const TOTAL = 1500 // > KV.list default page size of 1000
+
+    // Seed. Sequential put is slow but reliable in the miniflare KV impl;
+    // batching to chunks of 50 keeps the test under a second.
+    for (let i = 0; i < TOTAL; i += 50) {
+      await Promise.all(
+        Array.from({ length: Math.min(50, TOTAL - i) }, (_, j) =>
+          env.ANALYTICS_CACHE.put(`${PREFIX}${i + j}`, 'x'),
+        ),
+      )
+    }
+
+    const seeded = await env.ANALYTICS_CACHE.list({ prefix: PREFIX })
+    expect(seeded.keys.length).toBeGreaterThan(0)
+
+    const deleted = await deleteAllByPrefix(env.ANALYTICS_CACHE, PREFIX)
+    expect(deleted).toBe(TOTAL)
+
+    // Walk to verify zero remain (also catches truncation bugs).
+    const remaining = await env.ANALYTICS_CACHE.list({ prefix: PREFIX })
+    expect(remaining.keys.length).toBe(0)
+  }, 30_000)
 })
