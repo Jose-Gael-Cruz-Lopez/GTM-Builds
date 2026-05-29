@@ -203,11 +203,17 @@ GTM-Builds/
 | `/dashboard/:businessId` | Dueño | Panel KPIs, gráficas, asistente IA (modal) |
 | `/dashboard/:businessId/assistant` | Dueño | Asistente IA standalone |
 | `/dashboard/:businessId/marketing` | Dueño | Campañas IA |
+| `/dashboard/:businessId/clients` | Dueño | Lista paginada de clientes (sidebar deshabilitado en #69 — accesible por URL) |
+| `/dashboard/:businessId/visits` | Dueño | Feed de visitas (sidebar deshabilitado en #69 — accesible por URL) |
+| `/dashboard/:businessId/redemptions` | Dueño | Recompensas por entregar |
+| `/dashboard/:businessId/sucursales` | Dueño | Sucursales (sidebar deshabilitado en #69 — accesible por URL) |
 | `/campaigns/:businessId` | Dueño | Wizard de campañas + WhatsApp copy |
 | `/settings/:businessId` | Dueño | General, lealtad, staff, cuenta |
 | `/scan` | Staff key | Escáner QR cámara |
 | `/user/register` | Cliente | Frictionless: username + referral opcional |
 | `/user/dashboard` | Cliente | QR rotativo 90 s + recompensas |
+| `/join/:businessId` | Cliente | Onboarding al programa de un negocio (flujo legacy Supabase) |
+| `/wallet`, `/wallet/:businessId`, `/wallet/profile` | Cliente | Monedero (flujo legacy — sustituido por `/user/*`) |
 | `/privacy`, `/terms` | Público | Legal |
 
 ---
@@ -228,6 +234,29 @@ Envelope:
 | Método | Ruta | Auth |
 |--------|------|------|
 | `GET` | `/health` | — |
+
+### Tokens (QR — flujo Supabase-authed)
+
+Usado por el flujo legacy con sesión Supabase del cliente. El flujo frictionless nuevo usa `/consumer/token` en su lugar.
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| `POST` | `/tokens/generate` | Bearer (cliente) | Genera QR firmado (90 s TTL) |
+| `POST` | `/tokens/validate` | — | Valida un token sin registrar visita |
+| `POST` | `/tokens/invalidate` | — | Invalida manualmente un token |
+
+### Clients (cliente Supabase-authed)
+
+Endpoints del cliente cuando se autentica vía sesión Supabase tradicional. Coexiste con `/consumer/*` (frictionless por username).
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| `POST` | `/clients` | Bearer (cliente) | Registrar/actualizar perfil |
+| `GET` | `/clients/me` | Bearer (cliente) | Perfil propio |
+| `GET` | `/clients/me/loyalty` | Bearer (cliente) | Todas mis tarjetas |
+| `GET` | `/clients/me/loyalty/:businessId` | Bearer (cliente) | Lealtad por negocio |
+| `GET` | `/clients/businesses-clients?businessId=` | Bearer (owner) | Lista admin (paginada, filtro por status) |
+| `GET` | `/clients/at-risk?businessId=` | Bearer (owner) | Clientes en riesgo |
 
 ### Consumer (cliente B2C)
 
@@ -445,7 +474,7 @@ El backend valida en orden:
 - **Fallback responses no se cachean** — un error transitorio de NIM no debe lockear al usuario en copy genérico por 30 min.
 - **`executionCtx.waitUntil()`** escribe la cache en background; el usuario recibe la respuesta sin esperar al KV put.
 - **Versioning** — el key incluye `:v1:` para que cambios futuros del payload puedan bumpear a `:v2:` sin servir datos con shape obsoleto.
-- **Cron diario** (`cron.ts`) limpia ambos prefijos paginando `KV.list` para soportar >1000 keys.
+- **Cron diario** a las 03:00 UTC (`cron.ts`) limpia ambos prefijos paginando `KV.list` para soportar >1000 keys.
 
 ---
 
