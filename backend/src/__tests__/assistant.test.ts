@@ -283,4 +283,289 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     expect(refreshedBody.data.cached).toBeUndefined()
     expect(nimCalls).toBe(2)
   })
+
+  it('PATCH /assistant/loyalty invalidates the cache (both update and create paths)', async () => {
+    // First pass: existing config exists → PATCH branch.
+    let nimCalls = 0
+    let loyaltyConfigExists = true
+
+    function buildMock() {
+      return async (input: string | URL | Request, init?: RequestInit) => {
+        const url =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url
+        const method = (
+          init?.method ?? (input instanceof Request ? input.method : 'GET')
+        ).toUpperCase()
+
+        if (url.includes('/auth/v1/user')) {
+          return new Response(JSON.stringify({ id: TEST_USER_ID }), { status: 200 })
+        }
+        if (url.includes('/rest/v1/businesses')) {
+          return new Response(
+            JSON.stringify([
+              { id: TEST_BUSINESS_ID, owner_id: TEST_USER_ID, name: 'Demo Co', category: 'cafe' },
+            ]),
+            { status: 200 },
+          )
+        }
+        if (url.includes('/rest/v1/client_business_loyalty') || url.includes('/rest/v1/visits')) {
+          return new Response(JSON.stringify([]), { status: 200 })
+        }
+        if (url.includes('/rest/v1/loyalty_configs')) {
+          if (method === 'GET') {
+            return new Response(
+              loyaltyConfigExists
+                ? JSON.stringify([
+                    { id: 'lc-1', business_id: TEST_BUSINESS_ID, stamps_required: 5 },
+                  ])
+                : JSON.stringify([]),
+              { status: 200 },
+            )
+          }
+          if (method === 'PATCH') {
+            return new Response(
+              JSON.stringify([{ id: 'lc-1', business_id: TEST_BUSINESS_ID, stamps_required: 7 }]),
+              { status: 200 },
+            )
+          }
+          if (method === 'POST') {
+            return new Response(
+              JSON.stringify([{ id: 'lc-new', business_id: TEST_BUSINESS_ID, stamps_required: 7 }]),
+              { status: 201 },
+            )
+          }
+        }
+        if (url.includes('integrate.api.nvidia.com')) {
+          nimCalls++
+          return new Response(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content: JSON.stringify({
+                      segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
+                      serviceAnalysis: {
+                        slowPeriods: [],
+                        activePeriods: [],
+                        lowPerformanceReasons: [],
+                        predictions: [],
+                      },
+                      recommendations: {
+                        forLost: 'a',
+                        forFrequent: 'b',
+                        forNew: 'c',
+                        suggestedDiscountLost: 15,
+                        suggestedDiscountFrequent: 10,
+                        suggestedDiscountNew: 10,
+                        suggestedVisitsForReward: 5,
+                      },
+                    }),
+                  },
+                },
+              ],
+            }),
+            { status: 200 },
+          )
+        }
+        return new Response(JSON.stringify([]), { status: 200 })
+      }
+    }
+
+    mockFetch.mockImplementation(buildMock())
+
+    async function loyaltyPatch(): Promise<Response> {
+      return app.fetch(
+        new Request(`http://localhost/businesses/${TEST_BUSINESS_ID}/assistant/loyalty`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer fake-token',
+          },
+          body: JSON.stringify({ visitsRequired: 7 }),
+        }),
+        env,
+      )
+    }
+
+    // ── Update branch ─────────────────────────────────────────────────────
+    await callAnalyze()
+    expect(nimCalls).toBe(1)
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).not.toBeNull()
+
+    const updateRes = await loyaltyPatch()
+    expect(updateRes.status).toBe(200)
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
+
+    // ── Create branch ─────────────────────────────────────────────────────
+    loyaltyConfigExists = false
+    mockFetch.mockImplementation(buildMock())
+
+    await callAnalyze() // re-prime
+    expect(nimCalls).toBe(2)
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).not.toBeNull()
+
+    const createRes = await loyaltyPatch()
+    expect(createRes.status).toBe(201)
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
+  })
+
+  it('POST /visits invalidates the cache (most frequent trigger in production)', async () => {
+    // Build a real valid token so requireStaff + tokenEngine.validateToken pass.
+    const { generateToken } = await import('../lib/tokenEngine')
+    const STAFF_SECRET = 'a'.repeat(64) // matches TOKEN_SECRET in vitest.config.ts
+    const TEST_CLIENT_AUTH_ID = 'client-auth-9'
+    const valid = await generateToken(TEST_CLIENT_AUTH_ID, TEST_BUSINESS_ID, STAFF_SECRET, 90)
+
+    let nimCalls = 0
+    mockFetch.mockImplementation(async (input: string | URL | Request, init?: RequestInit) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url
+      const method = (
+        init?.method ?? (input instanceof Request ? input.method : 'GET')
+      ).toUpperCase()
+
+      if (url.includes('/auth/v1/user')) {
+        return new Response(JSON.stringify({ id: TEST_USER_ID }), { status: 200 })
+      }
+      if (url.includes('/rest/v1/businesses')) {
+        return new Response(
+          JSON.stringify([
+            { id: TEST_BUSINESS_ID, owner_id: TEST_USER_ID, name: 'Demo Co', category: 'cafe' },
+          ]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/staff_keys')) {
+        return new Response(
+          JSON.stringify([
+            {
+              id: 'sk-1',
+              business_id: TEST_BUSINESS_ID,
+              key_hash: 'whatever',
+              is_active: true,
+            },
+          ]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/clients')) {
+        return new Response(
+          JSON.stringify([{ id: 'client-row-1', auth_id: TEST_CLIENT_AUTH_ID }]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/client_business_loyalty')) {
+        if (method === 'GET') {
+          return new Response(
+            JSON.stringify([
+              {
+                id: 'cbl-1',
+                client_id: 'client-row-1',
+                business_id: TEST_BUSINESS_ID,
+                stamp_count: 0,
+                total_visits: 0,
+                total_rewards: 0,
+                status: 'active',
+              },
+            ]),
+            { status: 200 },
+          )
+        }
+        if (method === 'PATCH' || method === 'POST') {
+          return new Response(
+            JSON.stringify([
+              {
+                id: 'cbl-1',
+                client_id: 'client-row-1',
+                business_id: TEST_BUSINESS_ID,
+                stamp_count: 1,
+                total_visits: 1,
+                total_rewards: 0,
+                status: 'active',
+              },
+            ]),
+            { status: 200 },
+          )
+        }
+      }
+      if (url.includes('/rest/v1/loyalty_configs')) {
+        return new Response(JSON.stringify([]), { status: 200 })
+      }
+      if (url.includes('/rest/v1/visits')) {
+        if (method === 'GET') return new Response(JSON.stringify([]), { status: 200 })
+        if (method === 'POST') {
+          return new Response(
+            JSON.stringify([{ id: 'visit-1', business_id: TEST_BUSINESS_ID, reward_unlocked: false }]),
+            { status: 201 },
+          )
+        }
+      }
+      if (url.includes('/rest/v1/campaigns')) {
+        return new Response(JSON.stringify([]), { status: 200 })
+      }
+      if (url.includes('integrate.api.nvidia.com')) {
+        nimCalls++
+        return new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
+                    serviceAnalysis: {
+                      slowPeriods: [],
+                      activePeriods: [],
+                      lowPerformanceReasons: [],
+                      predictions: [],
+                    },
+                    recommendations: {
+                      forLost: 'a',
+                      forFrequent: 'b',
+                      forNew: 'c',
+                      suggestedDiscountLost: 15,
+                      suggestedDiscountFrequent: 10,
+                      suggestedDiscountNew: 10,
+                      suggestedVisitsForReward: 5,
+                    },
+                  }),
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        )
+      }
+      return new Response(JSON.stringify([]), { status: 200 })
+    })
+
+    // Prime the assistant cache.
+    await callAnalyze()
+    expect(nimCalls).toBe(1)
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).not.toBeNull()
+
+    // Register a visit — the most common production trigger for invalidation.
+    const visitRes = await app.fetch(
+      new Request('http://localhost/visits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Staff-Key': `${TEST_BUSINESS_ID}:rawkey`,
+        },
+        body: JSON.stringify({ token: valid.token }),
+      }),
+      env,
+    )
+    expect(visitRes.status).toBe(201)
+
+    // Cache should be gone.
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
+  })
 })
