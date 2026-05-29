@@ -6,6 +6,7 @@ import { requireStaff, requireAdmin, requireAnyAuth } from '../middleware/auth'
 import { rateLimit } from '../middleware/rateLimit'
 import { validateToken, invalidateToken, hashToken } from '../lib/tokenEngine'
 import { createSupabaseClient, mapSupabaseError, SupabaseError } from '../lib/supabase'
+import { analyzeCacheKey } from './assistant'
 
 type HonoEnv = { Bindings: Env; Variables: ContextVariables }
 
@@ -203,7 +204,7 @@ visitRoutes.post('/', requireStaff(), async (c) => {
   // ── Step 11: Invalidate analytics cache for this business ─────────────────
   await Promise.all([
     c.env.ANALYTICS_CACHE.delete(`stats:summary:${staffBusinessId}`),
-    c.env.ANALYTICS_CACHE.delete(`assistant:analyze:${staffBusinessId}`),
+    c.env.ANALYTICS_CACHE.delete(analyzeCacheKey(staffBusinessId)),
   ]).catch(console.error)
 
   const stats = await snapshotBusinessStats(db, staffBusinessId)

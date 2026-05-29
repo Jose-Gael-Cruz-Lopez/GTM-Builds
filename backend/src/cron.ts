@@ -79,10 +79,19 @@ export async function recalculateClientStatuses(env: Env): Promise<{
   }
 
   // Invalidate analytics cache so the new statuses surface immediately
-  // on the next dashboard load. Best-effort.
+  // on the next dashboard load. Status changes also shift the assistant's
+  // segment counts (new/frequent/lost/at-risk), so its cache is swept too.
+  // Best-effort.
   try {
-    const list = await env.ANALYTICS_CACHE.list({ prefix: 'stats:summary:' })
-    await Promise.all(list.keys.map((k) => env.ANALYTICS_CACHE.delete(k.name)))
+    const [statsList, assistantList] = await Promise.all([
+      env.ANALYTICS_CACHE.list({ prefix: 'stats:summary:' }),
+      env.ANALYTICS_CACHE.list({ prefix: 'assistant:analyze:' }),
+    ])
+    await Promise.all(
+      [...statsList.keys, ...assistantList.keys].map((k) =>
+        env.ANALYTICS_CACHE.delete(k.name),
+      ),
+    )
   } catch (e) {
     console.error('Failed to invalidate analytics cache', e)
   }
