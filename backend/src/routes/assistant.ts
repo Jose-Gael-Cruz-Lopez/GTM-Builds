@@ -23,8 +23,14 @@ function daysAgo(days: number): string {
 // ─── Cache key ────────────────────────────────────────────────────────────────
 // Exported so other routes (visits, campaign creation, loyalty updates) can
 // invalidate the assistant cache when underlying data changes.
+//
+// The ':v1:' segment is a payload-shape version. If the cached response shape
+// changes (new required field, renamed key), bump to ':v2:' and old entries
+// become unreachable and expire naturally — no risk of returning misshapen
+// data after a deploy. The cron sweep prefix stays 'assistant:analyze:' so
+// it catches all versions during transitions.
 
-export const analyzeCacheKey = (businessId: string) => `assistant:analyze:${businessId}`
+export const analyzeCacheKey = (businessId: string) => `assistant:analyze:v1:${businessId}`
 
 // 30 min — long enough to make repeat dashboard presses feel instant, short
 // enough that organic data drift is bounded. Explicit invalidation handles
