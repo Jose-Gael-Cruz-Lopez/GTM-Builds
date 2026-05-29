@@ -46,6 +46,7 @@ const NAV_ITEM_DEFS: {
   to: FileRouteTypes["to"];
   mobileTab?: boolean;
   label?: string;
+  disabled?: boolean;
 }[] = [
   {
     id: "resumen",
@@ -58,18 +59,21 @@ const NAV_ITEM_DEFS: {
     icon: Building2,
     to: "/dashboard/$businessId/sucursales",
     mobileTab: false,
+    disabled: true,
   },
   {
     id: "clientes",
     icon: Users,
     to: "/dashboard/$businessId/clients",
     mobileTab: true,
+    disabled: true,
   },
   {
     id: "visitas",
     icon: Footprints,
     to: "/dashboard/$businessId/visits",
     mobileTab: true,
+    disabled: true,
   },
   {
     id: "escaner",
@@ -114,8 +118,30 @@ function SidebarNav({
 
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
-      {NAV_ITEM_DEFS.map(({ id, icon: Icon, to, label }) => {
+      {NAV_ITEM_DEFS.map(({ id, icon: Icon, to, label, disabled }) => {
         const active = activeNav === id;
+        const baseClass =
+          "flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--duration)] ease-[var(--ease-out-expo)]";
+
+        if (disabled) {
+          // role="link" + tabIndex makes the disabled state focusable and
+          // announceable; without role, a <span> isn't communicated as a
+          // disabled control, and without tabIndex keyboard users skip it
+          // entirely and never learn the feature is coming.
+          return (
+            <span
+              key={id}
+              className={cn(baseClass, "cursor-not-allowed opacity-40 select-none")}
+              role="link"
+              aria-disabled="true"
+              tabIndex={0}
+            >
+              <Icon className="h-4 w-4 shrink-0" aria-hidden />
+              {navLabel(id, d.dashboard.nav, label)}
+            </span>
+          );
+        }
+
         const linkProps =
           typeof to === "string" && to.includes("$businessId")
             ? { to, params: { businessId } as { businessId: string } }
@@ -128,7 +154,7 @@ function SidebarNav({
             {...linkProps}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--duration)] ease-[var(--ease-out-expo)]",
+              baseClass,
               active
                 ? "bg-[var(--color-cream)] text-[color:var(--color-ink)] shadow-[var(--shadow-soft)]"
                 : "text-[color:var(--color-ink-soft)] hover:bg-[var(--color-cream)]/60 hover:text-[color:var(--color-ink)]",
@@ -248,8 +274,27 @@ export function DashboardShell({
         aria-label={d.dashboard.openMenu}
       >
         <div className="grid grid-cols-4">
-          {mobileTabs.map(({ id, icon: Icon, to, label }) => {
+          {mobileTabs.map(({ id, icon: Icon, to, label, disabled }) => {
             const active = activeNav === id;
+            const tabClass =
+              "flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors";
+
+            if (disabled) {
+              // See SidebarNav above for the role/tabIndex rationale.
+              return (
+                <span
+                  key={id}
+                  className={cn(tabClass, "cursor-not-allowed opacity-40 select-none")}
+                  role="link"
+                  aria-disabled="true"
+                  tabIndex={0}
+                >
+                  <Icon className="h-5 w-5" aria-hidden />
+                  {navLabel(id, d.dashboard.nav, label)}
+                </span>
+              );
+            }
+
             const linkProps =
               typeof to === "string" && to.includes("$businessId")
                 ? { to, params: { businessId } as { businessId: string } }
@@ -261,7 +306,7 @@ export function DashboardShell({
                 key={id}
                 {...linkProps}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors",
+                  tabClass,
                   active ? "text-[color:var(--color-ink)]" : "text-[color:var(--color-ink-soft)]",
                 )}
                 aria-current={active ? "page" : undefined}

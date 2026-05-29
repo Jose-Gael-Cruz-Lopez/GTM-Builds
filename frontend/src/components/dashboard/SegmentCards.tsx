@@ -8,7 +8,6 @@ import {
 } from "@/components/dashboard/AnalyticsEmptyState";
 
 export interface SegmentCardsProps {
-  businessId: string;
   data?: ClientsAnalyticsResponse;
   isLoading: boolean;
   isError?: boolean;
@@ -19,7 +18,6 @@ interface Segment {
   label: string;
   count: number;
   tone: "good" | "warn" | "risk";
-  href: string;
   trend?: "up" | "down" | "flat";
 }
 
@@ -44,7 +42,7 @@ function pickBreakdown(data: ClientsAnalyticsResponse) {
   };
 }
 
-export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCardsProps) {
+export function SegmentCards({ data, isLoading, isError }: SegmentCardsProps) {
   if (isLoading) return <AnalyticsCardSkeleton />;
 
   if (isError || !data) {
@@ -65,7 +63,6 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
       label: "Activos",
       count: active,
       tone: "good",
-      href: `/dashboard/${businessId}/clients?status=active`,
       trend: active >= atRisk ? "up" : "flat",
     },
     {
@@ -73,7 +70,6 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
       label: "En riesgo",
       count: atRisk,
       tone: "warn",
-      href: `/dashboard/${businessId}/clients?status=at_risk`,
       trend: atRisk > 0 ? "down" : "flat",
     },
     {
@@ -81,7 +77,6 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
       label: "Perdidos",
       count: lost,
       tone: "risk",
-      href: `/dashboard/${businessId}/clients?status=lost`,
       trend: lost > 0 ? "down" : "flat",
     },
   ];
@@ -97,11 +92,10 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
 
       <div className="flex flex-1 flex-col gap-3">
         {segments.map((segment) => (
-          <a
+          <div
             key={segment.key}
-            href={segment.href}
             className={cn(
-              "group flex items-center gap-4 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[var(--color-cream)] p-4 transition-all duration-[var(--duration)] ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]",
+              "flex items-center gap-4 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[var(--color-cream)] p-4 cursor-default",
             )}
           >
             <div
@@ -143,7 +137,7 @@ export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCa
                 <span className="text-xs">—</span>
               )}
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </div>
