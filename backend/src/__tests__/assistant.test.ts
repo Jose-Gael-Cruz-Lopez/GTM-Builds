@@ -180,4 +180,107 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     expect(secondBody.data.cached).toBeUndefined()
     expect(nimCalls).toBe(2)
   })
+
+  it('POST /assistant/campaign invalidates the cache so the next /analyze re-runs NIM', async () => {
+    let nimCalls = 0
+    mockFetch.mockImplementation(async (input: string | URL | Request, init?: RequestInit) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url
+      const method = (
+        init?.method ?? (input instanceof Request ? input.method : 'GET')
+      ).toUpperCase()
+
+      if (url.includes('/auth/v1/user')) {
+        return new Response(JSON.stringify({ id: TEST_USER_ID }), { status: 200 })
+      }
+      if (url.includes('/rest/v1/businesses')) {
+        return new Response(
+          JSON.stringify([
+            { id: TEST_BUSINESS_ID, owner_id: TEST_USER_ID, name: 'Demo Co', category: 'cafe' },
+          ]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/client_business_loyalty') || url.includes('/rest/v1/visits')) {
+        return new Response(JSON.stringify([]), { status: 200 })
+      }
+      if (url.includes('/rest/v1/campaigns') && method === 'POST') {
+        return new Response(
+          JSON.stringify([{ id: 'camp-1', business_id: TEST_BUSINESS_ID, status: 'draft' }]),
+          { status: 201 },
+        )
+      }
+      if (url.includes('integrate.api.nvidia.com')) {
+        nimCalls++
+        return new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
+                    serviceAnalysis: {
+                      slowPeriods: [],
+                      activePeriods: [],
+                      lowPerformanceReasons: [],
+                      predictions: [],
+                    },
+                    recommendations: {
+                      forLost: 'a',
+                      forFrequent: 'b',
+                      forNew: 'c',
+                      suggestedDiscountLost: 15,
+                      suggestedDiscountFrequent: 10,
+                      suggestedDiscountNew: 10,
+                      suggestedVisitsForReward: 5,
+                    },
+                  }),
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        )
+      }
+      return new Response(JSON.stringify([]), { status: 200 })
+    })
+
+    // Prime the cache.
+    await callAnalyze()
+    expect(nimCalls).toBe(1)
+    const beforeBust = await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))
+    expect(beforeBust).not.toBeNull()
+
+    // Create a campaign — should bust the cache.
+    const campaignReq = new Request(
+      `http://localhost/businesses/${TEST_BUSINESS_ID}/assistant/campaign`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer fake-token',
+        },
+        body: JSON.stringify({ segment: 'lost', discountPct: 15, durationDays: 14 }),
+      },
+    )
+    const campaignRes = await app.fetch(campaignReq, env)
+    expect(campaignRes.status).toBe(201)
+
+    // Cache should be gone.
+    const afterBust = await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))
+    expect(afterBust).toBeNull()
+
+    // Next analyze must re-run the model rather than serve stale data.
+    const refreshed = await callAnalyze()
+    const refreshedBody = (await refreshed.json()) as {
+      success: boolean
+      data: { cached?: boolean }
+    }
+    expect(refreshedBody.data.cached).toBeUndefined()
+    expect(nimCalls).toBe(2)
+  })
 })
