@@ -8,7 +8,6 @@ import {
 } from "@/components/dashboard/AnalyticsEmptyState";
 
 export interface SegmentCardsProps {
-  businessId: string;
   data?: ClientsAnalyticsResponse;
   isLoading: boolean;
   isError?: boolean;
@@ -43,7 +42,7 @@ function pickBreakdown(data: ClientsAnalyticsResponse) {
   };
 }
 
-export function SegmentCards({ businessId, data, isLoading, isError }: SegmentCardsProps) {
+export function SegmentCards({ data, isLoading, isError }: SegmentCardsProps) {
   if (isLoading) return <AnalyticsCardSkeleton />;
 
   if (isError || !data) {

@@ -268,7 +268,7 @@ function DashboardPage() {
               </Suspense>
             </div>
             <div className="lg:col-span-4">
-              <SegmentCards businessId={businessId} data={DEMO_CLIENTS} isLoading={false} />
+              <SegmentCards data={DEMO_CLIENTS} isLoading={false} />
             </div>
           </div>
 
@@ -299,7 +299,6 @@ function DashboardPage() {
             </div>
             <div className="lg:col-span-4">
               <SegmentCards
-                businessId={businessId}
                 data={clientsBreak.data}
                 isLoading={clientsBreak.isLoading}
                 isError={clientsBreak.isError}
