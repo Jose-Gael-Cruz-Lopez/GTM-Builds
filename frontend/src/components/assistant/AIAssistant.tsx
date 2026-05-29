@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { assistantApi } from "@/lib/api/assistant";
 import type { AnalyzeResponse } from "@/lib/api/assistant";
+import { ApiError } from "@/lib/api-client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,6 +60,17 @@ type PendingAction = "summary" | "activity" | "clients";
 
 let msgId = 0;
 const nextId = () => String(++msgId);
+
+const LOADING_TIPS = [
+  "Analizando el historial de visitas de tus clientes...",
+  "💡 Tip: Retener a un cliente cuesta 5× menos que conseguir uno nuevo.",
+  "Buscando patrones en tus horas pico y días tranquilos...",
+  "💡 Tip: Los programas de lealtad aumentan las visitas recurrentes hasta un 20%.",
+  "Identificando clientes en riesgo de no regresar...",
+  "💡 Tip: Los clientes frecuentes gastan un 67% más que los compradores nuevos.",
+  "Generando recomendaciones personalizadas para tu negocio...",
+  "💡 Tip: Un mensaje de reactivación con descuento puede recuperar hasta el 26% de clientes perdidos.",
+] as const;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -104,6 +116,8 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
   const [customVisitsInput, setCustomVisitsInput] = useState("");
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [tipIdx, setTipIdx] = useState(0);
+  const [tipVisible, setTipVisible] = useState(true);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -277,10 +291,18 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
         doSummary(data);
       }
     },
-    onError: () => {
-      toast.error("No se pudo conectar con el asistente. Intenta de nuevo.");
+    onError: (e) => {
       setStep("welcome");
       setMessages((prev) => prev.filter((m) => !m.isLoading));
+      const code = e instanceof ApiError ? e.code : "";
+      // api-client already showed a specific "Demasiadas solicitudes" toast for
+      // RATE_LIMITED — adding a second generic toast here would be confusing.
+      if (code === "RATE_LIMITED") return;
+      const msg =
+        code === "TIMEOUT"
+          ? "El análisis tardó demasiado. El modelo IA está ocupado, intenta en unos segundos."
+          : "No se pudo conectar con el asistente. Intenta de nuevo.";
+      toast.error(msg);
     },
   });
 
@@ -349,6 +371,33 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
       toast.error("No se pudo actualizar la configuración. Intenta de nuevo.");
     },
   });
+
+  // Rotate loading tips while the analyze mutation is in flight.
+  // Must be declared AFTER analyzeMutation to avoid the TDZ: the dependency
+  // array [analyzeMutation.isPending] is evaluated when useEffect() is called,
+  // so analyzeMutation must already be initialized at that point.
+  useEffect(() => {
+    if (!analyzeMutation.isPending) {
+      setTipIdx(0);
+      setTipVisible(true);
+      return;
+    }
+
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const interval = setInterval(() => {
+      setTipVisible(false);
+      fadeTimer = setTimeout(() => {
+        setTipIdx((prev) => (prev + 1) % LOADING_TIPS.length);
+        setTipVisible(true);
+      }, 300);
+    }, 2500);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(fadeTimer);
+    };
+  }, [analyzeMutation.isPending]);
 
   // ─── Flow handlers ────────────────────────────────────────────────────────
 
@@ -692,8 +741,15 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
                 >
                   {msg.isLoading ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>{msg.content}</span>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                      <span
+                        className={cn(
+                          "transition-opacity duration-300",
+                          tipVisible ? "opacity-100" : "opacity-0",
+                        )}
+                      >
+                        {LOADING_TIPS[tipIdx]}
+                      </span>
                     </>
                   ) : (
                     <MessageContent content={msg.content} />
