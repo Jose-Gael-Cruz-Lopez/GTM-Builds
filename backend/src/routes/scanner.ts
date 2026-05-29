@@ -6,6 +6,7 @@ import { requireStaff } from '../middleware/auth'
 import { rateLimit } from '../middleware/rateLimit'
 import { validateConsumerToken, invalidateToken, hashToken } from '../lib/tokenEngine'
 import { createSupabaseClient, SupabaseError } from '../lib/supabase'
+import { analyzeCacheKey } from './assistant'
 
 type HonoEnv = { Bindings: Env; Variables: ContextVariables }
 
@@ -207,7 +208,10 @@ scannerRoutes.post('/scan', requireStaff(), rateLimit({ keyPrefix: 'scanner' }),
   await invalidateToken(body.token, c.env.TOKEN_BLACKLIST, ttl)
 
   // ── Step 11: Bust analytics cache for this business ───────────────────────────
-  await c.env.ANALYTICS_CACHE.delete(`stats:summary:${businessId}`).catch(console.error)
+  await Promise.all([
+    c.env.ANALYTICS_CACHE.delete(`stats:summary:${businessId}`),
+    c.env.ANALYTICS_CACHE.delete(analyzeCacheKey(businessId)),
+  ]).catch(console.error)
 
   return c.json(
     ok({

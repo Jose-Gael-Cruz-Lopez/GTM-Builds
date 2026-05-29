@@ -1,6 +1,20 @@
 import type { Env } from './types/env'
 import { createSupabaseClient } from './lib/supabase'
 
+// Walks every page of KV.list to handle the >1000-key case the single-call
+// form would silently truncate.
+async function deleteAllByPrefix(kv: KVNamespace, prefix: string): Promise<number> {
+  let deleted = 0
+  let cursor: string | undefined
+  do {
+    const page: KVNamespaceListResult<unknown, string> = await kv.list({ prefix, cursor })
+    await Promise.all(page.keys.map((k) => kv.delete(k.name)))
+    deleted += page.keys.length
+    cursor = page.list_complete ? undefined : page.cursor
+  } while (cursor)
+  return deleted
+}
+
 // ─── Cron: recalculate client_business_loyalty.status ────────────────────────
 // Runs daily at 03:00 UTC. Buckets every client-business pair into one of
 // three engagement states based on last_visit_at:
@@ -79,10 +93,16 @@ export async function recalculateClientStatuses(env: Env): Promise<{
   }
 
   // Invalidate analytics cache so the new statuses surface immediately
-  // on the next dashboard load. Best-effort.
+  // on the next dashboard load. Status changes also shift the assistant's
+  // segment counts (new/frequent/lost/at-risk), so its cache is swept too.
+  // Paginates because KV.list caps each page at ~1000 keys — without the
+  // cursor loop we silently leave orphans once the platform crosses that.
+  // Best-effort.
   try {
-    const list = await env.ANALYTICS_CACHE.list({ prefix: 'stats:summary:' })
-    await Promise.all(list.keys.map((k) => env.ANALYTICS_CACHE.delete(k.name)))
+    await Promise.all([
+      deleteAllByPrefix(env.ANALYTICS_CACHE, 'stats:summary:'),
+      deleteAllByPrefix(env.ANALYTICS_CACHE, 'assistant:analyze:'),
+    ])
   } catch (e) {
     console.error('Failed to invalidate analytics cache', e)
   }

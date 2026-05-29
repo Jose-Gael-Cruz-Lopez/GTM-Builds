@@ -20,9 +20,28 @@ function daysAgo(days: number): string {
   return d.toISOString()
 }
 
+// ─── Cache key ────────────────────────────────────────────────────────────────
+// Exported so other routes (visits, campaign creation, loyalty updates) can
+// invalidate the assistant cache when underlying data changes.
+//
+// The ':v1:' segment is a payload-shape version. If the cached response shape
+// changes (new required field, renamed key), bump to ':v2:' and old entries
+// become unreachable and expire naturally — no risk of returning misshapen
+// data after a deploy. The cron sweep prefix stays 'assistant:analyze:' so
+// it catches all versions during transitions.
+
+export const analyzeCacheKey = (businessId: string) => `assistant:analyze:v1:${businessId}`
+
+// 30 min — long enough to make repeat dashboard presses feel instant, short
+// enough that organic data drift is bounded. Explicit invalidation handles
+// the data-changed case faster than the TTL.
+const ANALYZE_CACHE_TTL_SECONDS = 1800
+
 // ─── POST /businesses/:id/assistant/analyze ───────────────────────────────────
 // Gathers the last 15 days of visits (or last 500 within 30 days if sparse),
-// computes segment counts, then calls NVIDIA NIM for insights.
+// computes segment counts, then calls NVIDIA NIM for insights. The full
+// response is cached in KV so repeat dashboard presses don't re-run a 253B
+// model that takes ~15–30s end-to-end. Pass ?refresh=true to bypass.
 
 assistantRoutes.post(
   '/:id/assistant/analyze',
@@ -30,6 +49,19 @@ assistantRoutes.post(
   strictRateLimit(),
   async (c) => {
     const businessId = c.req.param('id')
+    const refresh = c.req.query('refresh') === 'true'
+    const cacheKey = analyzeCacheKey(businessId)
+
+    if (!refresh) {
+      const cached = (await c.env.ANALYTICS_CACHE.get(cacheKey, 'json')) as Record<
+        string,
+        unknown
+      > | null
+      if (cached) {
+        return c.json(ok({ ...cached, cached: true }), 200)
+      }
+    }
+
     const db = createSupabaseClient(c.env, 'service')
 
     const [business, allLoyalties] = await Promise.all([
@@ -86,29 +118,36 @@ assistantRoutes.post(
 
       const { insights, usedFallback } = await analyzeBusinessInsights(c.env.NIM_API_KEY, demoCtx)
 
-      return c.json(
-        ok({
-          periodDays: 30,
-          visitCount: 372,
-          uniqueClientsInPeriod: 84,
-          segments: {
-            total: 127,
-            newClients: 23,
-            frequentClients: 84,
-            lostClients: 15,
-            atRiskClients: 28,
-          },
-          peakDay: 'Sábado',
-          slowDay: 'Lunes',
-          peakHour: '5pm',
-          slowHour: '7am',
-          insights,
-          usedFallback,
-          isDemo: true,
-          generatedAt: new Date().toISOString(),
-        }),
-        200
-      )
+      const demoPayload = {
+        periodDays: 30,
+        visitCount: 372,
+        uniqueClientsInPeriod: 84,
+        segments: {
+          total: 127,
+          newClients: 23,
+          frequentClients: 84,
+          lostClients: 15,
+          atRiskClients: 28,
+        },
+        peakDay: 'Sábado',
+        slowDay: 'Lunes',
+        peakHour: '5pm',
+        slowHour: '7am',
+        insights,
+        usedFallback,
+        isDemo: true,
+        generatedAt: new Date().toISOString(),
+      }
+
+      // Only cache successful (non-fallback) responses — caching a fallback
+      // would lock the user into the generic copy for 30 minutes.
+      if (!usedFallback) {
+        await c.env.ANALYTICS_CACHE.put(cacheKey, JSON.stringify(demoPayload), {
+          expirationTtl: ANALYZE_CACHE_TTL_SECONDS,
+        }).catch(console.error)
+      }
+
+      return c.json(ok(demoPayload), 200)
     }
 
     // Compute unique client IDs from analysis visits
@@ -162,29 +201,35 @@ assistantRoutes.post(
 
     const { insights, usedFallback } = await analyzeBusinessInsights(c.env.NIM_API_KEY, ctx)
 
-    return c.json(
-      ok({
-        periodDays,
-        visitCount: analysisVisits.length,
-        uniqueClientsInPeriod: visitClientIds.size,
-        segments: {
-          total: allLoyalties.length,
-          newClients,
-          frequentClients,
-          lostClients,
-          atRiskClients,
-        },
-        peakDay: ctx.peakDay,
-        slowDay: ctx.slowDay,
-        peakHour: ctx.peakHour,
-        slowHour: ctx.slowHour,
-        insights,
-        usedFallback,
-        isDemo: false,
-        generatedAt: new Date().toISOString(),
-      }),
-      200
-    )
+    const payload = {
+      periodDays,
+      visitCount: analysisVisits.length,
+      uniqueClientsInPeriod: visitClientIds.size,
+      segments: {
+        total: allLoyalties.length,
+        newClients,
+        frequentClients,
+        lostClients,
+        atRiskClients,
+      },
+      peakDay: ctx.peakDay,
+      slowDay: ctx.slowDay,
+      peakHour: ctx.peakHour,
+      slowHour: ctx.slowHour,
+      insights,
+      usedFallback,
+      isDemo: false,
+      generatedAt: new Date().toISOString(),
+    }
+
+    // Only cache successful (non-fallback) responses — see demo branch above.
+    if (!usedFallback) {
+      await c.env.ANALYTICS_CACHE.put(cacheKey, JSON.stringify(payload), {
+        expirationTtl: ANALYZE_CACHE_TTL_SECONDS,
+      }).catch(console.error)
+    }
+
+    return c.json(ok(payload), 200)
   }
 )
 
@@ -271,6 +316,11 @@ assistantRoutes.post(
       generated_by: 'assistant',
     })
 
+    // Creating a campaign doesn't change the underlying segment data, but
+    // the assistant's recommendations reference active campaigns — bust the
+    // cache so the next analyze reflects the new state.
+    await c.env.ANALYTICS_CACHE.delete(analyzeCacheKey(businessId)).catch(console.error)
+
     return c.json(
       ok({
         campaign,
@@ -323,6 +373,7 @@ assistantRoutes.patch(
         { stamps_required: visitsRequired, reward_description: description },
         [{ column: 'business_id', operator: 'eq', value: businessId }]
       )
+      await c.env.ANALYTICS_CACHE.delete(analyzeCacheKey(businessId)).catch(console.error)
       return c.json(ok({ loyaltyConfig: updated, action: 'updated' }), 200)
     } else {
       const [created] = await db.post('loyalty_configs', {
@@ -331,6 +382,7 @@ assistantRoutes.patch(
         reward_description: description,
         is_active: true,
       })
+      await c.env.ANALYTICS_CACHE.delete(analyzeCacheKey(businessId)).catch(console.error)
       return c.json(ok({ loyaltyConfig: created, action: 'created' }), 201)
     }
   }
