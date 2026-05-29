@@ -180,7 +180,14 @@ function buildUserPrompt(ctx: BusinessContext): string {
 
 // ─── NIM API call (TypeScript port of nimClient.js) ───────────────────────────
 
-async function nimFetch(apiKey: string, model: string, messages: { role: string; content: string }[], maxTokens: number, temperature: number) {
+async function nimFetch(
+  apiKey: string,
+  model: string,
+  messages: { role: string; content: string }[],
+  maxTokens: number,
+  temperature: number,
+  signal?: AbortSignal,
+) {
   return fetch(NIM_URL, {
     method: 'POST',
     headers: {
@@ -193,13 +200,20 @@ async function nimFetch(apiKey: string, model: string, messages: { role: string;
       temperature,
       messages,
     }),
+    signal,
   })
 }
 
-async function nimFetchWithFallback(apiKey: string, messages: { role: string; content: string }[], maxTokens: number, temperature: number) {
-  const res = await nimFetch(apiKey, NIM_MODEL, messages, maxTokens, temperature)
+async function nimFetchWithFallback(
+  apiKey: string,
+  messages: { role: string; content: string }[],
+  maxTokens: number,
+  temperature: number,
+  signal?: AbortSignal,
+) {
+  const res = await nimFetch(apiKey, NIM_MODEL, messages, maxTokens, temperature, signal)
   if (res.status === 404 || res.status === 422) {
-    return nimFetch(apiKey, NIM_FALLBACK_MODEL, messages, maxTokens, temperature)
+    return nimFetch(apiKey, NIM_FALLBACK_MODEL, messages, maxTokens, temperature, signal)
   }
   return res
 }
@@ -209,6 +223,9 @@ export async function generateCampaigns(
   context: BusinessContext
 ): Promise<{ campaigns: CampaignSuggestion[]; usedFallback: boolean }> {
   const userContent = buildUserPrompt(context)
+
+  const controller = new AbortController()
+  const nimTimeout = setTimeout(() => controller.abort(), 25_000)
 
   try {
     const response = await nimFetch(
@@ -220,7 +237,9 @@ export async function generateCampaigns(
       ],
       2048,
       0.8,
+      controller.signal,
     )
+    clearTimeout(nimTimeout)
 
     if (!response.ok) {
       const errBody = await response.json().catch(() => ({})) as { detail?: string; message?: string }
@@ -273,9 +292,13 @@ export async function generateCampaigns(
 
     return { campaigns: validated, usedFallback: false }
   } catch (error) {
-    // Mirrors the error handling pattern in nimClient.js
-    const msg = error instanceof Error ? error.message : String(error)
-    console.error('[NIM] Unexpected error:', msg)
+    clearTimeout(nimTimeout)
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('[NIM] Campaign request timed out after 25 s, returning fallback')
+    } else {
+      const msg = error instanceof Error ? error.message : String(error)
+      console.error('[NIM] Unexpected error:', msg)
+    }
     return { campaigns: [selectFallback(context.targetSegment)], usedFallback: true }
   }
 }
@@ -385,21 +408,32 @@ export async function analyzeBusinessInsights(
   apiKey: string,
   ctx: AssistantAnalysisContext
 ): Promise<{ insights: AssistantInsights; usedFallback: boolean }> {
+  // Use the 70B model directly — the 253B model takes 15–30 s and frequently
+  // exhausts Cloudflare Workers' 30 s wall-clock limit before the response
+  // arrives, leaving the catch block unreachable and returning a raw 502.
+  // The 70B model produces equivalent structured-JSON output in 3–8 s.
+  //
+  // A 25 s AbortController ensures the Worker can still return FALLBACK_INSIGHTS
+  // even on slow days, rather than being hard-killed by Cloudflare at 30 s.
+  const controller = new AbortController()
+  const nimTimeout = setTimeout(() => controller.abort(), 25_000)
+
   try {
-    // 1500 max_tokens is ~2× the size of the largest realistic insights JSON
-    // (FALLBACK_INSIGHTS is ~700 tokens). Lower ceiling = faster generation
-    // on the 253B model and a tighter upper-bound on cold-start latency.
-    const response = await nimFetchWithFallback(
+    const response = await nimFetch(
       apiKey,
+      NIM_FALLBACK_MODEL,
       [
         { role: 'system', content: ASSISTANT_SYSTEM_PROMPT },
         { role: 'user', content: buildAssistantPrompt(ctx) },
       ],
       1500,
       0.7,
+      controller.signal,
     )
+    clearTimeout(nimTimeout)
 
     if (!response.ok) {
+      clearTimeout(nimTimeout)
       const errBody = await response.json().catch(() => ({})) as { detail?: string; message?: string }
       console.error(`[NIM Assistant] error ${response.status}: ${errBody.detail ?? errBody.message ?? response.statusText}`)
       return { insights: FALLBACK_INSIGHTS, usedFallback: true }
@@ -438,8 +472,13 @@ export async function analyzeBusinessInsights(
 
     return { insights: parsed, usedFallback: false }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    console.error('[NIM Assistant] Unexpected error:', msg)
+    clearTimeout(nimTimeout)
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('[NIM Assistant] Request timed out after 25 s, returning fallback')
+    } else {
+      const msg = error instanceof Error ? error.message : String(error)
+      console.error('[NIM Assistant] Unexpected error:', msg)
+    }
     return { insights: FALLBACK_INSIGHTS, usedFallback: true }
   }
 }
