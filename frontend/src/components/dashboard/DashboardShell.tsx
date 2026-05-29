@@ -124,11 +124,17 @@ function SidebarNav({
           "flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-[var(--duration)] ease-[var(--ease-out-expo)]";
 
         if (disabled) {
+          // role="link" + tabIndex makes the disabled state focusable and
+          // announceable; without role, a <span> isn't communicated as a
+          // disabled control, and without tabIndex keyboard users skip it
+          // entirely and never learn the feature is coming.
           return (
             <span
               key={id}
               className={cn(baseClass, "cursor-not-allowed opacity-40 select-none")}
+              role="link"
               aria-disabled="true"
+              tabIndex={0}
             >
               <Icon className="h-4 w-4 shrink-0" aria-hidden />
               {navLabel(id, d.dashboard.nav, label)}
@@ -274,11 +280,14 @@ export function DashboardShell({
               "flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors";
 
             if (disabled) {
+              // See SidebarNav above for the role/tabIndex rationale.
               return (
                 <span
                   key={id}
                   className={cn(tabClass, "cursor-not-allowed opacity-40 select-none")}
+                  role="link"
                   aria-disabled="true"
+                  tabIndex={0}
                 >
                   <Icon className="h-5 w-5" aria-hidden />
                   {navLabel(id, d.dashboard.nav, label)}
