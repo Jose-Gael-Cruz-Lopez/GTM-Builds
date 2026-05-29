@@ -292,12 +292,15 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
       }
     },
     onError: (e) => {
+      const code = e instanceof ApiError ? e.code : "";
+      // On RATE_LIMITED, api-client already showed the retry-countdown toast.
+      // Keep the current UI state so the user can retry without losing context.
+      if (code === "RATE_LIMITED") {
+        setMessages((prev) => prev.filter((m) => !m.isLoading));
+        return;
+      }
       setStep("welcome");
       setMessages((prev) => prev.filter((m) => !m.isLoading));
-      const code = e instanceof ApiError ? e.code : "";
-      // api-client already showed a specific "Demasiadas solicitudes" toast for
-      // RATE_LIMITED — adding a second generic toast here would be confusing.
-      if (code === "RATE_LIMITED") return;
       const msg =
         code === "TIMEOUT"
           ? "El análisis tardó demasiado. El modelo IA está ocupado, intenta en unos segundos."

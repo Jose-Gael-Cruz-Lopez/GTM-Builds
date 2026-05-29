@@ -224,6 +224,9 @@ export async function generateCampaigns(
 ): Promise<{ campaigns: CampaignSuggestion[]; usedFallback: boolean }> {
   const userContent = buildUserPrompt(context)
 
+  const controller = new AbortController()
+  const nimTimeout = setTimeout(() => controller.abort(), 25_000)
+
   try {
     const response = await nimFetch(
       apiKey,
@@ -234,7 +237,9 @@ export async function generateCampaigns(
       ],
       2048,
       0.8,
+      controller.signal,
     )
+    clearTimeout(nimTimeout)
 
     if (!response.ok) {
       const errBody = await response.json().catch(() => ({})) as { detail?: string; message?: string }
@@ -287,9 +292,13 @@ export async function generateCampaigns(
 
     return { campaigns: validated, usedFallback: false }
   } catch (error) {
-    // Mirrors the error handling pattern in nimClient.js
-    const msg = error instanceof Error ? error.message : String(error)
-    console.error('[NIM] Unexpected error:', msg)
+    clearTimeout(nimTimeout)
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('[NIM] Campaign request timed out after 25 s, returning fallback')
+    } else {
+      const msg = error instanceof Error ? error.message : String(error)
+      console.error('[NIM] Unexpected error:', msg)
+    }
     return { campaigns: [selectFallback(context.targetSegment)], usedFallback: true }
   }
 }
@@ -424,6 +433,7 @@ export async function analyzeBusinessInsights(
     clearTimeout(nimTimeout)
 
     if (!response.ok) {
+      clearTimeout(nimTimeout)
       const errBody = await response.json().catch(() => ({})) as { detail?: string; message?: string }
       console.error(`[NIM Assistant] error ${response.status}: ${errBody.detail ?? errBody.message ?? response.statusText}`)
       return { insights: FALLBACK_INSIGHTS, usedFallback: true }
