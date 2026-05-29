@@ -1,13 +1,61 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { env } from 'cloudflare:test'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import app from '../index'
 import { analyzeCacheKey } from '../routes/assistant'
+import { generateToken, generateConsumerToken } from '../lib/tokenEngine'
+import { recalculateClientStatuses, deleteAllByPrefix } from '../cron'
+
+// Worker entry expects (request, env, ctx). Tests must supply ctx so the
+// route's c.executionCtx.waitUntil(...) — used to fire-and-forget cache writes
+// — works. After fetch, awaiting on the same ctx flushes those background
+// promises so subsequent assertions see the resulting KV state.
+async function fetchApp(request: Request): Promise<Response> {
+  const ctx = createExecutionContext()
+  const response = await app.fetch(request, env, ctx)
+  await waitOnExecutionContext(ctx)
+  return response
+}
 
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch as unknown as typeof fetch
 
 const TEST_USER_ID = 'admin-user-1'
 const TEST_BUSINESS_ID = 'biz-cache-1'
+
+// Canonical "success" NIM response shared by every test that needs the model
+// to return a parseable insights payload. Returning fresh Responses per call
+// is required — Response bodies are one-shot streams.
+function buildNimSuccessResponse(): Response {
+  return new Response(
+    JSON.stringify({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
+              serviceAnalysis: {
+                slowPeriods: [],
+                activePeriods: [],
+                lowPerformanceReasons: [],
+                predictions: [],
+              },
+              recommendations: {
+                forLost: 'a',
+                forFrequent: 'b',
+                forNew: 'c',
+                suggestedDiscountLost: 15,
+                suggestedDiscountFrequent: 10,
+                suggestedDiscountNew: 10,
+                suggestedVisitsForReward: 5,
+              },
+            }),
+          },
+        },
+      ],
+    }),
+    { status: 200 },
+  )
+}
 
 // Counts how many times the NIM endpoint is called so we can prove the cache
 // short-circuits before reaching the model.
@@ -41,35 +89,7 @@ function makeMockNimCounter() {
 
     if (url.includes('integrate.api.nvidia.com')) {
       nimCalls++
-      return new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                content: JSON.stringify({
-                  segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
-                  serviceAnalysis: {
-                    slowPeriods: [],
-                    activePeriods: [],
-                    lowPerformanceReasons: [],
-                    predictions: [],
-                  },
-                  recommendations: {
-                    forLost: 'a',
-                    forFrequent: 'b',
-                    forNew: 'c',
-                    suggestedDiscountLost: 15,
-                    suggestedDiscountFrequent: 10,
-                    suggestedDiscountNew: 10,
-                    suggestedVisitsForReward: 5,
-                  },
-                }),
-              },
-            },
-          ],
-        }),
-        { status: 200 },
-      )
+      return buildNimSuccessResponse()
     }
 
     return new Response(JSON.stringify([]), { status: 200 })
@@ -79,7 +99,7 @@ function makeMockNimCounter() {
 
 async function callAnalyze(query = ''): Promise<Response> {
   const url = `http://localhost/businesses/${TEST_BUSINESS_ID}/assistant/analyze${query}`
-  return app.fetch(
+  return fetchApp(
     new Request(url, {
       method: 'POST',
       headers: {
@@ -88,7 +108,6 @@ async function callAnalyze(query = ''): Promise<Response> {
       },
       body: '{}',
     }),
-    env,
   )
 }
 
@@ -96,6 +115,12 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
   beforeEach(async () => {
     mockFetch.mockReset()
     await env.ANALYTICS_CACHE.delete(analyzeCacheKey(TEST_BUSINESS_ID))
+  })
+
+  // Best-effort cleanup so a mid-test assertion failure can't leak keys
+  // into the next test. delete() is a no-op when the key isn't present.
+  afterEach(async () => {
+    await env.ANALYTICS_CACHE.delete('unrelated:key')
   })
 
   it('caches the first response and serves subsequent calls from KV without re-calling NIM', async () => {
@@ -216,35 +241,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
       }
       if (url.includes('integrate.api.nvidia.com')) {
         nimCalls++
-        return new Response(
-          JSON.stringify({
-            choices: [
-              {
-                message: {
-                  content: JSON.stringify({
-                    segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
-                    serviceAnalysis: {
-                      slowPeriods: [],
-                      activePeriods: [],
-                      lowPerformanceReasons: [],
-                      predictions: [],
-                    },
-                    recommendations: {
-                      forLost: 'a',
-                      forFrequent: 'b',
-                      forNew: 'c',
-                      suggestedDiscountLost: 15,
-                      suggestedDiscountFrequent: 10,
-                      suggestedDiscountNew: 10,
-                      suggestedVisitsForReward: 5,
-                    },
-                  }),
-                },
-              },
-            ],
-          }),
-          { status: 200 },
-        )
+        return buildNimSuccessResponse()
       }
       return new Response(JSON.stringify([]), { status: 200 })
     })
@@ -267,7 +264,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
         body: JSON.stringify({ segment: 'lost', discountPct: 15, durationDays: 14 }),
       },
     )
-    const campaignRes = await app.fetch(campaignReq, env)
+    const campaignRes = await fetchApp(campaignReq)
     expect(campaignRes.status).toBe(201)
 
     // Cache should be gone.
@@ -341,35 +338,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
         }
         if (url.includes('integrate.api.nvidia.com')) {
           nimCalls++
-          return new Response(
-            JSON.stringify({
-              choices: [
-                {
-                  message: {
-                    content: JSON.stringify({
-                      segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
-                      serviceAnalysis: {
-                        slowPeriods: [],
-                        activePeriods: [],
-                        lowPerformanceReasons: [],
-                        predictions: [],
-                      },
-                      recommendations: {
-                        forLost: 'a',
-                        forFrequent: 'b',
-                        forNew: 'c',
-                        suggestedDiscountLost: 15,
-                        suggestedDiscountFrequent: 10,
-                        suggestedDiscountNew: 10,
-                        suggestedVisitsForReward: 5,
-                      },
-                    }),
-                  },
-                },
-              ],
-            }),
-            { status: 200 },
-          )
+          return buildNimSuccessResponse()
         }
         return new Response(JSON.stringify([]), { status: 200 })
       }
@@ -378,7 +347,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     mockFetch.mockImplementation(buildMock())
 
     async function loyaltyPatch(): Promise<Response> {
-      return app.fetch(
+      return fetchApp(
         new Request(`http://localhost/businesses/${TEST_BUSINESS_ID}/assistant/loyalty`, {
           method: 'PATCH',
           headers: {
@@ -387,7 +356,6 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
           },
           body: JSON.stringify({ visitsRequired: 7 }),
         }),
-        env,
       )
     }
 
@@ -401,8 +369,10 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
 
     // ── Create branch ─────────────────────────────────────────────────────
+    // The mock factory already closes over loyaltyConfigExists and reads its
+    // live value at call time, so toggling the variable is sufficient — no
+    // need to rebind the implementation.
     loyaltyConfigExists = false
-    mockFetch.mockImplementation(buildMock())
 
     await callAnalyze() // re-prime
     expect(nimCalls).toBe(2)
@@ -415,7 +385,6 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
 
   it('POST /visits invalidates the cache (most frequent trigger in production)', async () => {
     // Build a real valid token so requireStaff + tokenEngine.validateToken pass.
-    const { generateToken } = await import('../lib/tokenEngine')
     const STAFF_SECRET = 'a'.repeat(64) // matches TOKEN_SECRET in vitest.config.ts
     const TEST_CLIENT_AUTH_ID = 'client-auth-9'
     const valid = await generateToken(TEST_CLIENT_AUTH_ID, TEST_BUSINESS_ID, STAFF_SECRET, 90)
@@ -513,35 +482,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
       }
       if (url.includes('integrate.api.nvidia.com')) {
         nimCalls++
-        return new Response(
-          JSON.stringify({
-            choices: [
-              {
-                message: {
-                  content: JSON.stringify({
-                    segmentAnalysis: { lostInsight: 'l', newInsight: 'n', frequentInsight: 'f' },
-                    serviceAnalysis: {
-                      slowPeriods: [],
-                      activePeriods: [],
-                      lowPerformanceReasons: [],
-                      predictions: [],
-                    },
-                    recommendations: {
-                      forLost: 'a',
-                      forFrequent: 'b',
-                      forNew: 'c',
-                      suggestedDiscountLost: 15,
-                      suggestedDiscountFrequent: 10,
-                      suggestedDiscountNew: 10,
-                      suggestedVisitsForReward: 5,
-                    },
-                  }),
-                },
-              },
-            ],
-          }),
-          { status: 200 },
-        )
+        return buildNimSuccessResponse()
       }
       return new Response(JSON.stringify([]), { status: 200 })
     })
@@ -552,7 +493,7 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).not.toBeNull()
 
     // Register a visit — the most common production trigger for invalidation.
-    const visitRes = await app.fetch(
+    const visitRes = await fetchApp(
       new Request('http://localhost/visits', {
         method: 'POST',
         headers: {
@@ -561,11 +502,178 @@ describe('POST /businesses/:id/assistant/analyze — caching', () => {
         },
         body: JSON.stringify({ token: valid.token }),
       }),
-      env,
     )
     expect(visitRes.status).toBe(201)
 
     // Cache should be gone.
     expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
   })
+
+  it('POST /scanner/scan invalidates the cache', async () => {
+    const STAFF_SECRET = 'a'.repeat(64)
+    const TEST_CLIENT_AUTH_ID = 'scanner-client-1'
+    const valid = await generateConsumerToken(
+      TEST_CLIENT_AUTH_ID,
+      'Test Client',
+      STAFF_SECRET,
+      90,
+    )
+
+    let nimCalls = 0
+    mockFetch.mockImplementation(async (input: string | URL | Request, init?: RequestInit) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url
+      const method = (
+        init?.method ?? (input instanceof Request ? input.method : 'GET')
+      ).toUpperCase()
+
+      if (url.includes('/auth/v1/user')) {
+        return new Response(JSON.stringify({ id: TEST_USER_ID }), { status: 200 })
+      }
+      if (url.includes('/rest/v1/businesses')) {
+        return new Response(
+          JSON.stringify([
+            { id: TEST_BUSINESS_ID, owner_id: TEST_USER_ID, name: 'Demo Co', category: 'cafe' },
+          ]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/staff_keys')) {
+        return new Response(
+          JSON.stringify([
+            { id: 'sk-1', business_id: TEST_BUSINESS_ID, key_hash: 'whatever', is_active: true },
+          ]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/clients')) {
+        return new Response(
+          JSON.stringify([{ id: 'scanner-client-row', auth_id: TEST_CLIENT_AUTH_ID }]),
+          { status: 200 },
+        )
+      }
+      if (url.includes('/rest/v1/client_business_loyalty')) {
+        if (method === 'GET') {
+          return new Response(
+            JSON.stringify([
+              {
+                id: 'cbl-2',
+                client_id: 'scanner-client-row',
+                business_id: TEST_BUSINESS_ID,
+                stamp_count: 0,
+                total_visits: 0,
+                total_rewards: 0,
+                status: 'active',
+              },
+            ]),
+            { status: 200 },
+          )
+        }
+        return new Response(JSON.stringify([{ id: 'cbl-2', status: 'active' }]), { status: 200 })
+      }
+      if (url.includes('/rest/v1/loyalty_configs')) {
+        return new Response(JSON.stringify([]), { status: 200 })
+      }
+      if (url.includes('/rest/v1/visits')) {
+        if (method === 'GET') return new Response(JSON.stringify([]), { status: 200 })
+        if (method === 'POST') {
+          return new Response(
+            JSON.stringify([{ id: 'scan-visit-1', reward_unlocked: false }]),
+            { status: 201 },
+          )
+        }
+      }
+      if (url.includes('/rest/v1/rewards') && method === 'POST') {
+        return new Response(JSON.stringify([{ id: 'r-1' }]), { status: 201 })
+      }
+      if (url.includes('integrate.api.nvidia.com')) {
+        nimCalls++
+        return buildNimSuccessResponse()
+      }
+      return new Response(JSON.stringify([]), { status: 200 })
+    })
+
+    await callAnalyze()
+    expect(nimCalls).toBe(1)
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).not.toBeNull()
+
+    const scanRes = await fetchApp(
+      new Request('http://localhost/scanner/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Staff-Key': `${TEST_BUSINESS_ID}:rawkey`,
+        },
+        body: JSON.stringify({ token: valid.token }),
+      }),
+    )
+    // New visit path (idempotency GET returned empty above) → always 201.
+    expect(scanRes.status).toBe(201)
+
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey(TEST_BUSINESS_ID))).toBeNull()
+  })
+
+  it('cron status recalc sweeps both stats:summary and assistant:analyze caches', async () => {
+    mockFetch.mockImplementation(async (input: string | URL | Request) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url
+      // No rows → the cron's main loop short-circuits and we go straight to
+      // the cache sweep, which is what we want to verify.
+      if (url.includes('/rest/v1/')) {
+        return new Response(JSON.stringify([]), { status: 200 })
+      }
+      return new Response(JSON.stringify([]), { status: 200 })
+    })
+
+    // Seed both prefixes with a handful of keys.
+    await Promise.all([
+      env.ANALYTICS_CACHE.put('stats:summary:biz-a', '{"x":1}'),
+      env.ANALYTICS_CACHE.put('stats:summary:biz-b', '{"x":2}'),
+      env.ANALYTICS_CACHE.put(analyzeCacheKey('biz-a'), '{"insights":"y"}'),
+      env.ANALYTICS_CACHE.put(analyzeCacheKey('biz-b'), '{"insights":"z"}'),
+      env.ANALYTICS_CACHE.put('unrelated:key', '{"keep":true}'),
+    ])
+
+    await recalculateClientStatuses(env)
+
+    expect(await env.ANALYTICS_CACHE.get('stats:summary:biz-a')).toBeNull()
+    expect(await env.ANALYTICS_CACHE.get('stats:summary:biz-b')).toBeNull()
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey('biz-a'))).toBeNull()
+    expect(await env.ANALYTICS_CACHE.get(analyzeCacheKey('biz-b'))).toBeNull()
+    // Unrelated keys are not touched (afterEach handles cleanup).
+    expect(await env.ANALYTICS_CACHE.get('unrelated:key')).toBe('{"keep":true}')
+  })
+
+  it('deleteAllByPrefix paginates past the single-page cap (1500 keys)', async () => {
+    const PREFIX = 'pagination-test:'
+    const TOTAL = 1500 // > KV.list default page size of 1000
+
+    // Seed. Sequential put is slow but reliable in the miniflare KV impl;
+    // batching to chunks of 50 keeps the test under a second.
+    for (let i = 0; i < TOTAL; i += 50) {
+      await Promise.all(
+        Array.from({ length: Math.min(50, TOTAL - i) }, (_, j) =>
+          env.ANALYTICS_CACHE.put(`${PREFIX}${i + j}`, 'x'),
+        ),
+      )
+    }
+
+    const seeded = await env.ANALYTICS_CACHE.list({ prefix: PREFIX })
+    expect(seeded.keys.length).toBeGreaterThan(0)
+
+    const deleted = await deleteAllByPrefix(env.ANALYTICS_CACHE, PREFIX)
+    expect(deleted).toBe(TOTAL)
+
+    // Walk to verify zero remain (also catches truncation bugs).
+    const remaining = await env.ANALYTICS_CACHE.list({ prefix: PREFIX })
+    expect(remaining.keys.length).toBe(0)
+  }, 30_000)
 })
