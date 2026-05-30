@@ -5,14 +5,14 @@ import { ok, err } from '../types/api'
 import { requireStaff, requireAdmin, requireAnyAuth } from '../middleware/auth'
 import { rateLimit } from '../middleware/rateLimit'
 import { validateToken, invalidateToken, hashToken } from '../lib/tokenEngine'
-import { createSupabaseClient, mapSupabaseError, SupabaseError } from '../lib/supabase'
+import { createSupabaseClient, SupabaseError } from '../lib/supabase'
 import { analyzeCacheKey } from './assistant'
 
 type HonoEnv = { Bindings: Env; Variables: ContextVariables }
 
 type StatsDb = ReturnType<typeof createSupabaseClient>
 
-async function snapshotBusinessStats(db: StatsDb, businessId: string) {
+export async function snapshotBusinessStats(db: StatsDb, businessId: string) {
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 

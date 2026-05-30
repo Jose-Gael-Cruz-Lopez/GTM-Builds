@@ -7,6 +7,7 @@ import { rateLimit } from '../middleware/rateLimit'
 import { validateConsumerToken, invalidateToken, hashToken } from '../lib/tokenEngine'
 import { createSupabaseClient, SupabaseError } from '../lib/supabase'
 import { analyzeCacheKey } from './assistant'
+import { snapshotBusinessStats } from './visits'
 
 type HonoEnv = { Bindings: Env; Variables: ContextVariables }
 
@@ -213,6 +214,8 @@ scannerRoutes.post('/scan', requireStaff(), rateLimit({ keyPrefix: 'scanner' }),
     c.env.ANALYTICS_CACHE.delete(analyzeCacheKey(businessId)),
   ]).catch(console.error)
 
+  const stats = await snapshotBusinessStats(db, businessId)
+
   return c.json(
     ok({
       visit: {
@@ -232,6 +235,7 @@ scannerRoutes.post('/scan', requireStaff(), rateLimit({ keyPrefix: 'scanner' }),
       rewardUnlocked,
       reward: reward ? { id: reward.id, description: reward.description } : null,
       referralBonusGranted,
+      stats,
     }),
     201
   )
