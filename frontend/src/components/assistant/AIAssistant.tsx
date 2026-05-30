@@ -752,8 +752,14 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
                   )}
                 >
                   {msg.isLoading ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                    <span
+                      role="status"
+                      aria-live="polite"
+                      aria-busy="true"
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" aria-hidden />
+                      <span className="sr-only">El asistente está analizando tus datos…</span>
                       <span
                         className={cn(
                           "transition-opacity duration-300",
@@ -762,7 +768,7 @@ export function AIAssistant({ businessId, onClose }: { businessId: string; onClo
                       >
                         {LOADING_TIPS[tipIdx]}
                       </span>
-                    </>
+                    </span>
                   ) : (
                     <MessageContent content={msg.content} />
                   )}
