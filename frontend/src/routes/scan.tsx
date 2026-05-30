@@ -178,12 +178,18 @@ function ScanPage() {
         return;
       }
       if (code === "TOKEN_INVALID") {
-        setStatus({ kind: "error-generic", message: "Código QR inválido. Pide al cliente generar uno nuevo." });
+        setStatus({
+          kind: "error-generic",
+          message: "Código QR inválido. Pide al cliente generar uno nuevo.",
+        });
         scheduleClear(3500);
         return;
       }
       if (code === "NOT_FOUND") {
-        setStatus({ kind: "error-generic", message: "Cliente no encontrado. Debe registrarse primero." });
+        setStatus({
+          kind: "error-generic",
+          message: "Cliente no encontrado. Debe registrarse primero.",
+        });
         scheduleClear(4000);
         return;
       }
@@ -200,7 +206,10 @@ function ScanPage() {
         return;
       }
 
-      setStatus({ kind: "error-generic", message: message ?? "Error inesperado. Intenta de nuevo." });
+      setStatus({
+        kind: "error-generic",
+        message: message ?? "Error inesperado. Intenta de nuevo.",
+      });
       scheduleClear(3500);
     },
     [scheduleClear],
