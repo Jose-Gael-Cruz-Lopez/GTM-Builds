@@ -61,6 +61,7 @@ export const campaignsApi = {
     apiFetch<GenerateCampaignsResponse>(`/businesses/${businessId}/campaigns/generate`, {
       method: "POST",
       body: body ?? {},
+      timeoutMs: 30_000,
     }),
   list: (businessId: string, status?: CampaignStatus) =>
     apiFetch<ListCampaignsResponse>(

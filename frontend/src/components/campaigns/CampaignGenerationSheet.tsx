@@ -249,6 +249,15 @@ export function CampaignGenerationSheet({
                     La IA está creando tu campaña personalizada...
                   </p>
                 </div>
+              ) : generate.isError ? (
+                <div className="flex flex-col items-center gap-3 py-12 text-center">
+                  <p className="text-sm font-medium text-[var(--ink)]">
+                    No se pudo generar la campaña. Intenta de nuevo.
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => setStep(2)}>
+                    Volver a intentar
+                  </Button>
+                </div>
               ) : draft ? (
                 <>
                   <div className="relative rounded-[var(--radius-lg)] rounded-bl-sm border bg-[var(--cream)] p-5 shadow-[var(--shadow-soft)]">
