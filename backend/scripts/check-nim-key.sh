@@ -38,9 +38,11 @@ load_key() {
   if [ -f "$dotvars" ]; then
     # Take the value after '=', drop an inline '# comment', then strip
     # surrounding quotes/whitespace/CR so a quoted or commented line still works.
-    KEY="$(grep '^NIM_API_KEY=' "$dotvars" | head -1 | cut -d= -f2- | cut -d'#' -f1 | tr -d '"'"'"' \r\n')"
-    # grep failure under set -e doesn't abort an assignment, so an absent or
-    # blank NIM_API_KEY line leaves KEY empty — fail loudly instead of testing "".
+    # `|| true` so a missing line (grep exit 1, propagated by pipefail) doesn't
+    # abort under set -e before the emptiness check below. Then drop an inline
+    # '# comment' and strip surrounding quotes/whitespace/CR.
+    KEY="$( { grep '^NIM_API_KEY=' "$dotvars" || true; } | head -1 | cut -d= -f2- | cut -d'#' -f1 | tr -d '"'"'"' \r\n')"
+    # Covers both an absent NIM_API_KEY line and a present-but-blank one.
     if [ -z "$KEY" ]; then
       echo "ERROR: NIM_API_KEY is missing or blank in $dotvars" >&2
       exit 2
