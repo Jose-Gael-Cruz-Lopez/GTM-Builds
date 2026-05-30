@@ -307,7 +307,24 @@ export function CampaignGenerationSheet({
                     </Button>
                   </div>
                 </>
-              ) : null}
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+                  <AlertTriangle className="h-8 w-8 text-[var(--signal)]" />
+                  <p className="text-sm text-[var(--ink-soft)]">
+                    {generate.isError
+                      ? ((generate.error as ApiError)?.message ?? "No pudimos generar la campaña.")
+                      : "No se generó ninguna campaña."}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generate.mutate(extraSpecs || undefined)}
+                    disabled={generate.isPending}
+                  >
+                    <RefreshCw className="h-4 w-4" /> Reintentar
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
