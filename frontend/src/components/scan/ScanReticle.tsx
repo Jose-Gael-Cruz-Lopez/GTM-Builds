@@ -8,8 +8,6 @@ interface ScanReticleProps {
   className?: string;
 }
 
-const SIZE = 280;
-
 export function ScanReticle({ processing, successZoom, className }: ScanReticleProps) {
   return (
     <div
@@ -20,8 +18,7 @@ export function ScanReticle({ processing, successZoom, className }: ScanReticleP
       aria-hidden
     >
       <motion.div
-        className="relative"
-        style={{ width: SIZE, height: SIZE }}
+        className="relative aspect-square w-[92%]"
         animate={successZoom ? motionPresets.scanZoom.animate : undefined}
         transition={successZoom ? motionPresets.scanZoom.transition : undefined}
       >
