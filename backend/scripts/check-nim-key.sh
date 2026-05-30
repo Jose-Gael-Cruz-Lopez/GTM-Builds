@@ -34,7 +34,9 @@ load_key() {
   local dotvars
   dotvars="$(dirname "$0")/../.dev.vars"
   if [ -f "$dotvars" ]; then
-    KEY="$(grep '^NIM_API_KEY=' "$dotvars" | head -1 | cut -d= -f2- | tr -d '"'"'"' \r\n')"
+    # Take the value after '=', drop an inline '# comment', then strip
+    # surrounding quotes/whitespace/CR so a quoted or commented line still works.
+    KEY="$(grep '^NIM_API_KEY=' "$dotvars" | head -1 | cut -d= -f2- | cut -d'#' -f1 | tr -d '"'"'"' \r\n')"
     return
   fi
   echo "ERROR: no key found (arg, NIM_API_KEY env, or backend/.dev.vars)" >&2
