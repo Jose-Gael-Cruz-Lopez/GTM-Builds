@@ -71,9 +71,6 @@ export function CampaignGenerationSheet({
   const [tone, setTone] = useState("calido");
   const [extraSpecs, setExtraSpecs] = useState("");
   const [draft, setDraft] = useState<Campaign | null>(null);
-  // The specs sent on the most recent generate, so Reintentar replays the exact
-  // same request (handleRefine clears extraSpecs, so we can't read it back).
-  const [lastSpecs, setLastSpecs] = useState<string | undefined>(undefined);
 
   const clients = useQuery({
     queryKey: ["business", businessId, "analytics", "clients"],
@@ -89,15 +86,13 @@ export function CampaignGenerationSheet({
   const count = getSegmentCount(segment, clients.data, churn.data);
 
   const generate = useMutation({
-    mutationFn: (specs?: string) => {
-      setLastSpecs(specs);
-      return campaignsApi.generate(businessId, {
+    mutationFn: (specs?: string) =>
+      campaignsApi.generate(businessId, {
         targetSegment: segment,
         objective: objective.trim() || undefined,
         tone,
         extraSpecs: specs?.trim() || undefined,
-      });
-    },
+      }),
     onSuccess: (d) => {
       const campaign = d.campaigns[0];
       if (!campaign) return;
@@ -120,7 +115,6 @@ export function CampaignGenerationSheet({
     setTone("calido");
     setExtraSpecs("");
     setDraft(null);
-    setLastSpecs(undefined);
   };
 
   const handleOpenChange = (next: boolean) => {
@@ -324,7 +318,7 @@ export function CampaignGenerationSheet({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => generate.mutate(lastSpecs)}
+                    onClick={() => generate.mutate(generate.variables)}
                     disabled={generate.isPending}
                   >
                     <RefreshCw className="h-4 w-4" /> Reintentar
