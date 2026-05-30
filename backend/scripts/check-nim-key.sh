@@ -39,6 +39,12 @@ load_key() {
     # Take the value after '=', drop an inline '# comment', then strip
     # surrounding quotes/whitespace/CR so a quoted or commented line still works.
     KEY="$(grep '^NIM_API_KEY=' "$dotvars" | head -1 | cut -d= -f2- | cut -d'#' -f1 | tr -d '"'"'"' \r\n')"
+    # grep failure under set -e doesn't abort an assignment, so an absent or
+    # blank NIM_API_KEY line leaves KEY empty — fail loudly instead of testing "".
+    if [ -z "$KEY" ]; then
+      echo "ERROR: NIM_API_KEY is missing or blank in $dotvars" >&2
+      exit 2
+    fi
     return
   fi
   echo "ERROR: no key found (arg, NIM_API_KEY env, or backend/.dev.vars)" >&2
