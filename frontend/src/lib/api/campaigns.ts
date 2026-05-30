@@ -61,6 +61,9 @@ export const campaignsApi = {
     apiFetch<GenerateCampaignsResponse>(`/businesses/${businessId}/campaigns/generate`, {
       method: "POST",
       body: body ?? {},
+      // NIM inference takes 10-25s; the default 8s timeout aborts mid-flight and
+      // leaves the modal blank. Give this one endpoint the headroom it needs.
+      timeoutMs: 35_000,
     }),
   list: (businessId: string, status?: CampaignStatus) =>
     apiFetch<ListCampaignsResponse>(
