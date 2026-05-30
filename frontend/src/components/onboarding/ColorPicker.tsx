@@ -3,12 +3,27 @@ import { Label } from "@/components/ui/label";
 import { tokens } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
+// Wider preset palette so business owners can pick a color closer to their
+// brand. Theme tokens first (keep brand consistency), then a curated hue
+// spread. Anything outside these is still reachable via the hex input below.
 const PRESETS = [
   { id: "ink", label: "Tinta", color: tokens.color.ink },
   { id: "signal", label: "Señal", color: tokens.color.signal },
   { id: "celebrate", label: "Celebrar", color: tokens.color.celebrate },
   { id: "health", label: "Salud", color: tokens.color.health },
   { id: "scanner", label: "Rosa", color: tokens.color.scannerWarm },
+  { id: "blue", label: "Azul", color: tokens.color.dataBlue },
+  { id: "good", label: "Verde", color: tokens.color.statusGood },
+  { id: "warn", label: "Ámbar", color: tokens.color.statusWarn },
+  { id: "risk", label: "Rojo", color: tokens.color.statusRisk },
+  { id: "rose", label: "Rosa fuerte", color: "#EC4899" },
+  { id: "purple", label: "Morado", color: "#8B5CF6" },
+  { id: "indigo", label: "Índigo", color: "#6366F1" },
+  { id: "cyan", label: "Cian", color: "#06B6D4" },
+  { id: "teal", label: "Verde azulado", color: "#14B8A6" },
+  { id: "lime", label: "Lima", color: "#84CC16" },
+  { id: "orange", label: "Naranja", color: "#F97316" },
+  { id: "slate", label: "Pizarra", color: "#475569" },
 ] as const;
 
 interface ColorPickerProps {
