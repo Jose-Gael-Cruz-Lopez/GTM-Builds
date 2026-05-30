@@ -17,6 +17,8 @@
 #   backend/scripts/check-nim-key.sh nvapi-...       # key as first arg
 set -euo pipefail
 
+command -v curl >/dev/null || { echo "ERROR: curl is required but not installed" >&2; exit 3; }
+
 NIM_URL="https://integrate.api.nvidia.com/v1"
 # Model used for campaigns in src/lib/nim.ts (NIM_CAMPAIGNS_MODEL).
 TEST_MODEL="meta/llama-3.3-70b-instruct"
@@ -70,6 +72,8 @@ verdict() {
     200)
       echo "✅ OK — key works for inference. Set it in prod with:"
       echo "     echo \"\$NIM_API_KEY\" | npx wrangler secret put NIM_API_KEY" ;;
+    000)
+      echo "❌ 000 — no HTTP response (timeout or no network). Check connectivity." ;;
     401)
       echo "❌ 401 — key missing or wrong. Check NIM_API_KEY." ;;
     403)
