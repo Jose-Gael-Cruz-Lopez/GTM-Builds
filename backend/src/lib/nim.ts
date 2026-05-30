@@ -86,6 +86,7 @@ La campaña debe incluir:
 - Timing óptimo basado en los datos del negocio
 - Estimación realista del impacto esperado con porcentajes específicos
 Las variables de mensaje son: {name} (nombre del cliente), {days} (días sin visitar), {businessName} (nombre del negocio), {stamps} (sellos faltantes).
+REGLA CRÍTICA: Si el campo "especificacionesExtra" no es null, debes incorporar EXACTAMENTE esas especificaciones en el messageTemplate y en el título. Son instrucciones directas del dueño del negocio y tienen máxima prioridad sobre cualquier otra consideración.
 Responde SOLO con JSON válido: { "campaign": { "title", "messageTemplate", "targetSegment", "sendTiming", "expectedLift" } }
 Sin markdown, sin explicaciones, sin texto adicional.
 `.trim()
@@ -174,7 +175,9 @@ function buildUserPrompt(ctx: BusinessContext): string {
     objetivoDeLaCampaña: ctx.objective ?? 'reactivar clientes y aumentar visitas',
     tonoDeLaCampaña: toneLabel,
     especificacionesExtra: ctx.extraSpecs ?? null,
-    instrucciones: `Genera exactamente 1 campaña para el segmento indicado (${segmentLabel}), con el tono "${toneLabel}" y el objetivo especificado. Devuelve: { "campaign": { "title", "messageTemplate", "targetSegment", "sendTiming", "expectedLift" } }`,
+    instrucciones: ctx.extraSpecs
+      ? `OBLIGATORIO: El messageTemplate y el título DEBEN incorporar esta especificación del dueño: "${ctx.extraSpecs}". Genera 1 campaña para el segmento (${segmentLabel}), con tono "${toneLabel}". Devuelve: { "campaign": { "title", "messageTemplate", "targetSegment", "sendTiming", "expectedLift" } }`
+      : `Genera exactamente 1 campaña para el segmento indicado (${segmentLabel}), con el tono "${toneLabel}" y el objetivo especificado. Devuelve: { "campaign": { "title", "messageTemplate", "targetSegment", "sendTiming", "expectedLift" } }`,
   })
 }
 
