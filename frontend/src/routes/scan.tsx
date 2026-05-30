@@ -177,6 +177,16 @@ function ScanPage() {
         scheduleClear(3500);
         return;
       }
+      if (code === "TOKEN_INVALID") {
+        setStatus({ kind: "error-generic", message: "Código QR inválido. Pide al cliente generar uno nuevo." });
+        scheduleClear(3500);
+        return;
+      }
+      if (code === "NOT_FOUND") {
+        setStatus({ kind: "error-generic", message: "Cliente no encontrado. Debe registrarse primero." });
+        scheduleClear(4000);
+        return;
+      }
       if (code === "AUTH_INVALID" || code === "invalid_staff_key" || code === "AUTH_MISSING") {
         setStatus({ kind: "error-invalid-key", message });
         setKeySheetOpen(true);
@@ -190,7 +200,7 @@ function ScanPage() {
         return;
       }
 
-      setStatus({ kind: "error-used" });
+      setStatus({ kind: "error-generic", message: message ?? "Error inesperado. Intenta de nuevo." });
       scheduleClear(3500);
     },
     [scheduleClear],

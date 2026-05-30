@@ -58,7 +58,7 @@ function toQuery(params?: ListMyVisitsParams): string {
 
 export const visitsApi = {
   register: (body: RegisterVisitRequest) =>
-    apiFetch<RegisterVisitResponse>("/visits", { method: "POST", body, staffKey: true }),
+    apiFetch<RegisterVisitResponse>("/scanner/scan", { method: "POST", body, staffKey: true }),
   listMine: (params?: ListMyVisitsParams) =>
     apiFetch<ListMyVisitsResponse>(`/visits/me/visits${toQuery(params)}`),
 };

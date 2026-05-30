@@ -16,6 +16,7 @@ export type ScanStatus =
   | { kind: "error-used" }
   | { kind: "error-invalid-key"; message?: string }
   | { kind: "error-camera" }
+  | { kind: "error-generic"; message?: string }
   | { kind: "offline-queued"; count?: number };
 
 interface ScanStatusPanelProps {
@@ -136,6 +137,17 @@ function StatusContent({ status }: { status: ScanStatus }) {
         />
       );
 
+    case "error-generic":
+      return (
+        <StatusRow
+          chip={
+            <Chip tone="risk" icon={<AlertCircle className="h-3.5 w-3.5" aria-hidden />}>
+              {status.message ?? "Error inesperado. Intenta de nuevo."}
+            </Chip>
+          }
+        />
+      );
+
     case "offline-queued":
       return (
         <StatusRow
@@ -244,6 +256,8 @@ function statusToLiveMessage(status: ScanStatus, scan: ScanDict): string {
       return status.message ?? scan.liveInvalidKey;
     case "error-camera":
       return scan.liveCameraDenied;
+    case "error-generic":
+      return status.message ?? "Error inesperado";
     case "offline-queued":
       return scan.liveOffline;
   }
