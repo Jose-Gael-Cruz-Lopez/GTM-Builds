@@ -42,8 +42,9 @@ load_key() {
 }
 
 http_status() {
-  # $1 = full URL, remaining args appended to curl
-  curl -s -o /dev/null -w '%{http_code}' "$@"
+  # $1 = full URL, remaining args appended to curl.
+  # --max-time guards against a hung endpoint; curl emits 000 on timeout.
+  curl -s --max-time 15 -o /dev/null -w '%{http_code}' "$@"
 }
 
 check_catalog() {
