@@ -335,6 +335,32 @@ npm run type-check               # tsc --noEmit
 npm run lint
 ```
 
+> En producción `NIM_API_KEY` se guarda como **secret** del Worker, no en `wrangler.toml`:
+> `echo "<key>" | npx wrangler secret put NIM_API_KEY`
+
+#### La IA devuelve texto genérico ("Día tranquilo…") e ignora lo que pides
+
+Si "Generar con IA" / "Mejorar campaña" o el asistente devuelven texto fijo y
+no respetan lo que escribió el dueño, casi siempre es la **key de NVIDIA NIM**,
+no el código. `src/lib/nim.ts` cae a una campaña hardcodeada ante **cualquier**
+fallo de NIM, y ese fallback ignora las especificaciones del dueño.
+
+Diagnostica con:
+
+```bash
+backend/scripts/check-nim-key.sh        # lee backend/.dev.vars
+```
+
+| Resultado | Significado | Solución |
+| --- | --- | --- |
+| `200` | La key funciona para inferencia | Súbela a prod: `wrangler secret put NIM_API_KEY` |
+| `401` | Key ausente / incorrecta | Revisa `NIM_API_KEY` |
+| `403` | La key autentica pero **no tiene cuota de inferencia** | Usa una key de una cuenta de build.nvidia.com **con créditos** |
+
+> **La trampa:** `GET /v1/models` devuelve `200` aunque la key no pueda correr
+> ningún modelo. Ese 200 **no** significa que la key sirva — siempre hay que
+> probar una chat completion real (el script ya lo hace).
+
 ### Frontend
 
 ```bash
