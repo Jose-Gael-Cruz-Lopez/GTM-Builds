@@ -411,7 +411,13 @@ function ScanPage() {
     scanner
       .start(
         { facingMode: "environment" },
-        { fps: 12, qrbox: { width: 260, height: 260 } },
+        {
+          fps: 12,
+          qrbox: (w: number, h: number) => {
+            const s = Math.round(Math.min(w, h) * 0.92);
+            return { width: s, height: s };
+          },
+        },
         (decoded) => {
           if (cancelled || processingRef.current) return;
           void processToken(decoded);
